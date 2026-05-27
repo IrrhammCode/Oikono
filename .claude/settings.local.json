@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.somnia.network)",
+      "WebFetch(domain:www.encodeclub.com)",
+      "WebSearch",
+      "Bash(npm install *)",
+      "Bash(npx hardhat *)",
+      "Bash(grep -v \"^$\")"
+    ]
+  }
+}
