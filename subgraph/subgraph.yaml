@@ -1,0 +1,147 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  # GameRegistry
+  - kind: ethereum
+    name: GameRegistry
+    network: somnia-testnet
+    source:
+      address: "0xce4a2319855968E0Bd6E1826f7A8a08e24a34f53"
+      abi: GameRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Game
+        - GameTypeStats
+      abis:
+        - name: GameRegistry
+          file: ./abis/GameRegistry.json
+      eventHandlers:
+        - event: GameRegistered(uint256 indexed gameId, address indexed gameAddress, address indexed owner, string name, string gameType)
+          handler: handleGameRegistered
+      file: ./src/mapping.ts
+
+  # MetricsRegistry
+  - kind: ethereum
+    name: MetricsRegistry
+    network: somnia-testnet
+    source:
+      address: "0x05fF035dc85f6b33D08af7ce202efaD245C8eE85"
+      abi: MetricsRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Metric
+        - MetricValue
+      abis:
+        - name: MetricsRegistry
+          file: ./abis/MetricsRegistry.json
+      eventHandlers:
+        - event: MetricDefined(uint256 indexed gameId, string metricName, string dataType, string source)
+          handler: handleMetricDefined
+        - event: MetricRecorded(uint256 indexed gameId, string metricName, uint256 value, uint256 timestamp)
+          handler: handleMetricRecorded
+      file: ./src/mapping.ts
+
+  # PatternDetector
+  - kind: ethereum
+    name: PatternDetector
+    network: somnia-testnet
+    source:
+      address: "0xB0dE1515787cB8809D4bAfecaA8523CC943F71eE"
+      abi: PatternDetector
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Pattern
+      abis:
+        - name: PatternDetector
+          file: ./abis/PatternDetector.json
+      eventHandlers:
+        - event: PatternDetected(uint256 indexed gameId, uint256 indexed patternId, string patternType, string description, uint256 severity)
+          handler: handlePatternDetected
+      file: ./src/mapping.ts
+
+  # SuggestionEngine
+  - kind: ethereum
+    name: SuggestionEngine
+    network: somnia-testnet
+    source:
+      address: "0xF2162A45c05cEB6db4CE8b2Bf3B576b328269a8B"
+      abi: SuggestionEngine
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Suggestion
+      abis:
+        - name: SuggestionEngine
+          file: ./abis/SuggestionEngine.json
+      eventHandlers:
+        - event: SuggestionCreated(uint256 indexed gameId, uint256 indexed suggestionId, string category, string priority, string description)
+          handler: handleSuggestionCreated
+        - event: SuggestionImplemented(uint256 indexed gameId, uint256 indexed suggestionId, uint256 implementedAt)
+          handler: handleSuggestionImplemented
+      file: ./src/mapping.ts
+
+  # OikonoAgent
+  - kind: ethereum
+    name: OikonoAgent
+    network: somnia-testnet
+    source:
+      address: "0x8B32e8C3Be192d37C79fAF14BEf0dbE6452153B2"
+      abi: OikonoAgent
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Decision
+      abis:
+        - name: OikonoAgent
+          file: ./abis/OikonoAgent.json
+      eventHandlers:
+        - event: DecisionRequested(uint256 indexed decisionId, address indexed game, string decisionType, string promptSummary)
+          handler: handleDecisionRequested
+        - event: DecisionExecuted(uint256 indexed decisionId, address indexed game, string action, bool success)
+          handler: handleDecisionExecuted
+        - event: AgentActionTaken(address indexed game, string actionType, string description)
+          handler: handleAgentActionTaken
+      file: ./src/mapping.ts
+
+  # LLMInvoker
+  - kind: ethereum
+    name: LLMInvoker
+    network: somnia-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"  # Update after deploy
+      abi: LLMInvoker
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LLMRequest
+      abis:
+        - name: LLMInvoker
+          file: ./abis/LLMInvoker.json
+      eventHandlers:
+        - event: LLMRequestSent(uint256 indexed requestId, address indexed game, string decisionType, string promptSummary)
+          handler: handleLLMRequestSent
+        - event: LLMResponseReceived(uint256 indexed requestId, address indexed game, string action, bool success)
+          handler: handleLLMResponseReceived
+      file: ./src/mapping.ts

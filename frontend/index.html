@@ -3,503 +3,744 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OIKONO — AI Agent Interface | Somnia Agentic L1</title>
-    <meta name="description" content="OIKONO Agent Kit - Universal AI Agent for Web3 Games on Somnia">
+    <title>OIKONO - Data-Driven Game Economy Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
+    <nav class="nav">
+        <div class="nav__inner">
+            <a href="#" class="nav__brand">
+                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="44" height="44">
+                <span class="nav__name">OIKONO</span>
+            </a>
+            <div class="nav__links">
+                <a href="#features" class="nav__link">Features</a>
+                <a href="#how-it-works" class="nav__link">How It Works</a>
+                <a href="#developers" class="nav__link">Developers</a>
+            </div>
+            <div class="nav__actions">
+                <button class="btn btn--ghost" id="connectBtn">Connect Wallet</button>
+                <button class="btn btn--primary" id="launchBtn" style="display:none">Launch Dashboard</button>
+            </div>
+        </div>
+    </nav>
 
-    <!-- Background Effects -->
-    <div class="bg-grid"></div>
-    <div class="bg-glow-orb bg-glow-orb--purple"></div>
-    <div class="bg-glow-orb bg-glow-orb--cyan"></div>
+    <section class="hero">
+        <div class="hero__bg">
+            <div class="hero__grid"></div>
+            <div class="hero__glow"></div>
+        </div>
+        <div class="container">
+            <div class="hero__content">
+                <div class="hero__badge">Data-Driven</div>
+                <h1 class="hero__title">
+                    Autonomous Game Economy<br>
+                    <span class="gradient">Powered by Real Data</span>
+                </h1>
+                <p class="hero__desc">
+                    No fixed formulas. No assumptions. Oikono tracks your game metrics,
+                    detects patterns, and learns what works to provide actionable suggestions.
+                </p>
+                <div class="hero__actions">
+                    <button class="btn btn--large btn--primary" type="button" id="heroRegisterBtn">Register Your Game</button>
+                    <button class="btn btn--large btn--ghost" type="button" id="heroHowBtn">See How It Works</button>
+                </div>
+                <div class="hero__stats">
+                    <div class="hero__stat">
+                        <div class="hero__stat-value">10</div>
+                        <div class="hero__stat-label">Game Types</div>
+                    </div>
+                    <div class="hero__stat">
+                        <div class="hero__stat-value">60+</div>
+                        <div class="hero__stat-label">Metrics</div>
+                    </div>
+                    <div class="hero__stat">
+                        <div class="hero__stat-value">30+</div>
+                        <div class="hero__stat-label">Detection Rules</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="page-wrapper">
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section__header">
+                <div class="section__label">Capabilities</div>
+                <h2 class="section__title">Data-Driven Approach</h2>
+                <p class="section__desc">We don't assume formulas. We track data, detect patterns, and learn from outcomes.</p>
+            </div>
+            <div class="features__grid">
+                <div class="feature-card">
+                    <div class="feature-card__icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h3 class="feature-card__title">Flexible Metrics</h3>
+                    <p class="feature-card__desc">Define your own metrics or use pre-built templates for 10+ game types.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <h3 class="feature-card__title">Pattern Detection</h3>
+                    <p class="feature-card__desc">Automatically detect anomalies, trends, and correlations in your game data.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    </div>
+                    <h3 class="feature-card__title">Smart Suggestions</h3>
+                    <p class="feature-card__desc">Get actionable suggestions based on detected patterns. System learns from outcomes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card__icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                    </div>
+                    <h3 class="feature-card__title">Continuous Learning</h3>
+                    <p class="feature-card__desc">Track what suggestions you implemented and what happened. System improves over time.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <!-- ═══ NAVBAR ═══ -->
-        <nav class="navbar" id="navbar">
-            <div class="container navbar__inner">
-                <a href="#/" class="navbar__brand">
-                    <img src="logo_transparent.png" class="navbar__logo" alt="OIKONO Logo">
-                    <span class="navbar__name">OIK<em>ONO</em></span>
+    <section class="section section--dark" id="how-it-works">
+        <div class="container">
+            <div class="section__header">
+                <div class="section__label">Process</div>
+                <h2 class="section__title">From Data to Decisions</h2>
+                <p class="section__desc">A continuous cycle of tracking, analyzing, suggesting, and learning.</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step__number">01</div>
+                    <div class="step__content">
+                        <h3 class="step__title">Define Metrics</h3>
+                        <p class="step__desc">Choose a game type template or define custom metrics.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step__number">02</div>
+                    <div class="step__content">
+                        <h3 class="step__title">Collect Data</h3>
+                        <p class="step__desc">System automatically collects on-chain data. You report off-chain metrics.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step__number">03</div>
+                    <div class="step__content">
+                        <h3 class="step__title">Detect Patterns</h3>
+                        <p class="step__desc">AI analyzes data for anomalies, trends, and correlations.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step__number">04</div>
+                    <div class="step__content">
+                        <h3 class="step__title">Get Suggestions</h3>
+                        <p class="step__desc">Receive actionable suggestions with confidence levels.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="developers" style="display:none">
+        <div class="container">
+            <div class="section__header">
+                <div class="section__label">For Developers</div>
+                <h2 class="section__title">Register Your Game</h2>
+                <p class="section__desc">Choose a game type template or define custom metrics.</p>
+                <button class="btn btn--ghost" onclick="showLanding()" style="margin-top: 1rem;">Back to Home</button>
+            </div>
+            <div class="register-form">
+                <div class="register-form__card">
+                    <div class="register-form__header">
+                        <h3>Game Registration</h3>
+                        <span class="badge badge--testnet">Somnia Testnet</span>
+                    </div>
+                    <form id="registerForm" class="register-form__body">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1.5">
+                                <label class="form-label">Game Name</label>
+                                <input type="text" class="form-input" id="gameName" placeholder="My Awesome Game" required>
+                            </div>
+                            <div class="form-group" style="flex: 1">
+                                <label class="form-label">Game Type</label>
+                                <select class="form-input" id="gameType" required onchange="updateTemplatePreview()">
+                                    <option value="">Select type...</option>
+                                    <option value="rpg">RPG</option>
+                                    <option value="card">Card Game</option>
+                                    <option value="strategy">Strategy</option>
+                                    <option value="pvp">PvP</option>
+                                    <option value="simulation">Simulation</option>
+                                    <option value="puzzle">Puzzle</option>
+                                    <option value="racing">Racing</option>
+                                    <option value="idle">Idle/Clicker</option>
+                                    <option value="sandbox">Sandbox</option>
+                                    <option value="defi">DeFi/GameFi</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1.5">
+                                <label class="form-label">Description</label>
+                                <input type="text" class="form-input" id="gameDesc" placeholder="Brief description...">
+                            </div>
+                            <div class="form-group" style="flex: 1">
+                                <label class="form-label">Website <span class="form-optional">(optional)</span></label>
+                                <input type="text" class="form-input" id="gameWebsite" placeholder="https://mygame.com">
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Game Contracts</h4>
+                        <p class="form-section-desc">Add your game contracts (token, NFT, marketplace, etc.)</p>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2">
+                                <label class="form-label">Contract Address</label>
+                                <input type="text" class="form-input" id="contractAddress" placeholder="0x...">
+                            </div>
+                            <div class="form-group" style="flex: 1">
+                                <label class="form-label">Role</label>
+                                <select class="form-input" id="contractRole">
+                                    <option value="token">Token</option>
+                                    <option value="nft">NFT</option>
+                                    <option value="marketplace">Marketplace</option>
+                                    <option value="staking">Staking</option>
+                                    <option value="game_logic">Game Logic</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 0; align-self: flex-end">
+                                <button type="button" class="btn btn--ghost btn--sm" onclick="addGameContract()" style="height: 36px; min-width: 60px; padding: 0 var(--space-4)">Add</button>
+                            </div>
+                        </div>
+
+                        <div id="contractList" class="contract-list">
+                            <p class="form-hint">No contracts added yet</p>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Economy Goals</h4>
+                        <p class="form-section-desc">What do you want to achieve with your game economy?</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Target Win Rate</label>
+                                <div class="form-range">
+                                    <input type="range" id="targetWinRate" min="30" max="80" value="55" oninput="updateRangeDisplay(this, 'winRateDisplay')">
+                                    <span id="winRateDisplay" class="form-range__value">55%</span>
+                                </div>
+                                <span class="form-hint">Ideal: 45-65% for RPG, 50-60% for PvP</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Target D7 Retention</label>
+                                <div class="form-range">
+                                    <input type="range" id="targetRetention" min="10" max="60" value="30" oninput="updateRangeDisplay(this, 'retentionDisplay')">
+                                    <span id="retentionDisplay" class="form-range__value">30%</span>
+                                </div>
+                                <span class="form-hint">Industry average: 20-40%</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Inflation Tolerance</label>
+                                <select class="form-input" id="inflationTolerance">
+                                    <option value="low">Low (0-2%/day)</option>
+                                    <option value="medium" selected>Medium (2-5%/day)</option>
+                                    <option value="high">High (5-10%/day)</option>
+                                </select>
+                                <span class="form-hint">How much token inflation is acceptable?</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Economy Style</label>
+                                <select class="form-input" id="economyStyle">
+                                    <option value="deflationary">Deflationary (burn > mint)</option>
+                                    <option value="balanced" selected>Balanced (burn ≈ mint)</option>
+                                    <option value="inflationary">Inflationary (mint > burn)</option>
+                                </select>
+                                <span class="form-hint">Overall token economy direction</span>
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Agent Permissions</h4>
+                        <p class="form-section-desc">What can the AI agent do for your game?</p>
+
+                        <div class="form-checks">
+                            <label class="form-check">
+                                <input type="checkbox" id="permSpawn" checked>
+                                <span class="form-check__label">Spawn Entities</span>
+                                <span class="form-check__desc">Generate enemies, NPCs, items based on player behavior</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="checkbox" id="permEconomy" checked>
+                                <span class="form-check__label">Adjust Economy</span>
+                                <span class="form-check__desc">Modify rewards, burn rates, token distribution</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="checkbox" id="permNarrative">
+                                <span class="form-check__label">Generate Narrative</span>
+                                <span class="form-check__desc">Create quests, dialogues, story events</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="checkbox" id="permDifficulty" checked>
+                                <span class="form-check__label">Adjust Difficulty</span>
+                                <span class="form-check__desc">Balance game difficulty based on player performance</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Max Change Per Epoch</label>
+                            <div class="form-range">
+                                <input type="range" id="maxChange" min="5" max="50" value="20" oninput="updateRangeDisplay(this, 'maxChangeDisplay')">
+                                <span id="maxChangeDisplay" class="form-range__value">20%</span>
+                            </div>
+                            <span class="form-hint">Maximum percentage the agent can change per adjustment cycle</span>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Alert Thresholds</h4>
+                        <p class="form-section-desc">When should the agent alert you?</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Win Rate Alert</label>
+                                <div class="form-row" style="gap: 8px">
+                                    <input type="number" class="form-input" id="winRateLow" placeholder="40" value="40" style="width: 80px">
+                                    <span class="form-hint" style="align-self: center">to</span>
+                                    <input type="number" class="form-input" id="winRateHigh" placeholder="70" value="70" style="width: 80px">
+                                    <span class="form-hint" style="align-self: center">%</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Token Velocity Alert</label>
+                                <input type="number" class="form-input" id="velocityAlert" placeholder="50000" value="50000">
+                                <span class="form-hint">Alert if velocity exceeds this value</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Retention Drop Alert</label>
+                                <div class="form-range">
+                                    <input type="range" id="retentionDrop" min="5" max="50" value="15" oninput="updateRangeDisplay(this, 'retentionDropDisplay')">
+                                    <span id="retentionDropDisplay" class="form-range__value">15%</span>
+                                </div>
+                                <span class="form-hint">Alert if retention drops by this percentage</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Inflation Alert</label>
+                                <div class="form-range">
+                                    <input type="range" id="inflationAlert" min="1" max="20" value="10" oninput="updateRangeDisplay(this, 'inflationAlertDisplay')">
+                                    <span id="inflationAlertDisplay" class="form-range__value">10%</span>
+                                </div>
+                                <span class="form-hint">Alert if daily inflation exceeds this</span>
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Token Economics</h4>
+                        <p class="form-section-desc">Tell us about your game's token model</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Token Name</label>
+                                <input type="text" class="form-input" id="tokenName" placeholder="e.g., Gold, OIK, Gems">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Token Symbol</label>
+                                <input type="text" class="form-input" id="tokenSymbol" placeholder="e.g., OIK, GOLD">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Total Supply</label>
+                                <input type="text" class="form-input" id="totalSupply" placeholder="1,500,000,000">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Circulating Supply</label>
+                                <input type="text" class="form-input" id="circSupply" placeholder="420,000,000">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Token Utility</label>
+                            <select class="form-input" id="tokenUtility">
+                                <option value="currency">Currency (in-game money)</option>
+                                <option value="governance">Governance (voting rights)</option>
+                                <option value="utility">Utility (access features)</option>
+                                <option value="reward">Reward (earn by playing)</option>
+                                <option value="mixed" selected>Mixed (multiple uses)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Main Token Sinks <span class="form-optional">(where tokens are burned)</span></label>
+                            <div class="form-checks form-checks--compact">
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="sinkEntry" checked>
+                                    <span class="form-check__label">Entry fees</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="sinkCraft" checked>
+                                    <span class="form-check__label">Crafting/Upgrading</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="sinkMarket" checked>
+                                    <span class="form-check__label">Marketplace fees</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="sinkStaking">
+                                    <span class="form-check__label">Staking</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="sinkCosmetic">
+                                    <span class="form-check__label">Cosmetics</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Main Token Sources <span class="form-optional">(where tokens are minted)</span></label>
+                            <div class="form-checks form-checks--compact">
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="srcBattle" checked>
+                                    <span class="form-check__label">Battle rewards</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="srcQuest" checked>
+                                    <span class="form-check__label">Quest rewards</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="srcStaking">
+                                    <span class="form-check__label">Staking yields</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="srcAirdrop">
+                                    <span class="form-check__label">Airdrops</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Player Economics</h4>
+                        <p class="form-section-desc">How do players interact with your economy?</p>
+
+                        <div class="form-group">
+                            <label class="form-label">Entry Model</label>
+                            <div class="form-radio-group">
+                                <label class="form-radio">
+                                    <input type="radio" name="entryModel" value="free" checked>
+                                    <span class="form-radio__label">Free to Play</span>
+                                    <span class="form-radio__desc">No cost to start</span>
+                                </label>
+                                <label class="form-radio">
+                                    <input type="radio" name="entryModel" value="freemium">
+                                    <span class="form-radio__label">Freemium</span>
+                                    <span class="form-radio__desc">Free with optional purchases</span>
+                                </label>
+                                <label class="form-radio">
+                                    <input type="radio" name="entryModel" value="paid">
+                                    <span class="form-radio__label">Paid Entry</span>
+                                    <span class="form-radio__desc">Requires purchase to play</span>
+                                </label>
+                                <label class="form-radio">
+                                    <input type="radio" name="entryModel" value="subscription">
+                                    <span class="form-radio__label">Subscription</span>
+                                    <span class="form-radio__desc">Monthly/annual fee</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Player Segments</label>
+                            <div class="form-checks form-checks--compact">
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="segCasual" checked>
+                                    <span class="form-check__label">Casual players</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="segHardcore" checked>
+                                    <span class="form-check__label">Hardcore players</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="segWhale">
+                                    <span class="form-check__label">Whales (big spenders)</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="segTrader">
+                                    <span class="form-check__label">Traders</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Integration Settings</h4>
+                        <p class="form-section-desc">How should the agent work with your game?</p>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Agent Check Frequency</label>
+                                <select class="form-input" id="checkFrequency">
+                                    <option value="realtime">Real-time (every block)</option>
+                                    <option value="hourly" selected>Hourly</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                </select>
+                                <span class="form-hint">How often should the agent analyze your game?</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Autonomy Level</label>
+                                <select class="form-input" id="autonomyLevel">
+                                    <option value="suggest">Suggest Only</option>
+                                    <option value="semi-auto" selected>Semi-Auto</option>
+                                    <option value="full-auto">Full Auto</option>
+                                </select>
+                                <span class="form-hint">How much control should the agent have?</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Notification Preferences</label>
+                            <div class="form-checks form-checks--compact">
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="notifOnChain" checked>
+                                    <span class="form-check__label">On-chain events</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="notifEmail">
+                                    <span class="form-check__label">Email</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="notifDiscord">
+                                    <span class="form-check__label">Discord webhook</span>
+                                </label>
+                                <label class="form-check form-check--small">
+                                    <input type="checkbox" id="notifTelegram">
+                                    <span class="form-check__label">Telegram bot</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Template Preview</h4>
+                        <div id="templatePreview" class="template-preview">
+                            <p class="form-section-desc">Select a game type to see included metrics</p>
+                        </div>
+                        <button type="button" class="btn btn--large btn--primary btn--full" onclick="registerGame()">Register Game</button>
+                    </form>
+                </div>
+                <div class="register-form__info">
+                    <div class="info-card">
+                        <h4>What happens after registration?</h4>
+                        <ul class="info-list">
+                            <li><span class="info-icon">1</span><span>Game type template applied automatically</span></li>
+                            <li><span class="info-icon">2</span><span>Metrics collection begins</span></li>
+                            <li><span class="info-icon">3</span><span>Pattern detection runs continuously</span></li>
+                            <li><span class="info-icon">4</span><span>Suggestions generated when patterns detected</span></li>
+                        </ul>
+                    </div>
+                    <div class="info-card info-card--dark">
+                        <h4>Supported Game Types</h4>
+                        <div class="game-types-grid">
+                            <span class="game-type-tag">RPG</span>
+                            <span class="game-type-tag">Card</span>
+                            <span class="game-type-tag">Strategy</span>
+                            <span class="game-type-tag">PvP</span>
+                            <span class="game-type-tag">Simulation</span>
+                            <span class="game-type-tag">Puzzle</span>
+                            <span class="game-type-tag">Racing</span>
+                            <span class="game-type-tag">Idle</span>
+                            <span class="game-type-tag">Sandbox</span>
+                            <span class="game-type-tag">DeFi</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard" id="dashboard" style="display:none">
+        <div class="dashboard__sidebar">
+            <div class="sidebar__header">
+                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="44" height="44">
+                <span class="nav__name">OIKONO</span>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="#/dashboard/overview" class="sidebar__link sidebar__link--active" data-view="overview">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Overview
                 </a>
-
-                <ul class="navbar__links">
-                    <li><a href="#/game" class="navbar__link">play</a></li>
-                    <li><a href="#/agents" class="navbar__link">agents</a></li>
-                    <li><a href="#/live" class="navbar__link">live_data</a></li>
-                    <li><a href="#/architecture" class="navbar__link">architecture</a></li>
-                </ul>
-
-                <div class="navbar__status">
-                    <button id="connectBtn" class="btn btn--connect" onclick="connectWallet()">
-                        <span class="btn__icon">⬡</span>
-                        <span id="connectText">Connect Wallet</span>
-                    </button>
-                    <button id="disconnectBtn" class="btn btn--disconnect" onclick="disconnectWallet()" style="display: none;">
-                        <span class="btn__icon">◇</span>
-                        <span>Disconnect</span>
-                    </button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- ═══ HERO ═══ -->
-        <section class="hero section landing-section" id="hero">
-            <div class="container">
-                <div class="hero__content">
-                    <div class="hero__text">
-                        <div class="hero__eyebrow">
-                            <span id="networkStatus">somnia_testnet://disconnected</span>
-                            <span class="blink">█</span>
-                        </div>
-                        <h1 class="hero__title">
-                            <span class="line gradient">Universal AI</span>
-                            <span class="line gradient">Agent for</span>
-                            <span class="line"><span class="highlight">Web3 Games</span></span>
-                        </h1>
-                        <p class="hero__desc">
-                            One import. Three lines of config. Infinite possibilities.
-                            <code>GameReactor</code> brings deterministic LLM inference,
-                            on-chain reactivity, and AI-powered game mechanics to any Web3 game.
-                        </p>
-                        <div class="hero__actions">
-                            <a href="#/game" class="btn btn--primary">
-                                <span class="btn__icon">⧫</span>
-                                Play Demo
-                            </a>
-                            <a href="#/architecture" class="btn btn--ghost">
-                                <span class="btn__icon">◇</span>
-                                view_docs
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Hero Terminal -->
-                    <div class="hero__terminal">
-                        <div class="terminal__header">
-                            <span class="terminal__dot terminal__dot--red"></span>
-                            <span class="terminal__dot terminal__dot--yellow"></span>
-                            <span class="terminal__dot terminal__dot--green"></span>
-                            <span class="terminal__title">agent_runtime — live</span>
-                        </div>
-                        <div class="terminal__body" id="heroTerminal">
-                            <div class="terminal__line" style="animation-delay: 0.2s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__comment">// OIKONO Agent Kit v1.0.0</span>
-                            </div>
-                            <div class="terminal__line" style="animation-delay: 0.5s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__cmd">connecting to </span>
-                                <span class="terminal__string">wss://dream-rpc.somnia.network</span>
-                            </div>
-                            <div class="terminal__line" style="animation-delay: 0.8s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__success" id="connStatus">... Awaiting wallet connection...</span>
-                            </div>
-                            <div class="terminal__line" style="animation-delay: 1.1s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__cmd">chain_id: </span>
-                                <span class="terminal__value">50312</span>
-                                <span class="terminal__cmd"> (Somnia Testnet)</span>
-                            </div>
-                            <div class="terminal__line" style="animation-delay: 1.4s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__cmd">plugins: </span>
-                                <span class="terminal__key">SPAWN</span>
-                                <span class="terminal__cmd"> </span>
-                                <span class="terminal__key">ECONOMY</span>
-                                <span class="terminal__cmd"> </span>
-                                <span class="terminal__key">BALANCE</span>
-                            </div>
-                            <div class="terminal__line" style="animation-delay: 1.7s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__success">✓ AgentRuntime initialized</span>
-                            </div>
-                            <div class="terminal__line" style="animation-delay: 2.0s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__info">⧫ Ready for game integration</span>
-                            </div>
-                            <div class="terminal__line" style="animation-delay: 2.3s">
-                                <span class="terminal__prompt">▸</span>
-                                <span class="terminal__cursor"></span>
-                            </div>
-                        </div>
+                <a href="#/dashboard/metrics" class="sidebar__link" data-view="metrics">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                    Metrics
+                </a>
+                <a href="#/dashboard/patterns" class="sidebar__link" data-view="patterns">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                    Patterns
+                </a>
+                <a href="#/dashboard/suggestions" class="sidebar__link" data-view="suggestions">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    Suggestions
+                </a>
+                <a href="#/dashboard/games" class="sidebar__link" data-view="games">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="16" cy="10" r="1"/><circle cx="18" cy="12" r="1"/></svg>
+                    My Games
+                </a>
+            </nav>
+            <div class="sidebar__footer">
+                <div class="sidebar__wallet">
+                    <div class="wallet__avatar"></div>
+                    <div class="wallet__info">
+                        <div class="wallet__address" id="walletAddress">-</div>
+                        <div class="wallet__network">Somnia Testnet</div>
                     </div>
                 </div>
             </div>
-        </section>
-
-        <!-- ═══ STATS BAR ═══ -->
-        <section class="section landing-section" style="padding-top: 0;">
-            <div class="container">
-                <div class="stats-bar">
-                    <div class="stat-card fade-up">
-                        <div class="stat-card__value">16</div>
-                        <div class="stat-card__label">Smart Contracts</div>
-                        <div class="stat-card__delta">Agent Kit + Plugins</div>
-                    </div>
-                    <div class="stat-card fade-up stagger-1">
-                        <div class="stat-card__value">4</div>
-                        <div class="stat-card__label">AI Plugins</div>
-                        <div class="stat-card__delta">Spawn | Economy | Narrative | Balance</div>
-                    </div>
-                    <div class="stat-card fade-up stagger-2">
-                        <div class="stat-card__value">3</div>
-                        <div class="stat-card__label">Game Types Demo</div>
-                        <div class="stat-card__delta">RPG | Card | Strategy</div>
-                    </div>
-                    <div class="stat-card fade-up stagger-3">
-                        <div class="stat-card__value">1</div>
-                        <div class="stat-card__label">Import Needed</div>
-                        <div class="stat-card__delta">GameReactor.sol</div>
-                    </div>
+        </div>
+        <div class="dashboard__main">
+            <div class="dashboard__header">
+                <h2 class="dashboard__title" id="dashboardTitle">Overview</h2>
+                <div class="dashboard__actions">
+                    <button class="btn btn--ghost" onclick="showLanding()">Back to Home</button>
                 </div>
             </div>
-        </section>
-
-        <hr class="section-divider landing-section">
-
-        <!-- ═══ AI DASHBOARD (LOGGED IN) ═══ -->
-        <main id="appDashboard" class="dashboard-layout" style="display: none;">
-            
-            <!-- Pane A: Player Identity & Stats -->
-            <aside class="dashboard-pane pane-sidebar">
-                <div class="pane__header">
-                    <div class="pane__title">IDENTITY</div>
-                    <span class="status-badge status-badge--online" id="playerStatus">
-                        <span class="status-badge__dot"></span>
-                        <span id="statusText">CONNECTED</span>
-                    </span>
-                </div>
-                <div class="pane__body">
-                    <div class="profile-card">
-                        <div class="profile-avatar"></div>
-                        <div class="profile-info">
-                            <div class="profile-label">Wallet Address</div>
-                            <div class="profile-value mono" id="playerAddress">-</div>
+            <div class="dashboard__content">
+                <div class="view" id="view-overview">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card__label">Registered Games</div>
+                            <div class="stat-card__value" id="statGames">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card__label">Active Patterns</div>
+                            <div class="stat-card__value" id="statPatterns">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card__label">Pending Suggestions</div>
+                            <div class="stat-card__value" id="statSuggestions">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card__label">Success Rate</div>
+                            <div class="stat-card__value" id="statSuccess">0%</div>
                         </div>
                     </div>
-                    
-                    <div class="stats-grid" id="playerStats">
-                        <div class="stat-card-mini">
-                            <div class="stat-data">
-                                <div class="stat-label">Level</div>
-                                <div class="stat-value" id="playerLevel">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-mini">
-                            <div class="stat-data">
-                                <div class="stat-label">XP</div>
-                                <div class="stat-value" id="playerXP">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-mini">
-                            <div class="stat-data">
-                                <div class="stat-label">Gold</div>
-                                <div class="stat-value" id="playerGold">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-mini">
-                            <div class="stat-data">
-                                <div class="stat-label">Food</div>
-                                <div class="stat-value" id="playerFood">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-mini">
-                            <div class="stat-data">
-                                <div class="stat-label">Soldiers</div>
-                                <div class="stat-value" id="playerSoldiers">-</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-mini">
-                            <div class="stat-data">
-                                <div class="stat-label">Buildings</div>
-                                <div class="stat-value" id="playerBuildings">-</div>
+                    <div class="card">
+                        <div class="card__header"><h3>Recent Activity</h3></div>
+                        <div class="card__body">
+                            <div class="activity-list" id="activityList">
+                                <div class="empty-state"><p>No activity yet. Register a game to get started.</p></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </aside>
-
-            <!-- Pane B: Command Center -->
-            <section class="dashboard-pane pane-main">
-                <div class="pane__header">
-                    <div class="pane__title"><span class="dot"></span> COMMAND CENTER</div>
-                </div>
-                <div class="pane__body pane__body--centered">
-                    
-                    <div id="gameActions" class="command-grid">
-                        <button class="cmd-btn cmd-btn--primary" onclick="registerPlayer()" id="registerBtn">
-                            <span class="cmd-text">Register Player</span>
-                        </button>
-                        <button class="cmd-btn" onclick="movePlayer()" id="moveBtn" disabled>
-                            <span class="cmd-text">Move (Random)</span>
-                        </button>
-                        <button class="cmd-btn" onclick="gatherResources()" id="gatherBtn" disabled>
-                            <span class="cmd-text">Gather Resources</span>
-                        </button>
-                        <button class="cmd-btn" onclick="trainUnit()" id="trainBtn" disabled>
-                            <span class="cmd-text">Train Unit <small>(50g, 30f)</small></span>
-                        </button>
-                        <button class="cmd-btn" onclick="buildStructure()" id="buildBtn" disabled>
-                            <span class="cmd-text">Build Structure <small>(100g)</small></span>
-                        </button>
-                        <button class="cmd-btn cmd-btn--danger" onclick="findBattle()" id="battleBtn" disabled>
-                            <span class="cmd-text">Find Battle</span>
-                        </button>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- Pane C: AI Telemetry -->
-            <aside class="dashboard-pane pane-terminal">
-                <div class="pane__header">
-                    <div class="pane__title">AI TELEMETRY</div>
-                    <span class="status-badge status-badge--online" style="font-size:0.65rem;padding:3px 8px;">
-                        <span class="status-badge__dot"></span>
-                        LIVE
-                    </span>
-                </div>
-                <div class="pane__body terminal-body" id="agentOutput">
-                    <div class="stream-line">
-                        <span class="stream-line__time">--:--:--</span>
-                        <span class="stream-line__type stream-line__type--info">SYSTEM</span>
-                        <span class="stream-line__msg">Agent ready. Awaiting commands.</span>
-                    </div>
-                </div>
-            </aside>
-
-        </main>
-
-        <hr class="section-divider landing-section">
-
-        <!-- ═══ AGENTS SECTION ═══ -->
-        <section class="section landing-section" id="agents">
-            <div class="container">
-                <div class="section__label">agent.capabilities</div>
-                <h2 class="section__title fade-up">4 Plugins. Infinite Games.</h2>
-                <p class="section__subtitle fade-up">
-                    Each plugin handles a specific aspect of game AI.
-                    Mix and match to create any game type — RPG, Card, Strategy, and more.
-                </p>
-
-                <div class="capabilities__grid">
-                    <div class="cap-card cap-card--llm fade-up">
-                        <div class="cap-card__icon">⬡</div>
-                        <h3 class="cap-card__title">SpawnPlugin</h3>
-                        <p class="cap-card__desc">
-                            Generate enemies, NPCs, cards, units, or any game entity
-                            with AI-determined stats. Scales with player level.
-                        </p>
-                        <div class="cap-card__meta">
-                            <span class="meta-chip">enemies</span>
-                            <span class="meta-chip--cyan meta-chip">cards</span>
-                            <span class="meta-chip--pink meta-chip">items</span>
+                <div class="view" id="view-metrics" style="display:none">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Game Metrics</h3>
+                            <select class="form-input" id="metricsGameSelect" style="width:200px" onchange="loadMetrics()">
+                                <option value="">Select game...</option>
+                            </select>
+                        </div>
+                        <div class="card__body">
+                            <div class="metrics-grid" id="metricsGrid">
+                                <div class="empty-state"><p>Select a game to view metrics</p></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="cap-card cap-card--react fade-up stagger-1">
-                        <div class="cap-card__icon">◇</div>
-                        <h3 class="cap-card__title">EconomyPlugin</h3>
-                        <p class="cap-card__desc">
-                            AI-driven economy management. Auto-adjusts rewards, burn rates,
-                            and token supply based on player behavior.
-                        </p>
-                        <div class="cap-card__meta">
-                            <span class="meta-chip--amber meta-chip">rewards</span>
-                            <span class="meta-chip--green meta-chip">inflation</span>
-                            <span class="meta-chip">burn</span>
+                    <div class="card" style="margin-top: var(--space-6);">
+                        <div class="card__header">
+                            <h3>Record Metric</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1">
+                                    <label class="form-label">Metric Name</label>
+                                    <input type="text" class="form-input" id="recordMetricName" placeholder="e.g., win_rate, retention_d7">
+                                </div>
+                                <div class="form-group" style="flex: 1">
+                                    <label class="form-label">Value</label>
+                                    <input type="number" class="form-input" id="recordMetricValue" placeholder="e.g., 6500">
+                                </div>
+                                <div class="form-group" style="flex: 0; align-self: flex-end">
+                                    <button type="button" class="btn btn--primary" onclick="recordMetric()">Record</button>
+                                </div>
+                            </div>
+                            <p class="form-hint">Record metric values for pattern detection. Values are in basis points (e.g., 6500 = 65%).</p>
                         </div>
                     </div>
-
-                    <div class="cap-card cap-card--nft fade-up stagger-2">
-                        <div class="cap-card__icon">⧫</div>
-                        <h3 class="cap-card__title">NarrativePlugin</h3>
-                        <p class="cap-card__desc">
-                            AI-generated quests, dialogues, and story events.
-                            Each playthrough is unique.
-                        </p>
-                        <div class="cap-card__meta">
-                            <span class="meta-chip--pink meta-chip">quests</span>
-                            <span class="meta-chip">dialogue</span>
-                            <span class="meta-chip--cyan meta-chip">story</span>
+                </div>
+                <div class="view" id="view-patterns" style="display:none">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Detected Patterns</h3>
+                            <button class="btn btn--primary btn--sm" onclick="detectPatterns(event)">Scan Now</button>
+                        </div>
+                        <div class="card__body">
+                            <div class="patterns-list" id="patternsList">
+                                <div class="empty-state"><p>No patterns detected yet.</p></div>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="cap-card fade-up stagger-3" style="--card-accent: var(--neon-green)">
-                        <div class="cap-card__icon">◈</div>
-                        <h3 class="cap-card__title">BalancePlugin</h3>
-                        <p class="cap-card__desc">
-                            Automatic game balancing. Analyzes win rates and adjusts
-                            difficulty to maintain target engagement.
-                        </p>
-                        <div class="cap-card__meta">
-                            <span class="meta-chip--green meta-chip">difficulty</span>
-                            <span class="meta-chip--amber meta-chip">win_rate</span>
-                            <span class="meta-chip">scaling</span>
+                </div>
+                <div class="view" id="view-suggestions" style="display:none">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Suggestions</h3>
+                            <button class="btn btn--primary btn--sm" onclick="generateSuggestions(event)">Generate</button>
+                        </div>
+                        <div class="card__body">
+                            <div class="suggestions-list" id="suggestionsList">
+                                <div class="empty-state"><p>No suggestions yet.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="view" id="view-games" style="display:none">
+                    <div class="card">
+                        <div class="card__header"><h3>My Games</h3></div>
+                        <div class="card__body">
+                            <div class="games-list" id="gamesList">
+                                <div class="empty-state">
+                                    <p>No games registered yet.</p>
+                                    <button class="btn btn--primary" onclick="showLanding()">Register Game</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <hr class="section-divider landing-section">
-
-        <!-- ═══ LIVE DATA SECTION ═══ -->
-        <section class="section landing-section" id="live">
-            <div class="container">
-                <div class="section__label">agent.data_stream</div>
-                <h2 class="section__title fade-up">Live Agent Telemetry</h2>
-                <p class="section__subtitle fade-up">
-                    Real-time event streams from Somnia consensus layer.
-                    WebSocket push — no polling, no indexers.
-                </p>
-
-                <div class="stream__container fade-up">
-                    <!-- On-Chain Events -->
-                    <div class="stream-panel">
-                        <div class="stream-panel__header">
-                            <div class="stream-panel__title">
-                                <span class="dot"></span>
-                                ON-CHAIN EVENTS
-                            </div>
-                            <span class="status-badge status-badge--online" style="font-size:0.65rem;padding:3px 8px;">
-                                <span class="status-badge__dot"></span>
-                                LIVE
-                            </span>
-                        </div>
-                        <div class="stream-panel__body" id="eventStream"></div>
-                    </div>
-
-                    <!-- Agent Inference Log -->
-                    <div class="stream-panel">
-                        <div class="stream-panel__header">
-                            <div class="stream-panel__title">
-                                <span class="dot"></span>
-                                AI INFERENCE LOG
-                            </div>
-                            <span class="status-badge status-badge--online" style="font-size:0.65rem;padding:3px 8px;">
-                                <span class="status-badge__dot"></span>
-                                LIVE
-                            </span>
-                        </div>
-                        <div class="stream-panel__body" id="agentStream"></div>
-                    </div>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__inner">
+                <div class="footer__brand">
+                    <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="44" height="44">
+                    <span class="nav__name">OIKONO</span>
+                    <p class="footer__desc">Data-driven game economy agent on Somnia.</p>
+                </div>
+                <div class="footer__links">
+                    <a href="#" class="footer__link">Documentation</a>
+                    <a href="#" class="footer__link">GitHub</a>
+                    <a href="#" class="footer__link">Discord</a>
                 </div>
             </div>
-        </section>
-
-        <hr class="section-divider landing-section">
-
-        <!-- ═══ ARCHITECTURE SECTION ═══ -->
-        <section class="section landing-section" id="architecture">
-            <div class="container">
-                <div class="section__label">system.architecture</div>
-                <h2 class="section__title fade-up">GameReactor Pipeline</h2>
-                <p class="section__subtitle fade-up">
-                    From event to action — one import handles everything.
-                </p>
-
-                <div class="arch__diagram fade-up">
-                    <div class="arch__flow">
-                        <div class="arch__node">
-                            <div class="arch__node-icon">⬡</div>
-                            <div class="arch__node-label">Your Game</div>
-                            <div class="arch__node-sub">emit events</div>
-                        </div>
-                        <div class="arch__arrow">→</div>
-                        <div class="arch__node">
-                            <div class="arch__node-icon">◇</div>
-                            <div class="arch__node-label">GameReactor</div>
-                            <div class="arch__node-sub">1 import</div>
-                        </div>
-                        <div class="arch__arrow">→</div>
-                        <div class="arch__node">
-                            <div class="arch__node-icon">⧫</div>
-                            <div class="arch__node-label">Plugins</div>
-                            <div class="arch__node-sub">spawn | econ | balance</div>
-                        </div>
-                        <div class="arch__arrow">→</div>
-                        <div class="arch__node">
-                            <div class="arch__node-icon">◈</div>
-                            <div class="arch__node-label">Somnia LLM</div>
-                            <div class="arch__node-sub">Qwen3-30B</div>
-                        </div>
-                        <div class="arch__arrow">→</div>
-                        <div class="arch__node">
-                            <div class="arch__node-icon">◈</div>
-                            <div class="arch__node-label">Result</div>
-                            <div class="arch__node-sub">NFT | state | reward</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Code Example -->
-                <div class="code-block fade-up">
-                    <div class="code-block__header">
-                        <div class="code-block__tabs">
-                            <button class="code-block__tab active" data-tab="solidity">GameReactor.sol</button>
-                            <button class="code-block__tab" data-tab="js">agent.js</button>
-                        </div>
-                        <button class="code-block__copy" id="copyBtn">copy</button>
-                    </div>
-                    <div class="code-block__body">
-<pre id="code-solidity"><span class="cmt">// 3 lines. That's all you need.</span>
-<span class="kw">contract</span> <span class="type">MyGame</span> <span class="kw">is</span> <span class="type">GameReactor</span> {
-    <span class="fn">constructor</span>() <span class="type">GameReactor</span>(<span class="str">"MyGame"</span>, <span class="type">GameType</span>.RPG) {
-        <span class="fn">enablePlugin</span>(<span class="type">AgentPlugin</span>.SPAWN);
-        <span class="fn">enablePlugin</span>(<span class="type">AgentPlugin</span>.BALANCE);
-    }
-
-    <span class="kw">function</span> <span class="fn">move</span>(<span class="type">uint256</span> x, <span class="type">uint256</span> y) <span class="kw">external</span> {
-        <span class="fn">emit</span> <span class="type">PlayerMoved</span>(msg.sender, x, y, xp);
-        <span class="cmt">// ⚡ Agent handles everything!</span>
-    }
-}</pre>
-<pre id="code-js" style="display:none"><span class="cmt">// Connect from any frontend</span>
-<span class="kw">import</span> { ethers } <span class="kw">from</span> <span class="str">"ethers"</span>;
-
-<span class="kw">const</span> provider <span class="op">=</span> <span class="kw">new</span> ethers.<span class="fn">WebSocketProvider</span>(
-  <span class="str">"wss://dream-rpc.somnia.network/ws"</span>
-);
-
-<span class="kw">const</span> reactor <span class="op">=</span> <span class="kw">new</span> ethers.<span class="fn">Contract</span>(
-  <span class="str">"0xGameReactor"</span>,
-  [<span class="str">"event AgentActionTriggered(uint8, uint8, bytes)"</span>],
-  provider
-);
-
-reactor.<span class="fn">on</span>(<span class="str">"AgentActionTriggered"</span>,
-  (type, plugin, data) <span class="op">=></span> {
-    console.log(`[Agent] action triggered!`);
-});</pre>
-                    </div>
-                </div>
+            <div class="footer__bottom">
+                <span>Built on Somnia Agentic L1</span>
+                <span>Chain ID: 50312</span>
             </div>
-        </section>
+        </div>
+    </footer>
 
-        <!-- ═══ FOOTER ═══ -->
-        <footer class="footer">
-            <div class="container footer__inner">
-                <div class="footer__left">
-                    ⬡ OIKONO v1.0.0 — Built on <a href="https://somnia.network" target="_blank" rel="noopener">Somnia Agentic L1</a>
-                    — Chain ID: <span style="color:var(--neon-cyan)">50312</span>
-                </div>
-                <div class="footer__right">
-                    <span id="walletAddress" class="footer__link" style="color: var(--text-muted);">Not connected</span>
-                </div>
-            </div>
-        </footer>
-
-    </div>
-
-    <!-- Ethers.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
-    <script src="app.js"></script>
+    <script src="config.js?v=25"></script>
+    <script src="app.js?v=25"></script>
 </body>
 </html>

@@ -72,6 +72,9 @@ contract GameMaster is Ownable {
     EnemyNFT public enemyNFT;
     AntiSybil public antiSybil;
 
+    // LLM Mode: true = use Somnia LLM Agent, false = use deterministic fallback
+    bool public useLLMAgent;
+
     // Request tracking
     struct PendingRequest {
         address player;
@@ -122,6 +125,14 @@ contract GameMaster is Ownable {
         playerRegistry = PlayerRegistry(_playerRegistry);
         enemyNFT = EnemyNFT(_enemyNFT);
         antiSybil = AntiSybil(_antiSybil);
+    }
+
+    /**
+     * @notice Toggle LLM Agent mode
+     * @param _useLLM true = use Somnia LLM Agent, false = use deterministic fallback
+     */
+    function setLLMMode(bool _useLLM) external onlyOwner {
+        useLLMAgent = _useLLM;
     }
 
     // ========================================
@@ -202,6 +213,10 @@ contract GameMaster is Ownable {
      * @dev Can be called by player directly or by admin
      */
     function triggerEnemyGeneration(address player) external {
+        require(
+            msg.sender == player || msg.sender == owner(),
+            "Not authorized"
+        );
         require(playerRegistry.playerExists(player), "Player not registered");
 
         (uint256 x, uint256 y, uint256 xp, uint256 level, , , , ) =
@@ -236,25 +251,28 @@ contract GameMaster is Ownable {
         // Compose prompt for LLM
         string memory prompt = _buildPrompt(player, x, y, xp, level);
 
-        // In production with Somnia Agent, this would be:
-        // bytes memory payload = abi.encodeWithSelector(
-        //     ILLMAgent.inferString.selector,
-        //     prompt,
-        //     "chainOfThought"
-        // );
-        // uint256 deposit = IAgentRequester(AGENT_REQUESTER).getRequestDeposit(LLM_INFERENCE_AGENT_ID);
-        // uint256 requestId = IAgentRequester(AGENT_REQUESTER).createRequest{value: deposit}(
-        //     LLM_INFERENCE_AGENT_ID,
-        //     payload,
-        //     this.handleAIResponse.selector
-        // );
-        // pendingRequests[requestId] = PendingRequest(player, x, y, xp, level, false);
-        // totalLLMCalls++;
+        if (useLLMAgent) {
+            // Production: Use Somnia LLM Agent
+            bytes memory payload = abi.encodeWithSelector(
+                ILLMAgent.inferString.selector,
+                prompt,
+                "chainOfThought"
+            );
+            uint256 deposit = IAgentRequester(AGENT_REQUESTER).getRequestDeposit(LLM_INFERENCE_AGENT_ID);
+            uint256 requestId = IAgentRequester(AGENT_REQUESTER).createRequest{value: deposit}(
+                LLM_INFERENCE_AGENT_ID,
+                payload,
+                this.handleAIResponse.selector
+            );
+            pendingRequests[requestId] = PendingRequest(player, x, y, xp, level, false);
+            totalLLMCalls++;
 
-        // For now, use deterministic on-chain generation (seeded by player + block)
-        _generateEnemyDeterministic(player, x, y, xp, level, prompt);
-
-        emit LLMRequestSent(nextRequestId++, player, prompt);
+            emit LLMRequestSent(requestId, player, prompt);
+        } else {
+            // Fallback: Use deterministic on-chain generation
+            _generateEnemyDeterministic(player, x, y, xp, level, prompt);
+            emit LLMRequestSent(nextRequestId++, player, prompt);
+        }
     }
 
     /**

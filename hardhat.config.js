@@ -1,3 +1,4 @@
+require("dotenv").config();
 require("@nomicfoundation/hardhat-toolbox");
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -14,6 +15,10 @@ module.exports = {
     }
   },
   networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true,
+      blockGasLimit: 30000000
+    },
     somnia_testnet: {
       url: "https://dream-rpc.somnia.network",
       chainId: 50312,

@@ -4,6 +4,17 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
+ * @title IPriceFeed
+ * @notice Interface for external price feed oracles (DIA, Protofire, etc.)
+ */
+interface IPriceFeed {
+    function getPrice(string calldata pair) external view returns (
+        uint256 price,
+        uint256 timestamp
+    );
+}
+
+/**
  * @title TWAPOracle
  * @notice Time-Weighted Average Price oracle for OIKONO economy
  * @dev Integrates with DIA or Protofire price feeds for Somnia
@@ -23,8 +34,9 @@ contract TWAPOracle is Ownable {
     uint256 public latestPrice;
     uint256 public latestTimestamp;
 
-    // DIA/Protofire oracle integration (placeholder)
+    // External oracle integration
     address public externalOracle;
+    string public pricePair; // e.g., "OIK/USDT"
 
     event PriceUpdated(uint256 price, uint256 timestamp);
     event OracleUpdated(address newOracle);
@@ -94,6 +106,43 @@ contract TWAPOracle is Ownable {
     function setExternalOracle(address _oracle) external onlyOwner {
         externalOracle = _oracle;
         emit OracleUpdated(_oracle);
+    }
+
+    /**
+     * @notice Set price pair for external oracle
+     * @param _pair Price pair string (e.g., "OIK/USDT")
+     */
+    function setPricePair(string calldata _pair) external onlyOwner {
+        pricePair = _pair;
+    }
+
+    /**
+     * @notice Update price from external oracle
+     * @dev Can be called by anyone to update price from DIA/Protofire
+     */
+    function updatePriceFromOracle() external {
+        require(externalOracle != address(0), "No external oracle set");
+        require(bytes(pricePair).length > 0, "Price pair not set");
+
+        (uint256 price, uint256 timestamp) = IPriceFeed(externalOracle).getPrice(pricePair);
+
+        require(price > 0, "Invalid oracle price");
+        require(block.timestamp - timestamp <= MAX_PRICE_AGE, "Oracle price stale");
+
+        priceHistory.push(PriceData({
+            price: price,
+            timestamp: block.timestamp
+        }));
+
+        // Keep only last 200 entries
+        if (priceHistory.length > 200) {
+            _removeOldest();
+        }
+
+        latestPrice = price;
+        latestTimestamp = block.timestamp;
+
+        emit PriceUpdated(price, block.timestamp);
     }
 
     function _removeOldest() internal {

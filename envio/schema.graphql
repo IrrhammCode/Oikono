@@ -1,0 +1,100 @@
+# OIKONO - GraphQL Schema for Indexed Data
+
+type Game @entity {
+  id: ID!
+  gameId: BigInt!
+  gameAddress: Bytes!
+  owner: Bytes!
+  name: String!
+  gameType: String!
+  isActive: Boolean!
+  isVerified: Boolean!
+  registeredAt: BigInt!
+  lastActivity: BigInt!
+  totalEvents: BigInt!
+  totalActions: BigInt!
+  metrics: [Metric!]! @derivedFrom(field: "game")
+  patterns: [Pattern!]! @derivedFrom(field: "game")
+  suggestions: [Suggestion!]! @derivedFrom(field: "game")
+  decisions: [Decision!]! @derivedFrom(field: "game")
+}
+
+type Metric @entity {
+  id: ID!
+  game: Game!
+  name: String!
+  dataType: String!
+  source: String!
+  latest: BigInt!
+  min: BigInt!
+  max: BigInt!
+  avg: BigInt!
+  count: BigInt!
+  lastUpdated: BigInt!
+  history: [MetricValue!]! @derivedFrom(field: "metric")
+}
+
+type MetricValue @entity {
+  id: ID!
+  metric: Metric!
+  value: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type Pattern @entity {
+  id: ID!
+  game: Game!
+  patternId: BigInt!
+  patternType: String!
+  metricName: String!
+  description: String!
+  severity: BigInt!
+  confidence: BigInt!
+  detectedAt: BigInt!
+  isActive: Boolean!
+}
+
+type Suggestion @entity {
+  id: ID!
+  game: Game!
+  suggestionId: BigInt!
+  category: String!
+  priority: String!
+  description: String!
+  action: String!
+  confidence: BigInt!
+  expectedImpact: BigInt!
+  implemented: Boolean!
+  implementedAt: BigInt
+  createdAt: BigInt!
+}
+
+type Decision @entity {
+  id: ID!
+  game: Game!
+  decisionId: BigInt!
+  decisionType: String!
+  action: String!
+  success: Boolean!
+  executedAt: BigInt!
+}
+
+type DailyStats @entity {
+  id: ID!
+  date: String!
+  totalGames: BigInt!
+  totalMetrics: BigInt!
+  totalPatterns: BigInt!
+  totalSuggestions: BigInt!
+  totalDecisions: BigInt!
+}
+
+type GameTypeStats @entity {
+  id: ID!
+  gameType: String!
+  gameCount: BigInt!
+  totalMetrics: BigInt!
+  totalPatterns: BigInt!
+  avgSuccessRate: BigInt!
+}

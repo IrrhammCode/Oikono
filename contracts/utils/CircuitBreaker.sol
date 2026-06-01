@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @title CircuitBreaker
  * @notice Emergency pause mechanism for OIKONO ecosystem
  * @dev Multi-sig style with guardian pattern
+ *      - Up to 5 guardians
+ *      - 3-of-5 vote to pause
+ *      - Owner can emergency pause
+ *      - Auto-unpause after max duration
  */
 contract CircuitBreaker is Ownable {
     bool public paused;
@@ -14,11 +18,11 @@ contract CircuitBreaker is Ownable {
     uint256 public constant MIN_PAUSE_DURATION = 1 hours;
     uint256 public constant MAX_PAUSE_DURATION = 7 days;
 
-    // Guardian addresses (3-of-5 multisig pattern)
+    // Guardian system
     mapping(address => bool) public guardians;
     mapping(address => bool) public guardianVotes;
     uint256 public requiredGuardianVotes;
-    uint256 public guardianCount;
+    address[] public guardianList;
 
     event Paused(address indexed by);
     event Unpaused(address indexed by);
@@ -37,18 +41,17 @@ contract CircuitBreaker is Ownable {
     }
 
     constructor(address initialOwner) Ownable(initialOwner) {
-        // Set deployer as first guardian
         guardians[initialOwner] = true;
-        guardianCount = 1;
-        requiredGuardianVotes = 3; // 3-of-5
+        guardianList.push(initialOwner);
+        requiredGuardianVotes = 3;
     }
 
     function addGuardian(address guardian) external onlyOwner {
         require(!guardians[guardian], "Already a guardian");
-        require(guardianCount < 5, "Max guardians reached");
+        require(guardianList.length < 5, "Max guardians reached");
 
         guardians[guardian] = true;
-        guardianCount++;
+        guardianList.push(guardian);
         emit GuardianAdded(guardian);
     }
 
@@ -56,7 +59,21 @@ contract CircuitBreaker is Ownable {
         require(guardians[guardian], "Not a guardian");
 
         guardians[guardian] = false;
-        guardianCount--;
+
+        // Remove from list
+        for (uint256 i = 0; i < guardianList.length; i++) {
+            if (guardianList[i] == guardian) {
+                guardianList[i] = guardianList[guardianList.length - 1];
+                guardianList.pop();
+                break;
+            }
+        }
+
+        // Reset their vote if they had voted
+        if (guardianVotes[guardian]) {
+            guardianVotes[guardian] = false;
+        }
+
         emit GuardianRemoved(guardian);
     }
 
@@ -71,16 +88,14 @@ contract CircuitBreaker is Ownable {
 
         // Count votes
         uint256 voteCount = 0;
-        address[] memory allGuardians = getGuardians();
-        for (uint256 i = 0; i < allGuardians.length; i++) {
-            if (guardianVotes[allGuardians[i]]) {
+        for (uint256 i = 0; i < guardianList.length; i++) {
+            if (guardianVotes[guardianList[i]]) {
                 voteCount++;
             }
         }
 
         if (voteCount >= requiredGuardianVotes) {
             _pause(msg.sender);
-            // Reset votes after pausing
             _resetVotes();
         }
 
@@ -116,6 +131,15 @@ contract CircuitBreaker is Ownable {
         _unpause(msg.sender);
     }
 
+    /**
+     * @notice Cancel a guardian's vote (before pause triggers)
+     */
+    function cancelVote() external {
+        require(guardianVotes[msg.sender], "No vote to cancel");
+        guardianVotes[msg.sender] = false;
+        emit EmergencyVoteCast(msg.sender, false);
+    }
+
     function _pause(address by) internal {
         paused = true;
         pausedAt = block.timestamp;
@@ -128,23 +152,36 @@ contract CircuitBreaker is Ownable {
     }
 
     function _resetVotes() internal {
-        address[] memory allGuardians = getGuardians();
-        for (uint256 i = 0; i < allGuardians.length; i++) {
-            guardianVotes[allGuardians[i]] = false;
+        for (uint256 i = 0; i < guardianList.length; i++) {
+            guardianVotes[guardianList[i]] = false;
         }
     }
 
-    function getGuardians() public view returns (address[] memory) {
-        address[] memory result = new address[](guardianCount);
-        uint256 idx = 0;
+    /**
+     * @notice Get all guardian addresses
+     */
+    function getGuardians() external view returns (address[] memory) {
+        return guardianList;
+    }
 
-        // Return known guardians (simplified - in production use EnumerableSet)
-        result[0] = owner();
-        if (idx + 1 < guardianCount) {
-            // In production, maintain a list of guardians
+    /**
+     * @notice Get guardian count
+     */
+    function getGuardianCount() external view returns (uint256) {
+        return guardianList.length;
+    }
+
+    /**
+     * @notice Check how many votes are currently cast
+     */
+    function getCurrentVotes() external view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < guardianList.length; i++) {
+            if (guardianVotes[guardianList[i]]) {
+                count++;
+            }
         }
-
-        return result;
+        return count;
     }
 
     /**

@@ -58,7 +58,7 @@ contract RewardDistributor is Ownable {
     /**
      * @notice Calculate emission rate based on current phase
      */
-    function updateEmissionPhase() external {
+    function updateEmissionPhase() external onlyOwner {
         uint256 elapsed = block.timestamp - startTime;
         uint256 newPhase;
         uint256 newRate;

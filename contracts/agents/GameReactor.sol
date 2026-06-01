@@ -299,9 +299,29 @@ contract GameReactor is Ownable {
 
     // ============ Internal Functions ============
 
-    function _determineEventType(bytes32[] calldata topics, bytes calldata data) internal pure returns (EventType) {
-        // Simplified event type determination
-        // In production: parse topic signatures
+    function _determineEventType(bytes32[] calldata topics, bytes calldata /* data */) internal pure returns (EventType) {
+        if (topics.length == 0) return EventType.PLAYER_ACTION;
+
+        bytes32 sig = topics[0];
+
+        // PlayerMoved, PlayerRegistered → PLAYER_ACTION
+        if (sig == keccak256("PlayerMoved(address,uint256,uint256,uint256,uint256)") ||
+            sig == keccak256("PlayerRegistered(address,uint256,uint256)")) {
+            return EventType.PLAYER_ACTION;
+        }
+
+        // Transfer, Approval → ECONOMY
+        if (sig == keccak256("Transfer(address,address,uint256)") ||
+            sig == keccak256("Approval(address,address,uint256)")) {
+            return EventType.ECONOMY;
+        }
+
+        // BattleEnded, EnemyGenerated → GAME_STATE
+        if (sig == keccak256("BattleEnded(address,uint256,bool,uint256,uint256)") ||
+            sig == keccak256("EnemyGenerated(address,uint256,string,string,uint256)")) {
+            return EventType.GAME_STATE;
+        }
+
         return EventType.PLAYER_ACTION;
     }
 

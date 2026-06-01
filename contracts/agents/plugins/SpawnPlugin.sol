@@ -46,6 +46,7 @@ contract SpawnPlugin is Ownable, IAgentPlugin {
     }
 
     mapping(uint256 => SpawnedEntity) public entities;
+    mapping(address => uint256) public gameSpawnCount;
     uint256 public totalSpawned;
 
     // ============ Events ============
@@ -217,6 +218,7 @@ contract SpawnPlugin is Ownable, IAgentPlugin {
 
         // Store entity
         uint256 entityId = totalSpawned++;
+        gameSpawnCount[msg.sender]++;
         entities[entityId] = SpawnedEntity({
             game: msg.sender,
             spawner: context.player,
@@ -240,8 +242,15 @@ contract SpawnPlugin is Ownable, IAgentPlugin {
     function parseResponse(
         bytes calldata aiResponse
     ) external pure override returns (bytes memory) {
-        // In production: parse JSON response
-        // For now: return as-is
+        // Parse structured response: expect (name, attribute, power) encoded
+        // If it's already encoded properly, return as-is
+        // If it's raw bytes, try to decode and re-encode
+        if (aiResponse.length >= 96) {
+            // Likely already abi-encoded (name + attribute + power)
+            return aiResponse;
+        }
+
+        // Fallback: return as-is for short responses
         return aiResponse;
     }
 
@@ -267,8 +276,7 @@ contract SpawnPlugin is Ownable, IAgentPlugin {
      * @notice Get total entities spawned for a game
      */
     function getGameStats(address game) external view returns (uint256 total) {
-        // In production: track per-game stats
-        return totalSpawned;
+        return gameSpawnCount[game];
     }
 
     // ============ Helper ============

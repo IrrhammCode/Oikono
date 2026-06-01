@@ -7,6 +7,7 @@ import "./Treasury.sol";
 import "../tokens/OIKToken.sol";
 import "../game/BattleArena.sol";
 import "../utils/CircuitBreaker.sol";
+import "../utils/TWAPOracle.sol";
 
 /**
  * @title EconomyController
@@ -34,6 +35,7 @@ contract EconomyController is Ownable {
     address public treasury;
     BattleArena public battleArena;
     CircuitBreaker public circuitBreaker;
+    TWAPOracle public twapOracle;
 
     // Configuration
     uint256 public epochLength = 1000; // Blocks between economy adjustments
@@ -312,11 +314,34 @@ contract EconomyController is Ownable {
         totalSupply = oikToken.totalSupply();
         circulatingSupply = totalSupply - oikToken.balanceOf(address(treasury));
 
-        // Simplified metrics (in production, query from game contracts)
-        winRate = 6500; // 65%
-        velocity = 25000;
-        avgEnemyPower = 65;
-        activePlayers = 150;
+        // Get velocity from TWAP oracle if available
+        if (address(twapOracle) != address(0) && twapOracle.isPriceFresh()) {
+            velocity = twapOracle.getTWAP();
+        } else {
+            velocity = 25000; // Default
+        }
+
+        // Get real metrics from BattleArena if available
+        if (address(battleArena) != address(0)) {
+            // Calculate velocity from battle activity
+            uint256 totalBattles = battleArena.totalBattles();
+            uint256 totalRewards = battleArena.totalRewardsDistributed();
+
+            // Velocity = rewards per epoch (simplified)
+            velocity = totalBattles > 0 ? totalRewards / (totalBattles + 1) : 10000;
+
+            // Win rate and other metrics would come from PlayerRegistry
+            // For now, use battle stats as proxy
+            winRate = 6500; // Would query PlayerRegistry in production
+            avgEnemyPower = 65;
+            activePlayers = totalBattles > 0 ? totalBattles / 3 : 50; // Rough estimate
+        } else {
+            // Fallback defaults
+            winRate = 6500;
+            velocity = 25000;
+            avgEnemyPower = 65;
+            activePlayers = 150;
+        }
     }
 
     /**
@@ -344,6 +369,10 @@ contract EconomyController is Ownable {
 
     function setBattleArena(address _battleArena) external onlyOwner {
         battleArena = BattleArena(_battleArena);
+    }
+
+    function setTWAPOracle(address _twapOracle) external onlyOwner {
+        twapOracle = TWAPOracle(_twapOracle);
     }
 
     function getEpochInfo() external view returns (

@@ -226,6 +226,12 @@ contract AgentRegistry is Ownable {
      */
     function recordUsage(uint256 agentId) external {
         require(agents[agentId].isActive, "Agent not active");
+        require(
+            agents[agentId].creator == msg.sender ||
+            agentUsage[agentId][msg.sender] ||
+            msg.sender == owner(),
+            "Not authorized"
+        );
         agents[agentId].totalUsage++;
         agentUsage[agentId][msg.sender] = true;
 

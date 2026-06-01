@@ -4,6 +4,33 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AgentTypes.sol";
 import "./IAgentPlugin.sol";
+import "./IGameDescriptor.sol";
+import "./IGameStateReader.sol";
+
+/**
+ * @title IAgentRequester
+ * @notice Interface for Somnia Agent Requester
+ */
+interface IAgentRequester {
+    function createRequest(
+        uint256 agentId,
+        bytes calldata payload,
+        bytes4 callbackSelector
+    ) external payable returns (uint256 requestId);
+
+    function getRequestDeposit(uint256 agentId) external view returns (uint256);
+}
+
+/**
+ * @title ILLMAgent
+ * @notice Interface for Somnia LLM Agent
+ */
+interface ILLMAgent {
+    function inferString(
+        string calldata prompt,
+        string calldata chainOfThought
+    ) external view returns (bytes memory);
+}
 
 /**
  * @title AgentRuntime
@@ -30,11 +57,19 @@ contract AgentRuntime is Ownable {
     struct RegisteredGame {
         address gameAddress;
         string name;
+        string gameType;
         bytes32[] subscribedEvents;
         address pluginAddress;
         bool isActive;
         uint256 totalExecutions;
+        bool hasDescriptor;
+        bool hasStateReader;
+        address descriptorAddress;
+        address stateReaderAddress;
     }
+
+    // LLM Mode: true = use Somnia LLM Agent, false = use rule-based fallback
+    bool public useLLMAgent;
 
     struct AgentStats {
         uint256 totalRequests;
@@ -64,6 +99,7 @@ contract AgentRuntime is Ownable {
 
     // ============ Events ============
     event GameRegistered(address indexed game, string name, address plugin);
+    event GameAutoRegistered(address indexed game, string name, string gameType, bool canSpawn, bool canEconomy);
     event GameUnregistered(address indexed game);
     event SubscriptionCreated(address indexed game, bytes32 eventSig);
     event ActionRequested(
@@ -99,15 +135,210 @@ contract AgentRuntime is Ownable {
         registeredGames[msg.sender] = RegisteredGame({
             gameAddress: msg.sender,
             name: name,
+            gameType: "",
             subscribedEvents: new bytes32[](0),
             pluginAddress: pluginAddress,
             isActive: true,
-            totalExecutions: 0
+            totalExecutions: 0,
+            hasDescriptor: false,
+            hasStateReader: false,
+            descriptorAddress: address(0),
+            stateReaderAddress: address(0)
         });
 
         gameAddresses.push(msg.sender);
 
         emit GameRegistered(msg.sender, name, pluginAddress);
+    }
+
+    // ============ Auto-Registration (Game Introspection) ============
+
+    /**
+     * @notice Auto-register a game that implements IGameDescriptor
+     * @dev The agent reads the game's descriptor to understand:
+     *      - Game type → auto-select plugins
+     *      - Entity schema → auto-configure spawn
+     *      - Economy schema → auto-configure economy
+     *      - Event schema → auto-subscribe to events
+     *      - Goals → set balancing targets
+     *
+     *      This is the "magic" — game developer just calls this one function
+     *      and the agent figures out everything else.
+     *
+     * @param gameAddress Address of the game contract (must implement IGameDescriptor)
+     */
+    function autoRegisterGame(address gameAddress) external {
+        require(registeredGames[gameAddress].gameAddress == address(0), "Already registered");
+
+        // Try to read game descriptor
+        IGameDescriptor descriptor = IGameDescriptor(gameAddress);
+
+        // Read game identity
+        (string memory name, , string memory gameType) = descriptor.getGameIdentity();
+        require(bytes(name).length > 0, "Invalid game descriptor");
+
+        // Read what the game allows
+        (bool canSpawn, bool canAdjustEconomy, bool canGenerateNarrative,
+         bool canAdjustDifficulty, ) = descriptor.getAgentPermissions();
+
+        // Auto-select plugins based on permissions
+        address spawnPlugin = canSpawn ? _findPluginByType("spawn") : address(0);
+        address econPlugin = canAdjustEconomy ? _findPluginByType("economy") : address(0);
+        address narrativePlugin = canGenerateNarrative ? _findPluginByType("narrative") : address(0);
+        address balancePlugin = canAdjustDifficulty ? _findPluginByType("balance") : address(0);
+
+        // Register game
+        registeredGames[gameAddress] = RegisteredGame({
+            gameAddress: gameAddress,
+            name: name,
+            gameType: gameType,
+            subscribedEvents: new bytes32[](0),
+            pluginAddress: spawnPlugin, // Primary plugin
+            isActive: true,
+            totalExecutions: 0,
+            hasDescriptor: true,
+            hasStateReader: false, // Will check below
+            descriptorAddress: gameAddress,
+            stateReaderAddress: address(0)
+        });
+
+        gameAddresses.push(gameAddress);
+
+        // Check if game also implements IGameStateReader
+        try descriptor.getGameIdentity() returns (string memory, string memory, string memory) {
+            // If descriptor works, try state reader interface
+            registeredGames[gameAddress].hasStateReader = true;
+            registeredGames[gameAddress].stateReaderAddress = gameAddress;
+        } catch {}
+
+        // Read and subscribe to events
+        (bytes32[] memory eventSigs, , string[] memory eventActions) = descriptor.getEventSchema();
+        for (uint256 i = 0; i < eventSigs.length; i++) {
+            if (keccak256(bytes(eventActions[i])) != keccak256(bytes("ignore"))) {
+                registeredGames[gameAddress].subscribedEvents.push(eventSigs[i]);
+            }
+        }
+
+        // Read goals for auto-configuration
+        (string[] memory goals, uint256[] memory goalWeights) = descriptor.getGoals();
+        _storeGameGoals(gameAddress, goals, goalWeights);
+
+        emit GameAutoRegistered(gameAddress, name, gameType, canSpawn, canAdjustEconomy);
+    }
+
+    /**
+     * @notice Auto-register from a game that also provides state reading
+     * @dev Use this when the game implements both IGameDescriptor and IGameStateReader
+     *      at different addresses (e.g., proxy pattern)
+     */
+    function autoRegisterGameWithReader(
+        address gameAddress,
+        address stateReaderAddress
+    ) external {
+        this.autoRegisterGame(gameAddress);
+        registeredGames[gameAddress].hasStateReader = true;
+        registeredGames[gameAddress].stateReaderAddress = stateReaderAddress;
+    }
+
+    // ============ Game Query Functions ============
+
+    /**
+     * @notice Read game state on-demand (for agent decision making)
+     * @dev Only works if game implements IGameStateReader
+     */
+    function readGameState(address gameAddress) external view returns (
+        uint256 totalPlayers,
+        uint256 activePlayers,
+        uint256 totalEntities,
+        uint256[] memory globalStats
+    ) {
+        RegisteredGame storage game = registeredGames[gameAddress];
+        require(game.hasStateReader, "Game has no state reader");
+        return IGameStateReader(game.stateReaderAddress).getGameState();
+    }
+
+    /**
+     * @notice Read player state on-demand
+     */
+    function readPlayerState(address gameAddress, address player) external view returns (
+        uint256 level,
+        uint256 xp,
+        bytes memory position,
+        uint256[] memory playerStats
+    ) {
+        RegisteredGame storage game = registeredGames[gameAddress];
+        require(game.hasStateReader, "Game has no state reader");
+        return IGameStateReader(game.stateReaderAddress).getPlayerState(player);
+    }
+
+    /**
+     * @notice Read economy state on-demand
+     */
+    function readEconomyState(address gameAddress) external view returns (
+        uint256 circulatingSupply,
+        uint256 totalSupply,
+        uint256 totalBurned,
+        uint256 velocity,
+        uint256 avgRewardPerPlayer
+    ) {
+        RegisteredGame storage game = registeredGames[gameAddress];
+        require(game.hasStateReader, "Game has no state reader");
+        return IGameStateReader(game.stateReaderAddress).getEconomyState();
+    }
+
+    /**
+     * @notice Read balance metrics on-demand
+     */
+    function readBalanceMetrics(address gameAddress) external view returns (
+        uint256 winRate,
+        uint256 avgBattleDuration,
+        uint256[] memory difficultyDistribution,
+        uint256 playerRetention
+    ) {
+        RegisteredGame storage game = registeredGames[gameAddress];
+        require(game.hasStateReader, "Game has no state reader");
+        return IGameStateReader(game.stateReaderAddress).getBalanceMetrics();
+    }
+
+    // ============ Plugin Discovery ============
+
+    /**
+     * @notice Find a registered plugin by type
+     * @dev Maintains a registry of plugin types → addresses
+     */
+    mapping(string => address) public pluginByType;
+
+    function registerPlugin(string calldata pluginType, address pluginAddress) external onlyOwner {
+        pluginByType[pluginType] = pluginAddress;
+    }
+
+    function _findPluginByType(string memory pluginType) internal view returns (address) {
+        return pluginByType[pluginType];
+    }
+
+    // ============ Game Goals Storage ============
+
+    struct GameGoals {
+        string[] goals;
+        uint256[] weights;
+    }
+
+    mapping(address => GameGoals) internal _gameGoals;
+
+    function _storeGameGoals(
+        address gameAddress,
+        string[] memory goals,
+        uint256[] memory weights
+    ) internal {
+        _gameGoals[gameAddress] = GameGoals({goals: goals, weights: weights});
+    }
+
+    function getGameGoals(address gameAddress) external view returns (
+        string[] memory goals,
+        uint256[] memory weights
+    ) {
+        GameGoals storage gg = _gameGoals[gameAddress];
+        return (gg.goals, gg.weights);
     }
 
     /**
@@ -187,9 +418,40 @@ contract AgentRuntime is Ownable {
             data  // Pass raw event data to plugin
         );
 
-        // In production: call LLM Agent and route to plugin callback
-        // For now: execute plugin directly with rule-based fallback
-        _executePlugin(game.pluginAddress, requestId, gameEvent);
+        if (useLLMAgent) {
+            // Production: Call Somnia LLM Agent
+            string memory prompt = _buildPrompt(gameEvent);
+            bytes memory payload = abi.encodeWithSelector(
+                ILLMAgent.inferString.selector,
+                prompt,
+                "chainOfThought"
+            );
+            uint256 deposit = IAgentRequester(AGENT_REQUESTER).getRequestDeposit(LLM_INFERENCE_AGENT_ID);
+            IAgentRequester(AGENT_REQUESTER).createRequest{value: deposit}(
+                LLM_INFERENCE_AGENT_ID,
+                payload,
+                this.handleLLMResponse.selector
+            );
+            stats.totalLLMCalls++;
+        } else {
+            // Fallback: Execute plugin directly
+            _executePlugin(game.pluginAddress, requestId, gameEvent);
+        }
+    }
+
+    /**
+     * @notice Build prompt for LLM Agent
+     */
+    function _buildPrompt(
+        AgentTypes.GameEvent memory gameEvent
+    ) internal pure returns (string memory) {
+        return string(abi.encodePacked(
+            "Game event from ",
+            _addressToString(gameEvent.emitter),
+            " at block ",
+            _uint256ToString(gameEvent.blockNumber),
+            ". Analyze and recommend action."
+        ));
     }
 
     // ============ Request Management ============
@@ -366,5 +628,42 @@ contract AgentRuntime is Ownable {
 
     function toggleGameActive(address gameAddress) external onlyOwner {
         registeredGames[gameAddress].isActive = !registeredGames[gameAddress].isActive;
+    }
+
+    /**
+     * @notice Toggle LLM Agent mode
+     * @param _useLLM true = use Somnia LLM Agent, false = use rule-based fallback
+     */
+    function setLLMMode(bool _useLLM) external onlyOwner {
+        useLLMAgent = _useLLM;
+    }
+
+    // ============ Helper Functions ============
+
+    function _addressToString(address addr) internal pure returns (string memory) {
+        uint256 value = uint256(uint160(addr));
+        bytes memory alphabet = "0123456789abcdef";
+        bytes memory str = new bytes(42);
+        str[0] = '0';
+        str[1] = 'x';
+        for (uint256 i = 0; i < 20; i++) {
+            str[2 + i * 2] = alphabet[uint8((value >> (156 - i * 8)) & 0xf0) >> 4];
+            str[3 + i * 2] = alphabet[uint8((value >> (152 - i * 8)) & 0x0f)];
+        }
+        return string(str);
+    }
+
+    function _uint256ToString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) return "0";
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) { digits++; temp /= 10; }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + (value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
     }
 }

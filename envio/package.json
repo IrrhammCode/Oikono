@@ -1,0 +1,19 @@
+{
+  "name": "oikono-envio-indexer",
+  "version": "1.0.0",
+  "description": "OIKONO Game Economy Event Indexer",
+  "main": "src/handlers.ts",
+  "scripts": {
+    "start": "envio start",
+    "dev": "envio start --dev",
+    "codegen": "envio codegen",
+    "build": "envio build",
+    "test": "envio test"
+  },
+  "dependencies": {
+    "envio": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

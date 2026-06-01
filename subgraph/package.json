@@ -1,0 +1,17 @@
+{
+  "name": "oikono-subgraph",
+  "version": "1.0.0",
+  "description": "OIKONO Game Economy Subgraph for The Graph",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ oikono-subgraph",
+    "deploy:local": "graph deploy --node http://localhost:8020/ oikono-subgraph",
+    "create-local": "graph create --node http://localhost:8020/ oikono-subgraph",
+    "remove-local": "graph remove --node http://localhost:8020/ oikono-subgraph"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "latest",
+    "@graphprotocol/graph-ts": "latest"
+  }
+}

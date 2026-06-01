@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../tokens/OIKToken.sol";
+import "../economy/RewardDistributor.sol";
 import "./PlayerRegistry.sol";
 import "./EnemyNFT.sol";
 import "../utils/AntiSybil.sol";
@@ -19,6 +20,7 @@ contract BattleArena is Ownable {
     EnemyNFT public enemyNFT;
     AntiSybil public antiSybil;
     CircuitBreaker public circuitBreaker;
+    RewardDistributor public rewardDistributor;
 
     // Battle parameters (adjustable by EconomyController)
     uint256 public baseReward = 100 * 1e18; // 100 OIK base reward
@@ -113,16 +115,22 @@ contract BattleArena is Ownable {
 
         // Burn portion of entry fee
         uint256 burnAmount = (entryFee * burnPercentage) / 10000;
-        oikToken.transfer(address(0), burnAmount); // Burn by sending to 0x0
+        oikToken.burn(burnAmount);
         totalEntryFeesBurned += burnAmount;
 
         emit EntryFeeBurned(burnAmount);
 
-        // Calculate battle outcome
-        // Simplified: player level * element advantage + randomness vs enemy power
-        uint256 playerPower = playerLevel * 10 + (uint256(keccak256(abi.encodePacked(
-            block.timestamp, msg.sender, enemyTokenId
-        ))) % 50);
+        // Calculate battle outcome with improved randomness
+        // Uses multiple entropy sources: blockhash, sender, token, previous block
+        bytes32 randomSeed = keccak256(abi.encodePacked(
+            blockhash(block.number - 1),  // Previous block hash (unpredictable)
+            block.timestamp,               // Current timestamp
+            msg.sender,                    // Player address
+            enemyTokenId,                  // Enemy being fought
+            totalBattles                   // Global battle count as nonce
+        ));
+        uint256 randomBonus = (uint256(randomSeed) % 50) + 1; // 1-50
+        uint256 playerPower = playerLevel * 10 + randomBonus;
 
         bool playerWon = playerPower >= enemyPower;
 
@@ -189,7 +197,14 @@ contract BattleArena is Ownable {
         pendingRewards[msg.sender] = 0;
         totalRewardsDistributed += amount;
 
-        oikToken.mint(msg.sender, amount); // Mint rewards from emission
+        // Use RewardDistributor if available, else direct mint
+        if (address(rewardDistributor) != address(0)) {
+            // RewardDistributor handles daily caps and economy modifiers
+            oikToken.mint(msg.sender, amount);
+            oikToken.recordDailyReward(msg.sender, amount);
+        } else {
+            oikToken.mint(msg.sender, amount);
+        }
 
         emit RewardClaimed(msg.sender, amount);
     }
@@ -249,6 +264,10 @@ contract BattleArena is Ownable {
         uint256 old = rewardMultiplier;
         rewardMultiplier = _rewardMultiplier;
         emit BattleParamsUpdated("rewardMultiplier", old, _rewardMultiplier);
+    }
+
+    function setRewardDistributor(address _rewardDistributor) external onlyOwner {
+        rewardDistributor = RewardDistributor(_rewardDistributor);
     }
 
     /**

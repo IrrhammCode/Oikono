@@ -220,10 +220,30 @@ contract NarrativePlugin is Ownable, IAgentPlugin {
         string calldata npcName,
         string calldata context
     ) external view returns (DialogueLine[] memory) {
-        // In production: LLM generates this
-        // For demo: return template
+        // Generate contextual dialogue based on quest state
+        Quest storage quest = quests[questId];
+        string memory questStatus;
+        string memory npcResponse;
+
+        if (!quest.isActive && !quest.isCompleted) {
+            questStatus = "new";
+            npcResponse = string(abi.encodePacked("I have a task for you: ", quest.title, ". Are you up for it?"));
+        } else if (quest.isActive && quest.currentProgress < quest.targetCount) {
+            questStatus = "in_progress";
+            npcResponse = string(abi.encodePacked(
+                "You've made progress: ", _toString(quest.currentProgress),
+                "/", _toString(quest.targetCount), ". Keep going!"
+            ));
+        } else if (quest.isCompleted) {
+            questStatus = "completed";
+            npcResponse = "Well done! You've completed the quest. Here is your reward.";
+        } else {
+            questStatus = "active";
+            npcResponse = "The quest awaits. Be careful out there.";
+        }
+
         DialogueLine[] memory dialogue = new DialogueLine[](3);
-        dialogue[0] = DialogueLine({speaker: npcName, text: "Greetings, traveler.", emotion: "neutral"});
+        dialogue[0] = DialogueLine({speaker: npcName, text: npcResponse, emotion: quest.isCompleted ? "happy" : "neutral"});
         dialogue[1] = DialogueLine({speaker: "Player", text: context, emotion: "curious"});
         dialogue[2] = DialogueLine({speaker: npcName, text: "May fortune smile upon your quest.", emotion: "happy"});
 

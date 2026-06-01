@@ -1,578 +1,1186 @@
-/* ═══════════════════════════════════════════════
-   OIKONO — AI Agent Interface
-   Wallet Connection + Contract Interaction
-   ═══════════════════════════════════════════════ */
+// ═══════════════════════════════════════════════
+// OIKONO - Data-Driven Game Economy Agent
+// With proper routing and game registration
+// ═══════════════════════════════════════════════
 
-// ── Somnia Testnet Config ──
-const SOMNIA_CHAIN_ID = '0xC478'; // 50312
+const SOMNIA_CHAIN_ID = '0xC488';
 const SOMNIA_RPC = 'https://dream-rpc.somnia.network';
-const SOMNIA_WS = 'wss://dream-rpc.somnia.network/ws';
 
-// ── Contract Addresses (update after deployment) ──
-const CONTRACTS = {
-  PlayerRegistry: '0x0000000000000000000000000000000000000000',
-  GameMaster: '0x0000000000000000000000000000000000000000',
-  EnemyNFT: '0x0000000000000000000000000000000000000000',
-  BattleArena: '0x0000000000000000000000000000000000000000',
-  OIKToken: '0x0000000000000000000000000000000000000000',
-};
-
-// ── Minimal ABIs ──
-const ABI_PlayerRegistry = [
-  'function registerPlayer(uint256 x, uint256 y) external',
-  'function move(uint256 x, uint256 y) external',
-  'function getPlayer(address player) external view returns (uint256 x, uint256 y, uint256 xp, uint256 level, uint256 totalBattles, uint256 wins, uint256 losses, bool exists)',
-  'function playerExists(address player) external view returns (bool)',
-  'function totalPlayers() external view returns (uint256)',
-  'event PlayerRegistered(address indexed player, uint256 x, uint256 y)',
-  'event PlayerMoved(address indexed player, uint256 x, uint256 y, uint256 xp, uint256 level)',
-  'event PlayerLevelUp(address indexed player, uint256 newLevel)',
-];
-
-const ABI_GameMaster = [
-  'function triggerEnemyGeneration(address player) external',
-  'function getStats() external view returns (uint256 totalEnemies, uint256 totalLLM, uint256 subscriptions)',
-  'event EnemyGenerated(address indexed player, uint256 indexed tokenId, string name, string enemyClass, uint256 power)',
-  'event LLMRequestSent(uint256 indexed requestId, address indexed player, string prompt)',
-];
-
-const ABI_EnemyNFT = [
-  'function getEnemy(uint256 tokenId) external view returns (string name, string enemyClass, string element, uint256 power, uint256 threatLevel, address creator, uint256 battlesWon, uint256 battlesLost, bool isBoss)',
-  'function getPlayerEnemies(address player) external view returns (uint256[] memory)',
-  'function totalEnemiesMinted() external view returns (uint256)',
-  'function balanceOf(address owner) external view returns (uint256)',
-  'function ownerOf(uint256 tokenId) external view returns (address)',
-  'event EnemyMinted(uint256 indexed tokenId, address indexed creator, string name, string enemyClass, uint256 power)',
-];
-
-const ABI_BattleArena = [
-  'function executeBattle(uint256 enemyTokenId) external',
-  'function claimRewards() external',
-  'function getPendingRewards(address player) external view returns (uint256)',
-  'function getPlayerBattleHistory(address player) external view returns (tuple(address player, uint256 enemyTokenId, bool playerWon, uint256 xpGained, uint256 rewardAmount, uint256 timestamp)[])',
-  'function baseEntryFee() external view returns (uint256)',
-  'function baseReward() external view returns (uint256)',
-  'function rewardMultiplier() external view returns (uint256)',
-  'event BattleStarted(address indexed player, uint256 enemyTokenId, uint256 entryFee)',
-  'event BattleEnded(address indexed player, uint256 enemyTokenId, bool playerWon, uint256 reward, uint256 xpGained)',
-  'event RewardClaimed(address indexed player, uint256 amount)',
-];
-
-const ABI_OIKToken = [
-  'function balanceOf(address account) external view returns (uint256)',
-  'function decimals() external view returns (uint8)',
-  'function approve(address spender, uint256 amount) external returns (bool)',
-  'function allowance(address owner, address spender) external view returns (uint256)',
-];
-
-// ── State ──
 let provider = null;
 let signer = null;
 let userAddress = null;
 let contracts = {};
+let registeredGames = [];
+let currentView = 'overview';
 
 // ══════════════════════════════════════════════
 // WALLET CONNECTION
 // ══════════════════════════════════════════════
 
 async function connectWallet() {
-  if (typeof window.ethereum === 'undefined') {
-    alert('MetaMask not detected. Please install MetaMask.');
-    return;
-  }
+    if (typeof window.ethereum === 'undefined') {
+        showNotification('MetaMask not detected', 'error');
+        return;
+    }
 
-  try {
-    // Request accounts
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    userAddress = accounts[0];
+    const btn = document.getElementById('connectBtn');
+    setButtonLoading(btn, true, 'Connecting...');
 
-    // Setup ethers provider & signer
-    provider = new ethers.BrowserProvider(window.ethereum);
-    signer = await provider.getSigner();
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        userAddress = accounts[0];
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
 
-    // Ensure Somnia testnet
-    await ensureSomniaNetwork();
+        await ensureSomniaNetwork();
+        initContracts();
+        await loadDashboardData();
 
-    // Initialize contracts
-    initContracts();
+        showNotification('Connected: ' + shortAddr(userAddress), 'success');
 
-    // Update UI
-    updateConnectionUI(true);
-
-    // Load player data
-    await loadPlayerData();
-
-    // Listen for events
-    listenContractEvents();
-
-    // Listen for account/chain changes
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', () => window.location.reload());
-
-    agentLog('Wallet connected: ' + shortAddr(userAddress), 'success');
-    agentLog('Somnia Testnet (Chain ID: 50312)', 'info');
-
-  } catch (err) {
-    console.error('Connection failed:', err);
-    agentLog('Connection failed: ' + err.message, 'error');
-  }
-}
-
-function disconnectWallet() {
-  userAddress = null;
-  signer = null;
-  contracts = {};
-
-  updateConnectionUI(false);
-  agentLog('Wallet disconnected', 'info');
+        // If on landing page, stay there. If trying to access dashboard, go there
+        if (window.location.hash.startsWith('#/dashboard')) {
+            showDashboard();
+        }
+    } catch (err) {
+        showNotification('Connection failed: ' + err.message, 'error');
+    } finally {
+        setButtonLoading(btn, false, 'Connect Wallet');
+        updateUI(!!userAddress);
+    }
 }
 
 async function ensureSomniaNetwork() {
-  const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-  if (chainId !== SOMNIA_CHAIN_ID) {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: SOMNIA_CHAIN_ID }],
-      });
-    } catch (switchError) {
-      // Chain not added yet
-      if (switchError.code === 4902) {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: SOMNIA_CHAIN_ID,
-            chainName: 'Somnia Testnet',
-            nativeCurrency: { name: 'STT', symbol: 'STT', decimals: 18 },
-            rpcUrls: [SOMNIA_RPC],
-            blockExplorerUrls: ['https://testnet.somnia.network'],
-          }],
-        });
-      } else {
-        throw switchError;
-      }
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    if (chainId !== SOMNIA_CHAIN_ID) {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: SOMNIA_CHAIN_ID }],
+            });
+        } catch (e) {
+            if (e.code === 4902) {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: SOMNIA_CHAIN_ID,
+                        chainName: 'Somnia Testnet',
+                        nativeCurrency: { name: 'STT', symbol: 'STT', decimals: 18 },
+                        rpcUrls: [SOMNIA_RPC],
+                    }],
+                });
+            }
+        }
     }
-  }
-}
-
-function handleAccountsChanged(accounts) {
-  if (accounts.length === 0) {
-    // Disconnected
-    userAddress = null;
-    signer = null;
-    contracts = {};
-    updateConnectionUI(false);
-    agentLog('Wallet disconnected', 'info');
-  } else {
-    userAddress = accounts[0];
-    updateConnectionUI(true);
-    loadPlayerData();
-    agentLog('Account changed: ' + shortAddr(userAddress), 'info');
-  }
 }
 
 function initContracts() {
-  contracts.playerRegistry = new ethers.Contract(CONTRACTS.PlayerRegistry, ABI_PlayerRegistry, signer);
-  contracts.gameMaster = new ethers.Contract(CONTRACTS.GameMaster, ABI_GameMaster, signer);
-  contracts.enemyNFT = new ethers.Contract(CONTRACTS.EnemyNFT, ABI_EnemyNFT, signer);
-  contracts.battleArena = new ethers.Contract(CONTRACTS.BattleArena, ABI_BattleArena, signer);
-  contracts.oikToken = new ethers.Contract(CONTRACTS.OIKToken, ABI_OIKToken, signer);
+    if (!CONFIG || !CONFIG.CONTRACTS) return;
+
+    for (const [name, abi] of Object.entries(CONFIG.ABI)) {
+        if (CONFIG.CONTRACTS[name] && CONFIG.CONTRACTS[name] !== '0x0000000000000000000000000000000000000000') {
+            contracts[name] = new ethers.Contract(CONFIG.CONTRACTS[name], abi, signer);
+        }
+    }
+}
+
+function updateUI(connected) {
+    const connectBtn = document.getElementById('connectBtn');
+    const launchBtn = document.getElementById('launchBtn');
+    const walletAddress = document.getElementById('walletAddress');
+
+    if (connected) {
+        connectBtn.textContent = shortAddr(userAddress);
+        connectBtn.classList.add('btn--connected');
+        launchBtn.style.display = 'inline-flex';
+        if (walletAddress) walletAddress.textContent = shortAddr(userAddress);
+    } else {
+        connectBtn.textContent = 'Connect Wallet';
+        connectBtn.classList.remove('btn--connected');
+        launchBtn.style.display = 'none';
+    }
 }
 
 // ══════════════════════════════════════════════
-// UI UPDATES
+// ROUTING
 // ══════════════════════════════════════════════
 
-function updateConnectionUI(connected) {
-  const connectBtn = document.getElementById('connectBtn');
-  const connectText = document.getElementById('connectText');
-  const disconnectBtn = document.getElementById('disconnectBtn');
-  const networkStatus = document.getElementById('networkStatus');
-  const connStatus = document.getElementById('connStatus');
-  const playerStatus = document.getElementById('playerStatus');
-  const statusText = document.getElementById('statusText');
-  const walletAddress = document.getElementById('walletAddress');
+function showDashboard(view = 'overview') {
+    document.getElementById('dashboard').style.display = 'grid';
+    document.querySelectorAll('body > *:not(#dashboard):not(script)').forEach(el => {
+        if (el.tagName !== 'SCRIPT') el.style.display = 'none';
+    });
+    loadDashboardData();
+    switchView(view);
+    window.location.hash = '#/dashboard/' + view;
+}
 
-  if (connected) {
-    connectText.textContent = shortAddr(userAddress);
-    connectBtn.classList.add('connected');
-    if (disconnectBtn) disconnectBtn.style.display = 'inline-flex';
-    if(networkStatus) networkStatus.textContent = 'somnia_testnet://connected';
-    if(connStatus) {
-      connStatus.textContent = '✓ Wallet connected: ' + shortAddr(userAddress);
-      connStatus.className = 'terminal__success';
-    }
-    if(playerStatus) playerStatus.classList.add('status-badge--online');
-    if(statusText) statusText.textContent = 'CONNECTED';
-    if(walletAddress) walletAddress.textContent = shortAddr(userAddress);
-    
-    // Populate player address in dashboard
-    const pAddr = document.getElementById('playerAddress');
-    if(pAddr) pAddr.textContent = shortAddr(userAddress);
-    
-    // Set route to dashboard
-    window.location.hash = '#/dashboard';
-  } else {
-    connectText.textContent = 'Connect Wallet';
-    connectBtn.classList.remove('connected');
-    if (disconnectBtn) disconnectBtn.style.display = 'none';
-    if(networkStatus) networkStatus.textContent = 'somnia_testnet://disconnected';
-    if(connStatus) {
-      connStatus.textContent = '... Awaiting wallet connection...';
-      connStatus.className = 'terminal__success';
-    }
-    if(playerStatus) playerStatus.classList.remove('status-badge--online');
-    if(statusText) statusText.textContent = 'NOT CONNECTED';
-    if(walletAddress) walletAddress.textContent = 'Not connected';
-    
-    // Set route to landing
+function showLanding() {
     window.location.hash = '#/';
-  }
+    showLandingDirect();
 }
 
-// ── Single Page Router ──
-function showDashboardView() {
-  const landingSections = document.querySelectorAll('.landing-section');
-  const appView = document.getElementById('appDashboard');
-  const navLinks = document.querySelector('.navbar__links');
-  const navbar = document.getElementById('navbar');
-  const footer = document.querySelector('.footer');
-
-  landingSections.forEach(el => el.style.display = 'none');
-  if(appView) appView.style.display = 'grid';
-  if(navLinks) navLinks.style.display = 'none';
-  if(navbar) navbar.classList.add('navbar--app');
-  if(footer) footer.style.display = 'none';
+function showRegisterPage() {
+    console.log('showRegisterPage called');
+    window.location.hash = '#/register';
+    showRegisterPageDirect();
 }
 
-function showLandingView() {
-  const landingSections = document.querySelectorAll('.landing-section');
-  const appView = document.getElementById('appDashboard');
-  const navLinks = document.querySelector('.navbar__links');
-  const navbar = document.getElementById('navbar');
-  const footer = document.querySelector('.footer');
-
-  landingSections.forEach(el => el.style.display = '');
-  if(appView) appView.style.display = 'none';
-  if(navLinks) navLinks.style.display = '';
-  if(navbar) navbar.classList.remove('navbar--app');
-  if(footer) footer.style.display = '';
+function switchView(view) {
+    currentView = view;
+    document.querySelectorAll('.sidebar__link').forEach(link => {
+        link.classList.toggle('sidebar__link--active', link.dataset.view === view);
+    });
+    document.querySelectorAll('.view').forEach(v => {
+        v.style.display = v.id === `view-${view}` ? '' : 'none';
+    });
+    const titles = { overview: 'Overview', metrics: 'Metrics', patterns: 'Patterns', suggestions: 'Suggestions', games: 'My Games' };
+    document.getElementById('dashboardTitle').textContent = titles[view] || 'Overview';
+    loadViewData(view);
+    window.location.hash = '#/dashboard/' + view;
 }
 
-function handleRouting() {
-  const hash = window.location.hash || '#/';
-  
-  if (hash === '#/dashboard') {
-    if (userAddress) {
-      showDashboardView();
+function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Handle hash changes for routing
+function handleRoute() {
+    const hash = window.location.hash || '#/';
+    console.log('handleRoute called, hash:', hash);
+
+    if (hash === '#/register') {
+        // Show register page (without changing hash again)
+        showRegisterPageDirect();
+    } else if (hash.startsWith('#/dashboard')) {
+        if (!userAddress) {
+            // Not connected, redirect to landing
+            window.location.hash = '#/';
+            return;
+        }
+        const view = hash.split('/')[2] || 'overview';
+        document.getElementById('dashboard').style.display = 'grid';
+        document.getElementById('developers').style.display = 'none';
+        document.querySelectorAll('body > section:not(#dashboard):not(#developers)').forEach(el => {
+            el.style.display = 'none';
+        });
+        // Hide nav and footer on dashboard
+        const nav = document.querySelector('.nav');
+        const footer = document.querySelector('.footer');
+        if (nav) nav.style.display = 'none';
+        if (footer) footer.style.display = 'none';
+        switchView(view);
     } else {
-      // Redirect to landing if not logged in
-      window.location.hash = '#/';
+        // Landing page
+        showLandingDirect();
     }
-  } else {
-    // Show landing
-    showLandingView();
-    
-    // Support section navigation scroll
-    const matched = hash.match(/^#\/([a-zA-Z0-9_-]+)$/);
-    if (matched) {
-      const sectionId = matched[1];
-      const el = document.getElementById(sectionId);
-      if (el) {
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
-    }
-  }
 }
 
-async function loadPlayerData() {
-  if (!contracts.playerRegistry || !userAddress) return;
+// Direct versions (don't change hash to avoid loops)
+function showRegisterPageDirect() {
+    console.log('showRegisterPageDirect called');
 
-  try {
-    const exists = await contracts.playerRegistry.playerExists(userAddress);
+    // Hide dashboard
+    const dashboard = document.getElementById('dashboard');
+    if (dashboard) dashboard.style.display = 'none';
 
-    if (exists) {
-      const data = await contracts.playerRegistry.getPlayer(userAddress);
-      document.getElementById('playerAddress').textContent = shortAddr(userAddress);
-      document.getElementById('playerLevel').textContent = data.level.toString();
-      document.getElementById('playerXP').textContent = data.xp.toString();
-
-      // Enable game buttons
-      document.getElementById('registerBtn').disabled = true;
-      document.getElementById('registerBtn').innerHTML = '<span class="cmd-text">Registered</span>';
-      setGameButtonsEnabled(true);
-
-      agentLog('Player data loaded — Level ' + data.level + ', XP: ' + data.xp, 'success');
-    } else {
-      document.getElementById('playerAddress').textContent = shortAddr(userAddress);
-      document.getElementById('playerLevel').textContent = '-';
-      document.getElementById('playerXP').textContent = '-';
-
-      document.getElementById('registerBtn').disabled = false;
-      document.getElementById('registerBtn').innerHTML = '<span class="cmd-text">Register Player</span>';
-      setGameButtonsEnabled(false);
-
-      agentLog('Player not registered yet. Click Register to start.', 'info');
-    }
-
-    // Load enemy count
-    try {
-      const enemyCount = await contracts.enemyNFT.balanceOf(userAddress);
-      agentLog('You own ' + enemyCount + ' enemy NFT(s)', 'info');
-    } catch (_) {}
-
-    // Load OIK balance
-    try {
-      const balance = await contracts.oikToken.balanceOf(userAddress);
-      const decimals = await contracts.oikToken.decimals();
-      const formatted = Number(balance) / Math.pow(10, Number(decimals));
-      document.getElementById('playerGold').textContent = formatted.toFixed(0);
-    } catch (_) {}
-
-  } catch (err) {
-    console.error('Failed to load player data:', err);
-    agentLog('Failed to load player data: ' + err.message, 'error');
-  }
-}
-
-function setGameButtonsEnabled(enabled) {
-  const ids = ['moveBtn', 'gatherBtn', 'trainBtn', 'buildBtn', 'battleBtn'];
-  ids.forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.disabled = !enabled;
-  });
-}
-
-// ══════════════════════════════════════════════
-// GAME ACTIONS
-// ══════════════════════════════════════════════
-
-async function registerPlayer() {
-  if (!contracts.playerRegistry) return;
-  try {
-    agentLog('Registering player on-chain...', 'info');
-    const x = Math.floor(Math.random() * 98) + 1;
-    const y = Math.floor(Math.random() * 98) + 1;
-    const tx = await contracts.playerRegistry.registerPlayer(x, y);
-    agentLog('TX sent: ' + tx.hash, 'tx');
-    await tx.wait();
-    agentLog('Player registered at (' + x + ', ' + y + ')', 'success');
-    await loadPlayerData();
-  } catch (err) {
-    agentLog('Register failed: ' + parseError(err), 'error');
-  }
-}
-
-async function movePlayer() {
-  if (!contracts.playerRegistry) return;
-  try {
-    const x = Math.floor(Math.random() * 98) + 1;
-    const y = Math.floor(Math.random() * 98) + 1;
-    agentLog('Moving to (' + x + ', ' + y + ')...', 'info');
-    const tx = await contracts.playerRegistry.move(x, y);
-    agentLog('TX sent: ' + tx.hash, 'tx');
-    const receipt = await tx.wait();
-    agentLog('Moved to (' + x + ', ' + y + '). XP gained!', 'success');
-
-    // Trigger enemy generation via GameMaster
-    try {
-      agentLog('Triggering AI enemy generation...', 'info');
-      const tx2 = await contracts.gameMaster.triggerEnemyGeneration(userAddress);
-      agentLog('Enemy TX sent: ' + tx2.hash, 'tx');
-      await tx2.wait();
-      agentLog('Enemy generated! Check your NFTs.', 'success');
-    } catch (e2) {
-      agentLog('Enemy generation: ' + parseError(e2), 'info');
-    }
-
-    await loadPlayerData();
-  } catch (err) {
-    agentLog('Move failed: ' + parseError(err), 'error');
-  }
-}
-
-async function gatherResources() {
-  // Simplified: move to a random spot to gain XP
-  if (!contracts.playerRegistry) return;
-  try {
-    const x = Math.floor(Math.random() * 98) + 1;
-    const y = Math.floor(Math.random() * 98) + 1;
-    agentLog('Gathering resources at (' + x + ', ' + y + ')...', 'info');
-    const tx = await contracts.playerRegistry.move(x, y);
-    agentLog('TX sent: ' + tx.hash, 'tx');
-    await tx.wait();
-    agentLog('Resources gathered! +XP', 'success');
-    await loadPlayerData();
-  } catch (err) {
-    agentLog('Gather failed: ' + parseError(err), 'error');
-  }
-}
-
-async function trainUnit() {
-  // Placeholder — would need a dedicated training contract
-  agentLog('Training unit... (feature requires dedicated contract)', 'info');
-  agentLog('For now, move around to gain XP and level up!', 'info');
-}
-
-async function buildStructure() {
-  // Placeholder — would need a dedicated building contract
-  agentLog('Building structure... (feature requires dedicated contract)', 'info');
-  agentLog('For now, battle enemies to earn OIK tokens!', 'info');
-}
-
-async function findBattle() {
-  if (!contracts.enemyNFT || !contracts.battleArena) return;
-  try {
-    // Find an enemy to battle
-    const totalMinted = await contracts.enemyNFT.totalEnemiesMinted();
-    if (totalMinted === 0n) {
-      agentLog('No enemies exist yet. Move around to spawn one!', 'info');
-      return;
-    }
-
-    // Pick the latest enemy
-    const enemyId = Number(totalMinted) - 1;
-    const enemy = await contracts.enemyNFT.getEnemy(enemyId);
-    agentLog('Found enemy: ' + enemy[0] + ' (Power: ' + enemy[3] + ')', 'info');
-
-    // Check OIK balance for entry fee
-    const entryFee = await contracts.battleArena.baseEntryFee();
-    const balance = await contracts.oikToken.balanceOf(userAddress);
-    const adjustedFee = (entryFee * BigInt(enemy[3])) / 100n;
-
-    if (balance < adjustedFee) {
-      agentLog('Insufficient OIK for entry fee. Need: ' + ethers.formatEther(adjustedFee), 'error');
-      return;
-    }
-
-    // Approve OIK spending
-    const allowance = await contracts.oikToken.allowance(userAddress, CONTRACTS.BattleArena);
-    if (allowance < adjustedFee) {
-      agentLog('Approving OIK spending...', 'info');
-      const approveTx = await contracts.oikToken.approve(CONTRACTS.BattleArena, adjustedFee);
-      await approveTx.wait();
-      agentLog('OIK approved', 'success');
-    }
-
-    // Execute battle
-    agentLog('Entering battle against ' + enemy[0] + '...', 'info');
-    const tx = await contracts.battleArena.executeBattle(enemyId);
-    agentLog('Battle TX sent: ' + tx.hash, 'tx');
-    const receipt = await tx.wait();
-
-    // Parse BattleEnded event
-    const battleLog = receipt.logs.find(log => {
-      try { return contracts.battleArena.interface.parseLog(log)?.name === 'BattleEnded'; }
-      catch { return false; }
+    // Hide landing sections
+    document.querySelectorAll('body > section:not(#dashboard):not(#developers)').forEach(el => {
+        el.style.display = 'none';
     });
 
-    if (battleLog) {
-      const parsed = contracts.battleArena.interface.parseLog(battleLog);
-      const won = parsed.args.playerWon;
-      const xp = parsed.args.xpGained;
-      const reward = parsed.args.reward;
-      if (won) {
-        agentLog('VICTORY! +' + xp + ' XP, +' + ethers.formatEther(reward) + ' OIK reward', 'success');
-      } else {
-        agentLog('DEFEAT. +' + xp + ' XP gained. Try again!', 'info');
-      }
+    // Show register page
+    const developers = document.getElementById('developers');
+    if (developers) {
+        developers.style.display = 'block';
     }
 
-    await loadPlayerData();
-  } catch (err) {
-    agentLog('Battle failed: ' + parseError(err), 'error');
-  }
+    // Hide nav and footer
+    const nav = document.querySelector('.nav');
+    const footer = document.querySelector('.footer');
+    if (nav) nav.style.display = 'none';
+    if (footer) footer.style.display = 'none';
 }
 
-// ══════════════════════════════════════════════
-// EVENT LISTENING
-// ══════════════════════════════════════════════
-
-function listenContractEvents() {
-  if (!contracts.playerRegistry || !contracts.gameMaster) return;
-
-  // PlayerMoved events
-  contracts.playerRegistry.on('PlayerMoved', (player, x, y, xp, level) => {
-    addLiveEvent('event', 'PlayerMoved', shortAddr(player) + ' → (' + x + ',' + y + ') | XP: ' + xp);
-  });
-
-  // PlayerLevelUp events
-  contracts.playerRegistry.on('PlayerLevelUp', (player, newLevel) => {
-    addLiveEvent('mint', 'LevelUp', shortAddr(player) + ' reached Level ' + newLevel);
-  });
-
-  // EnemyGenerated events
-  contracts.gameMaster.on('EnemyGenerated', (player, tokenId, name, enemyClass, power) => {
-    addLiveEvent('mint', 'EnemyMinted', name + ' (#' + tokenId + ') Power: ' + power + ' for ' + shortAddr(player));
-  });
-
-  // Battle events
-  if (contracts.battleArena) {
-    contracts.battleArena.on('BattleEnded', (player, enemyTokenId, playerWon, reward, xpGained) => {
-      const result = playerWon ? 'WON' : 'LOST';
-      addLiveEvent('tx', 'Battle', shortAddr(player) + ' ' + result + ' vs Enemy #' + enemyTokenId);
+function showLandingDirect() {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('developers').style.display = 'none';
+    document.querySelectorAll('body > section:not(#dashboard):not(#developers)').forEach(el => {
+        el.style.display = '';
     });
-  }
-
-  agentLog('Listening for on-chain events...', 'info');
-}
-
-function addLiveEvent(type, label, message) {
-  const eventStream = document.getElementById('eventStream');
-  if (!eventStream) return;
-
-  const clsMap = {
-    event: 'stream-line__type--event',
-    agent: 'stream-line__type--agent',
-    mint: 'stream-line__type--mint',
-    tx: 'stream-line__type--tx',
-  };
-
-  const now = new Date();
-  const time = now.toTimeString().slice(0, 8);
-
-  const line = document.createElement('div');
-  line.className = 'stream-line';
-  line.innerHTML =
-    '<span class="stream-line__time">' + time + '</span>' +
-    '<span class="stream-line__type ' + (clsMap[type] || clsMap.event) + '">' + label + '</span>' +
-    '<span class="stream-line__msg">' + message + '</span>';
-
-  eventStream.prepend(line);
-  while (eventStream.children.length > 30) {
-    eventStream.removeChild(eventStream.lastChild);
-  }
+    document.querySelector('.nav').style.display = '';
+    document.querySelector('.footer').style.display = '';
 }
 
 // ══════════════════════════════════════════════
-// AGENT LOG (Game Panel)
+// DASHBOARD DATA
 // ══════════════════════════════════════════════
 
-function agentLog(message, type) {
-  const output = document.getElementById('agentOutput');
-  if (!output) return;
+async function loadDashboardData() {
+    if (!userAddress) return;
 
-  const typeCls = {
-    info: 'stream-line__type--info',
-    success: 'stream-line__type--mint',
-    error: 'stream-line__type--event',
-    tx: 'stream-line__type--tx',
-  };
+    try {
+        if (contracts.GameRegistry) {
+            const gameIds = await contracts.GameRegistry.getGamesByOwner(userAddress);
+            registeredGames = [];
+            for (const id of gameIds) {
+                try {
+                    const game = await contracts.GameRegistry.getGame(Number(id));
+                    // ABI returns: owner, name, gameType, description, metadata, isActive, isVerified, totalEvents, totalActions
+                    registeredGames.push({
+                        id: Number(id),
+                        owner: game[0],
+                        name: game[1],
+                        gameType: game[2],
+                        description: game[3],
+                        metadata: game[4],
+                        isActive: game[5],
+                        isVerified: game[6],
+                        totalEvents: Number(game[7]),
+                        totalActions: Number(game[8])
+                    });
+                } catch (e) {
+                    console.error('Failed to load game:', e);
+                }
+            }
+        }
 
-  const now = new Date();
-  const time = now.toTimeString().slice(0, 8);
+        // Update overview stats
+        document.getElementById('statGames').textContent = registeredGames.length;
 
-  const line = document.createElement('div');
-  line.className = 'stream-line';
-  line.innerHTML =
-    '<span class="stream-line__time">' + time + '</span>' +
-    '<span class="stream-line__type ' + (typeCls[type] || typeCls.info) + '">' + (type || 'INFO').toUpperCase() + '</span>' +
-    '<span class="stream-line__msg">' + message + '</span>';
+        // Load patterns count
+        if (contracts.PatternDetector && registeredGames.length > 0) {
+            try {
+                const count = await contracts.PatternDetector.getPatternCount(registeredGames[0].id);
+                document.getElementById('statPatterns').textContent = count.toString();
+            } catch (e) {}
+        }
 
-  output.appendChild(line);
-  output.scrollTop = output.scrollHeight;
+        // Load suggestions count
+        if (contracts.SuggestionEngine && registeredGames.length > 0) {
+            try {
+                const count = await contracts.SuggestionEngine.getSuggestionCount(registeredGames[0].id);
+                document.getElementById('statSuggestions').textContent = count.toString();
+            } catch (e) {}
+        }
+
+        // Update success rate via OikonoAgent stats
+        if (contracts.OikonoAgent) {
+            try {
+                const agentStats = await contracts.OikonoAgent.getStats();
+                const decisions = Number(agentStats[0]);
+                const successEl = document.getElementById('statSuccess');
+                successEl.textContent = decisions > 0 ? decisions + ' decisions' : 'N/A';
+            } catch (e) {
+                document.getElementById('statSuccess').textContent = 'N/A';
+            }
+        } else {
+            document.getElementById('statSuccess').textContent = 'N/A';
+        }
+
+        // Update activity feed
+        updateActivityFeed();
+
+        // Update games list
+        updateGamesList();
+
+    } catch (err) {
+        console.error('Failed to load dashboard:', err);
+    }
+}
+
+function loadViewData(view) {
+    switch (view) {
+        case 'overview':
+            loadDashboardData();
+            break;
+        case 'metrics':
+            loadMetrics();
+            break;
+        case 'patterns':
+            loadPatterns();
+            break;
+        case 'suggestions':
+            loadSuggestions();
+            break;
+        case 'games':
+            updateGamesList();
+            break;
+    }
+}
+
+// ══════════════════════════════════════════════
+// METRICS
+// ══════════════════════════════════════════════
+
+async function loadMetrics() {
+    const grid = document.getElementById('metricsGrid');
+    const select = document.getElementById('metricsGameSelect');
+
+    // Populate game select (preserve current selection)
+    const prevSelected = select.value;
+    select.innerHTML = '<option value="">Select game...</option>';
+    registeredGames.forEach(game => {
+        const opt = document.createElement('option');
+        opt.value = game.id;
+        opt.textContent = game.name + ' (' + game.gameType + ')';
+        if (String(game.id) === prevSelected) opt.selected = true;
+        select.appendChild(opt);
+    });
+
+    const gameId = select.value;
+    if (!gameId || !contracts.MetricsRegistry) {
+        grid.innerHTML = '<div class="empty-state"><p>Select a game to view metrics</p></div>';
+        return;
+    }
+
+    try {
+        const metricNames = await contracts.MetricsRegistry.getMetricNames(gameId);
+
+        if (metricNames.length === 0) {
+            grid.innerHTML = '<div class="empty-state"><p>No metrics defined yet. Apply a game type template first.</p></div>';
+            return;
+        }
+
+        let html = '';
+        for (const name of metricNames) {
+            try {
+                const stats = await contracts.MetricsRegistry.getStats(gameId, name);
+                const latest = stats[0];
+                const min = stats[1];
+                const max = stats[2];
+                const avg = stats[3];
+                const count = stats[4];
+                // stats[5] = lastUpdated (unused in display)
+                const isHealthy = await contracts.MetricsRegistry.isHealthy(gameId, name);
+                let changeText = '';
+                try {
+                    const change = await contracts.MetricsRegistry.getChange(gameId, name);
+                    const changeNum = Number(change);
+                    changeText = changeNum >= 0 ? `+${changeNum}` : `${changeNum}`;
+                } catch (e) {}
+
+                html += `
+                    <div class="metric-card ${isHealthy ? '' : 'metric-card--warning'}">
+                        <div class="metric-card__header">
+                            <span class="metric-card__name">${name}</span>
+                            <span class="metric-card__status ${isHealthy ? 'status--good' : 'status--warning'}">
+                                ${isHealthy ? '● Healthy' : '⚠ Warning'}
+                            </span>
+                        </div>
+                        <div class="metric-card__value">${latest}${changeText ? ` <small style="color:${Number(changeText)>=0?'var(--accent-success)':'var(--accent-danger)'}">${changeText}</small>` : ''}</div>
+                        <div class="metric-card__stats">
+                            <span>Min: ${min}</span>
+                            <span>Max: ${max}</span>
+                            <span>Avg: ${avg}</span>
+                            <span>Count: ${count}</span>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Failed to load metric:', name, e);
+            }
+        }
+
+        grid.innerHTML = html || '<div class="empty-state"><p>Failed to load metrics</p></div>';
+    } catch (err) {
+        console.error('Error loading metrics:', err);
+        grid.innerHTML = '<div class="empty-state"><p>Error loading metrics</p></div>';
+    }
+}
+
+async function recordMetric() {
+    const select = document.getElementById('metricsGameSelect');
+    const gameId = select?.value;
+    const metricName = document.getElementById('recordMetricName')?.value;
+    const metricValue = document.getElementById('recordMetricValue')?.value;
+
+    if (!gameId) {
+        showNotification('Please select a game first', 'error');
+        return;
+    }
+
+    if (!metricName || !metricValue) {
+        showNotification('Please enter metric name and value', 'error');
+        return;
+    }
+
+    if (!contracts.MetricsRegistry) {
+        showNotification('MetricsRegistry contract not available', 'error');
+        return;
+    }
+
+    try {
+        showNotification('Recording metric...', 'info');
+        const tx = await contracts.MetricsRegistry.recordMetric(
+            gameId,
+            metricName,
+            parseInt(metricValue)
+        );
+        showNotification('TX sent: ' + tx.hash, 'info');
+        await tx.wait();
+        showNotification('Metric recorded: ' + metricName + ' = ' + metricValue, 'success');
+
+        // Clear inputs
+        document.getElementById('recordMetricName').value = '';
+        document.getElementById('recordMetricValue').value = '';
+
+        // Reload metrics
+        loadMetrics();
+    } catch (err) {
+        showNotification('Failed to record metric: ' + parseError(err), 'error');
+    }
+}
+
+// ══════════════════════════════════════════════
+// PATTERNS
+// ══════════════════════════════════════════════
+
+async function loadPatterns() {
+    const list = document.getElementById('patternsList');
+
+    if (!contracts.PatternDetector || registeredGames.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>No games registered yet. Register a game first.</p></div>';
+        return;
+    }
+
+    // Collect patterns from ALL registered games
+    let allPatterns = [];
+    for (const game of registeredGames) {
+        try {
+            const patterns = await contracts.PatternDetector.getActivePatterns(game.id);
+            patterns.forEach(p => allPatterns.push({ ...p, gameName: game.name, gameId: game.id }));
+        } catch (e) {
+            console.error('Failed to load patterns for game', game.id, e);
+        }
+    }
+
+    if (allPatterns.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>No patterns detected yet. Click "Scan Now" to detect patterns.</p></div>';
+        return;
+    }
+
+    list.innerHTML = allPatterns.map(p => `
+        <div class="pattern-item">
+            <div class="pattern-item__header">
+                <span class="pattern-item__type">${p.patternType}</span>
+                <span class="pattern-item__severity severity--${Number(p.severity) >= 7 ? 'high' : Number(p.severity) >= 4 ? 'medium' : 'low'}">Severity: ${p.severity}/10</span>
+            </div>
+            <p class="pattern-item__desc">${p.description}</p>
+            <div class="pattern-item__meta">
+                <span>Game: ${p.gameName}</span>
+                <span>Confidence: ${(Number(p.confidence) / 100).toFixed(0)}%</span>
+                <span>Metric: ${p.metricName}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function detectPatterns(e) {
+    if (!contracts.PatternDetector || registeredGames.length === 0) {
+        showNotification('No games registered', 'error');
+        return;
+    }
+
+    const btn = e?.target || document.querySelector('[onclick*="detectPatterns"]');
+    setButtonLoading(btn, true, 'Scanning...');
+
+    try {
+        let scanned = 0;
+        for (const game of registeredGames) {
+            try {
+                const tx = await contracts.PatternDetector.detectPatterns(game.id);
+                showNotification(`Scanning ${game.name}... TX: ${tx.hash}`, 'info');
+                await tx.wait();
+                scanned++;
+            } catch (err) {
+                console.error('Detection failed for game', game.id, err);
+            }
+        }
+        showNotification(`Pattern detection complete for ${scanned} game(s)`, 'success');
+        loadPatterns();
+    } catch (err) {
+        showNotification('Detection failed: ' + parseError(err), 'error');
+    } finally {
+        setButtonLoading(btn, false, 'Scan Now');
+    }
+}
+
+// ══════════════════════════════════════════════
+// SUGGESTIONS
+// ══════════════════════════════════════════════
+
+async function loadSuggestions() {
+    const list = document.getElementById('suggestionsList');
+
+    if (!contracts.SuggestionEngine || registeredGames.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>No games registered yet. Register a game first.</p></div>';
+        return;
+    }
+
+    // Collect suggestions from ALL registered games
+    let allSuggestions = [];
+    for (const game of registeredGames) {
+        try {
+            const suggestions = await contracts.SuggestionEngine.getActiveSuggestions(game.id);
+            suggestions.forEach(s => allSuggestions.push({ ...s, gameName: game.name, gameId: game.id }));
+        } catch (e) {
+            console.error('Failed to load suggestions for game', game.id, e);
+        }
+    }
+
+    if (allSuggestions.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>No suggestions yet. Detect patterns first, then generate suggestions.</p></div>';
+        return;
+    }
+
+    list.innerHTML = allSuggestions.map(s => `
+        <div class="suggestion-item">
+            <div class="suggestion-item__header">
+                <span class="suggestion-item__category">${s.category}</span>
+                <span class="suggestion-item__priority priority--${s.priority}">${s.priority}</span>
+            </div>
+            <p class="suggestion-item__desc">${s.description}</p>
+            <p class="suggestion-item__action">💡 ${s.action}</p>
+            <div class="suggestion-item__meta">
+                <span>Game: ${s.gameName}</span>
+                <span>Confidence: ${(Number(s.confidence) / 100).toFixed(0)}%</span>
+                <span>Impact: ${(Number(s.expectedImpact) / 100).toFixed(0)}%</span>
+            </div>
+            ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">✓ Mark Implemented</button>` : '<span class="badge badge--active">Implemented</span>'}
+        </div>
+    `).join('');
+}
+
+async function generateSuggestions(e) {
+    if (!contracts.SuggestionEngine || registeredGames.length === 0) {
+        showNotification('No games registered', 'error');
+        return;
+    }
+
+    const btn = e?.target || document.querySelector('[onclick*="generateSuggestions"]');
+    setButtonLoading(btn, true, 'Generating...');
+
+    try {
+        let generated = 0;
+        for (const game of registeredGames) {
+            try {
+                const tx = await contracts.SuggestionEngine.generateSuggestions(game.id);
+                showNotification(`Generating for ${game.name}... TX: ${tx.hash}`, 'info');
+                await tx.wait();
+                generated++;
+            } catch (err) {
+                console.error('Generation failed for game', game.id, err);
+            }
+        }
+        showNotification(`Suggestions generated for ${generated} game(s)`, 'success');
+        loadSuggestions();
+    } catch (err) {
+        showNotification('Generation failed: ' + parseError(err), 'error');
+    } finally {
+        setButtonLoading(btn, false, 'Generate');
+    }
+}
+
+async function markImplemented(gameId, suggestionId) {
+    try {
+        const tx = await contracts.SuggestionEngine.markImplemented(gameId, suggestionId);
+        showNotification('Marking... TX: ' + tx.hash, 'info');
+        await tx.wait();
+        showNotification('Marked as implemented', 'success');
+        loadSuggestions();
+    } catch (err) {
+        showNotification('Failed: ' + parseError(err), 'error');
+    }
+}
+
+// ══════════════════════════════════════════════
+// GAMES
+// ══════════════════════════════════════════════
+
+function updateGamesList() {
+    const list = document.getElementById('gamesList');
+    if (!list) return;
+
+    let html = '';
+
+    // Selalu tampilkan tombol Register Game
+    html += `
+        <div class="game-card" style="border-style: dashed; text-align: center; padding: var(--space-4);">
+            <button class="btn btn--primary" id="addGameBtn">+ Register Game</button>
+        </div>
+    `;
+
+    // Tambahkan game cards
+    if (registeredGames.length > 0) {
+        html += registeredGames.map(game => `
+            <div class="game-card">
+                <div class="game-card__header">
+                    <div class="game-card__info">
+                        <h4 class="game-card__name">${game.name}</h4>
+                        <span class="game-card__type">${game.gameType}</span>
+                    </div>
+                    <span class="badge badge--${game.isActive ? 'active' : 'inactive'}">${game.isActive ? 'Active' : 'Inactive'}</span>
+                </div>
+                <div class="game-card__stats">
+                    <div class="game-card__stat">
+                        <div class="game-card__stat-value">${game.totalEvents}</div>
+                        <div class="game-card__stat-label">Events</div>
+                    </div>
+                    <div class="game-card__stat">
+                        <div class="game-card__stat-value">${game.totalActions}</div>
+                        <div class="game-card__stat-label">Actions</div>
+                    </div>
+                    <div class="game-card__stat">
+                        <div class="game-card__stat-value">${game.isVerified ? 'Yes' : 'No'}</div>
+                        <div class="game-card__stat-label">Verified</div>
+                    </div>
+                </div>
+                <div class="game-card__footer">
+                    <span class="game-card__address">${game.address === '0x0000000000000000000000000000000000000000' ? 'Off-chain' : shortAddr(game.address)}</span>
+                </div>
+                <div class="game-card__actions">
+                    <button class="btn btn--ghost btn--sm" data-action="view" data-game-id="${game.id}">View Details</button>
+                    <button class="btn btn--ghost btn--sm" data-action="toggle" data-game-id="${game.id}" data-active="${game.isActive}">
+                        ${game.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        html += `<div class="empty-state"><p>No games registered yet.</p></div>`;
+    }
+
+    list.innerHTML = html;
+
+    // Attach event listeners after rendering
+    document.getElementById('addGameBtn')?.addEventListener('click', showRegisterPage);
+
+    list.querySelectorAll('[data-action="view"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const gameId = parseInt(btn.dataset.gameId);
+            console.log('View Details clicked, gameId:', gameId);
+            viewGameDetails(gameId);
+        });
+    });
+
+    list.querySelectorAll('[data-action="toggle"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const gameId = parseInt(btn.dataset.gameId);
+            const isActive = btn.dataset.active === 'true';
+            console.log('Toggle clicked, gameId:', gameId, 'isActive:', isActive);
+            toggleGameStatus(gameId, isActive);
+        });
+    });
+}
+
+async function toggleGameStatus(gameId, currentlyActive) {
+    console.log('toggleGameStatus called', { gameId, currentlyActive });
+
+    if (!contracts.GameRegistry) {
+        showNotification('GameRegistry not available', 'error');
+        return;
+    }
+
+    try {
+        const tx = currentlyActive
+            ? await contracts.GameRegistry.deactivateGame(gameId)
+            : await contracts.GameRegistry.activateGame(gameId);
+
+        showNotification('Transaction sent: ' + tx.hash, 'info');
+        await tx.wait();
+        showNotification('Game ' + (currentlyActive ? 'deactivated' : 'activated'), 'success');
+
+        await loadDashboardData();
+        updateGamesList();
+    } catch (err) {
+        showNotification('Failed: ' + parseError(err), 'error');
+    }
+}
+
+async function viewGameDetails(gameId) {
+    console.log('viewGameDetails called', gameId);
+    const game = registeredGames.find(g => g.id === gameId);
+    console.log('Found game:', game);
+
+    if (!game) {
+        showNotification('Game not found', 'error');
+        return;
+    }
+
+    showNotification(`Game: ${game.name} (${game.gameType}) - Events: ${game.totalEvents}, Actions: ${game.totalActions}`, 'info');
+}
+
+// ══════════════════════════════════════════════
+// REGISTRATION
+// ══════════════════════════════════════════════
+
+// Use templates from config.js
+const GAME_TYPE_TEMPLATES = CONFIG.GAME_TYPE_TEMPLATES || {};
+
+// Multi-contract state
+let gameContracts = [];
+
+function addGameContract() {
+    const addressInput = document.getElementById('contractAddress');
+    const roleSelect = document.getElementById('contractRole');
+
+    const address = addressInput.value.trim();
+    const role = roleSelect.value;
+
+    console.log('addGameContract called', { address, role });
+
+    if (!address || !address.startsWith('0x')) {
+        showNotification('Invalid! Contract address must start with 0x', 'error');
+        return;
+    }
+
+    if (gameContracts.find(c => c.address.toLowerCase() === address.toLowerCase())) {
+        showNotification('Contract already added', 'error');
+        return;
+    }
+
+    gameContracts.push({ address, role });
+    updateContractList();
+
+    // Clear input
+    addressInput.value = '';
+}
+
+function removeGameContract(index) {
+    gameContracts.splice(index, 1);
+    updateContractList();
+}
+
+function updateContractList() {
+    const list = document.getElementById('contractList');
+    if (!list) return;
+
+    if (gameContracts.length === 0) {
+        list.innerHTML = '<p class="form-hint">No contracts added yet</p>';
+        return;
+    }
+
+    list.innerHTML = gameContracts.map((c, i) => {
+        const roleInfo = CONFIG.CONTRACT_ROLES[c.role] || { label: c.role, icon: '📄' };
+        return `
+            <div class="contract-item">
+                <span class="contract-item__icon">${roleInfo.icon}</span>
+                <span class="contract-item__role">${roleInfo.label}</span>
+                <span class="contract-item__address">${shortAddr(c.address)}</span>
+                <button type="button" class="btn btn--ghost btn--sm" onclick="removeGameContract(${i})">Remove</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateRangeDisplay(input, displayId) {
+    const display = document.getElementById(displayId);
+    if (display) {
+        display.textContent = input.value + '%';
+    }
+}
+
+function updateTemplatePreview() {
+    const gameType = document.getElementById('gameType').value;
+    const preview = document.getElementById('templatePreview');
+
+    if (!gameType || !GAME_TYPE_TEMPLATES[gameType]) {
+        preview.innerHTML = '<p class="form-section-desc">Select a game type to see included metrics</p>';
+        return;
+    }
+
+    const template = GAME_TYPE_TEMPLATES[gameType];
+
+    // Get all config from form
+    const targetWinRate = document.getElementById('targetWinRate')?.value || 55;
+    const targetRetention = document.getElementById('targetRetention')?.value || 30;
+    const inflationTolerance = document.getElementById('inflationTolerance')?.value || 'medium';
+    const economyStyle = document.getElementById('economyStyle')?.value || 'balanced';
+    const maxChange = document.getElementById('maxChange')?.value || 20;
+    const checkFrequency = document.getElementById('checkFrequency')?.value || 'hourly';
+    const autonomyLevel = document.getElementById('autonomyLevel')?.value || 'semi-auto';
+    const entryModel = document.querySelector('input[name="entryModel"]:checked')?.value || 'free';
+
+    // Get permissions
+    const permSpawn = document.getElementById('permSpawn')?.checked ?? true;
+    const permEconomy = document.getElementById('permEconomy')?.checked ?? true;
+    const permNarrative = document.getElementById('permNarrative')?.checked ?? false;
+    const permDifficulty = document.getElementById('permDifficulty')?.checked ?? true;
+
+    preview.innerHTML = `
+        <div class="template-metrics">
+            <div class="template-header">
+                <h5>${template.name} Template</h5>
+                <p class="template-desc">${template.description}</p>
+            </div>
+
+            <div class="template-config">
+                <h6>Economy Goals:</h6>
+                <div class="template-config__grid">
+                    <div class="template-config__item">
+                        <span class="template-config__label">Target Win Rate</span>
+                        <span class="template-config__value">${targetWinRate}%</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Target D7 Retention</span>
+                        <span class="template-config__value">${targetRetention}%</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Inflation Tolerance</span>
+                        <span class="template-config__value">${inflationTolerance}</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Economy Style</span>
+                        <span class="template-config__value">${economyStyle}</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Max Change/Epoch</span>
+                        <span class="template-config__value">${maxChange}%</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Entry Model</span>
+                        <span class="template-config__value">${entryModel}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="template-config">
+                <h6>Agent Permissions:</h6>
+                <div class="template-config__grid">
+                    <div class="template-config__item">
+                        <span class="template-config__label">Spawn Entities</span>
+                        <span class="template-config__value">${permSpawn ? 'Yes' : 'No'}</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Adjust Economy</span>
+                        <span class="template-config__value">${permEconomy ? 'Yes' : 'No'}</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Generate Narrative</span>
+                        <span class="template-config__value">${permNarrative ? 'Yes' : 'No'}</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Adjust Difficulty</span>
+                        <span class="template-config__value">${permDifficulty ? 'Yes' : 'No'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="template-config">
+                <h6>Integration:</h6>
+                <div class="template-config__grid">
+                    <div class="template-config__item">
+                        <span class="template-config__label">Check Frequency</span>
+                        <span class="template-config__value">${checkFrequency}</span>
+                    </div>
+                    <div class="template-config__item">
+                        <span class="template-config__label">Autonomy Level</span>
+                        <span class="template-config__value">${autonomyLevel}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="template-metrics__list">
+                <h6>Metrics Tracked:</h6>
+                ${template.metrics.map(m => `
+                    <div class="template-metric-item">
+                        <span class="template-metric-name">${m.name}</span>
+                        <span class="template-metric-healthy">${m.healthy}</span>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="template-rules">
+                <h6>Detection Rules:</h6>
+                ${template.rules.map(r => `
+                    <div class="template-rule-item">
+                        <span class="template-rule-type">${r.type}</span>
+                        <span class="template-rule-metric">${r.metric}</span>
+                        <span class="template-rule-threshold">${r.threshold}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+async function registerGame() {
+    console.log('registerGame called');
+
+    // Check wallet connection
+    if (!userAddress) {
+        showNotification('Please connect wallet first', 'error');
+        return;
+    }
+
+    if (!contracts.GameRegistry) {
+        showNotification('Contracts not loaded. Please reconnect wallet.', 'error');
+        return;
+    }
+
+    const name = document.getElementById('gameName').value;
+    const gameType = document.getElementById('gameType').value;
+    const description = document.getElementById('gameDesc').value;
+
+    console.log('Form values:', { name, gameType, description });
+
+    if (!name || name.trim() === '') {
+        showNotification('Please enter a game name', 'error');
+        return;
+    }
+
+    if (!gameType) {
+        showNotification('Please select a game type', 'error');
+        return;
+    }
+
+    const btn = document.querySelector('#registerForm .btn--primary');
+    if (!btn) {
+        console.error('Register button not found');
+        return;
+    }
+
+    setButtonLoading(btn, true, 'Registering...');
+
+    try {
+        showNotification('Preparing transaction...', 'info');
+
+        if (!contracts.GameRegistry) {
+            showNotification('GameRegistry contract not available', 'error');
+            return;
+        }
+
+        console.log('GameRegistry target:', contracts.GameRegistry.target);
+        console.log('Wallet:', userAddress);
+
+        let gameId;
+
+        // Build metadata JSON with full configuration
+        const metadata = JSON.stringify({
+            website: document.getElementById('gameWebsite')?.value || '',
+            contracts: gameContracts.map(c => ({ address: c.address, role: c.role })),
+
+            // Token Economics
+            token: {
+                name: document.getElementById('tokenName')?.value || '',
+                symbol: document.getElementById('tokenSymbol')?.value || '',
+                totalSupply: document.getElementById('totalSupply')?.value || '',
+                circSupply: document.getElementById('circSupply')?.value || '',
+                utility: document.getElementById('tokenUtility')?.value || 'mixed',
+                sinks: {
+                    entry: document.getElementById('sinkEntry')?.checked ?? false,
+                    craft: document.getElementById('sinkCraft')?.checked ?? false,
+                    market: document.getElementById('sinkMarket')?.checked ?? false,
+                    staking: document.getElementById('sinkStaking')?.checked ?? false,
+                    cosmetic: document.getElementById('sinkCosmetic')?.checked ?? false,
+                },
+                sources: {
+                    battle: document.getElementById('srcBattle')?.checked ?? false,
+                    quest: document.getElementById('srcQuest')?.checked ?? false,
+                    staking: document.getElementById('srcStaking')?.checked ?? false,
+                    airdrop: document.getElementById('srcAirdrop')?.checked ?? false,
+                }
+            },
+
+            // Player Economics
+            player: {
+                entryModel: document.querySelector('input[name="entryModel"]:checked')?.value || 'free',
+                segments: {
+                    casual: document.getElementById('segCasual')?.checked ?? false,
+                    hardcore: document.getElementById('segHardcore')?.checked ?? false,
+                    whale: document.getElementById('segWhale')?.checked ?? false,
+                    trader: document.getElementById('segTrader')?.checked ?? false,
+                }
+            },
+
+            // Economy Goals
+            economy: {
+                targetWinRate: parseInt(document.getElementById('targetWinRate')?.value || 55),
+                targetRetention: parseInt(document.getElementById('targetRetention')?.value || 30),
+                inflationTolerance: document.getElementById('inflationTolerance')?.value || 'medium',
+                economyStyle: document.getElementById('economyStyle')?.value || 'balanced',
+                maxChangePerEpoch: parseInt(document.getElementById('maxChange')?.value || 20),
+            },
+
+            // Agent Permissions
+            permissions: {
+                canSpawn: document.getElementById('permSpawn')?.checked ?? true,
+                canAdjustEconomy: document.getElementById('permEconomy')?.checked ?? true,
+                canGenerateNarrative: document.getElementById('permNarrative')?.checked ?? false,
+                canAdjustDifficulty: document.getElementById('permDifficulty')?.checked ?? true,
+            },
+
+            // Alert Thresholds
+            alerts: {
+                winRateLow: parseInt(document.getElementById('winRateLow')?.value || 40),
+                winRateHigh: parseInt(document.getElementById('winRateHigh')?.value || 70),
+                velocityAlert: parseInt(document.getElementById('velocityAlert')?.value || 50000),
+                retentionDrop: parseInt(document.getElementById('retentionDrop')?.value || 15),
+                inflationAlert: parseInt(document.getElementById('inflationAlert')?.value || 10),
+            },
+
+            // Integration Settings
+            integration: {
+                checkFrequency: document.getElementById('checkFrequency')?.value || 'hourly',
+                autonomyLevel: document.getElementById('autonomyLevel')?.value || 'semi-auto',
+                notifications: {
+                    onChain: document.getElementById('notifOnChain')?.checked ?? true,
+                    email: document.getElementById('notifEmail')?.checked ?? false,
+                    discord: document.getElementById('notifDiscord')?.checked ?? false,
+                    telegram: document.getElementById('notifTelegram')?.checked ?? false,
+                }
+            }
+        });
+
+        const tx = await contracts.GameRegistry.registerGame(
+            name.trim(),
+            gameType,
+            description || 'No description provided',
+            metadata
+        );
+
+        showNotification('TX sent: ' + tx.hash, 'info');
+        const receipt = await tx.wait();
+
+        // Parse GameRegistered event to get gameId
+        const log = receipt.logs.find(l => {
+            try {
+                return contracts.GameRegistry.interface.parseLog(l)?.name === 'GameRegistered';
+            } catch { return false; }
+        });
+
+        if (log) {
+            gameId = contracts.GameRegistry.interface.parseLog(log).args.gameId;
+            showNotification('Game registered! ID: ' + gameId, 'success');
+
+            // Add contracts via GameRegistry.addContract(gameId, address, role, eventHashes)
+            for (const c of gameContracts) {
+                try {
+                    const addTx = await contracts.GameRegistry.addContract(
+                        gameId,
+                        c.address,
+                        c.role,
+                        [] // Event hashes - can be added later
+                    );
+                    await addTx.wait();
+                    showNotification('Contract added: ' + c.role, 'success');
+                } catch (e) {
+                    console.error('Failed to add contract:', e);
+                    showNotification('Failed to add contract ' + c.role + ': ' + parseError(e), 'error');
+                }
+            }
+
+            // Apply game type template
+            try {
+                showNotification('Applying game type template...', 'info');
+                const templateTx = await contracts.GameRegistry.applyTemplate(gameId, gameType);
+                await templateTx.wait();
+                showNotification('Template applied!', 'success');
+            } catch (e) {
+                console.error('Template application failed:', e);
+                // Try via GameTypeManager contract as fallback
+                if (contracts.GameTypeManager) {
+                    try {
+                        const templateTx = await contracts.GameTypeManager.applyTemplate(gameId, gameType);
+                        await templateTx.wait();
+                        showNotification('Template applied via fallback!', 'success');
+                    } catch (e2) {
+                        console.error('Fallback template failed:', e2);
+                    }
+                }
+            }
+        } else {
+            showNotification('Game registered but could not parse event', 'warning');
+        }
+
+        // Reset form
+        const form = document.getElementById('registerForm');
+        if (form) form.reset();
+        const preview = document.getElementById('templatePreview');
+        if (preview) preview.innerHTML = '<p class="form-section-desc">Select a game type to see included metrics</p>';
+        gameContracts = [];
+        updateContractList();
+
+        // Reload dashboard data
+        await loadDashboardData();
+
+        // Switch to dashboard
+        showDashboard('games');
+
+    } catch (err) {
+        console.error('Registration failed:', err);
+        showNotification('Registration failed: ' + parseError(err), 'error');
+    } finally {
+        setButtonLoading(btn, false, 'Register Game');
+    }
+}
+
+// ══════════════════════════════════════════════
+// ACTIVITY FEED
+// ══════════════════════════════════════════════
+
+function updateActivityFeed() {
+    const list = document.getElementById('activityList');
+    if (!list) return;
+
+    if (registeredGames.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>No activity yet. Register a game to get started.</p></div>';
+        return;
+    }
+
+    let html = '';
+
+    // Show registered games as activity
+    for (const game of registeredGames) {
+        html += `
+            <div class="activity-item">
+                <div class="activity-item__icon">${game.isActive ? '🟢' : '🔴'}</div>
+                <div class="activity-item__content">
+                    <div class="activity-item__title">${game.name} <span class="badge badge--sm">${game.gameType}</span></div>
+                    <div class="activity-item__desc">
+                        ${game.isActive ? 'Active' : 'Inactive'} · 
+                        ${game.totalEvents} events · 
+                        ${game.totalActions} actions
+                        ${game.isVerified ? ' · ✓ Verified' : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    list.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════════
+
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notifications') || createNotificationContainer();
+    const notification = document.createElement('div');
+    notification.className = `notification notification--${type}`;
+    notification.innerHTML = `
+        <div class="notification__content">
+            <span class="notification__message">${message}</span>
+            <button class="notification__close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+    `;
+    container.appendChild(notification);
+    setTimeout(() => { if (notification.parentElement) notification.remove(); }, 5000);
+}
+
+function createNotificationContainer() {
+    const container = document.createElement('div');
+    container.id = 'notifications';
+    container.style.cssText = 'position:fixed;top:80px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px;';
+    document.body.appendChild(container);
+    return container;
 }
 
 // ══════════════════════════════════════════════
@@ -580,292 +1188,131 @@ function agentLog(message, type) {
 // ══════════════════════════════════════════════
 
 function shortAddr(addr) {
-  if (!addr) return '-';
-  return addr.slice(0, 6) + '..' + addr.slice(-4);
+    if (!addr) return '-';
+    return addr.slice(0, 6) + '...' + addr.slice(-4);
 }
 
 function parseError(err) {
-  if (err.reason) return err.reason;
-  if (err.data?.message) return err.data.message;
-  if (err.message) {
-    const match = err.message.match(/reason="([^"]+)"/);
-    if (match) return match[1];
-    return err.message.slice(0, 120);
-  }
-  return 'Unknown error';
+    if (err.reason) return err.reason;
+    if (err.data?.message) return err.data.message;
+    if (err.message) {
+        const match = err.message.match(/reason="([^"]+)"/);
+        if (match) return match[1];
+        return err.message.slice(0, 120);
+    }
+    return 'Unknown error';
+}
+
+function setButtonLoading(btn, loading, text) {
+    if (!btn) return;
+    if (loading) {
+        btn.disabled = true;
+        btn.dataset.originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="btn__spinner"></span> ' + text;
+    } else {
+        btn.disabled = false;
+        if (btn.dataset.originalText) {
+            btn.innerHTML = btn.dataset.originalText;
+        } else {
+            btn.innerHTML = text;
+        }
+    }
 }
 
 // ══════════════════════════════════════════════
-// LANDING PAGE EFFECTS (preserved from original)
+// GLOBAL FUNCTIONS
+// ══════════════════════════════════════════════
+
+window.updateTemplatePreview = updateTemplatePreview;
+window.registerGame = registerGame;
+window.addGameContract = addGameContract;
+window.removeGameContract = removeGameContract;
+window.showLanding = showLanding;
+window.showRegisterPage = showRegisterPage;
+window.showDashboard = showDashboard;
+window.scrollToSection = scrollToSection;
+window.detectPatterns = detectPatterns;
+window.generateSuggestions = generateSuggestions;
+window.markImplemented = markImplemented;
+window.loadMetrics = loadMetrics;
+window.recordMetric = recordMetric;
+window.toggleGameStatus = toggleGameStatus;
+window.viewGameDetails = viewGameDetails;
+
+// ══════════════════════════════════════════════
+// INITIALIZATION
 // ══════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded fired');
 
-  // ── Navbar scroll effect ──
-  const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
-    }
-  }, { passive: true });
+    // Connect wallet button
+    const connectBtn = document.getElementById('connectBtn');
+    if (connectBtn) connectBtn.addEventListener('click', connectWallet);
 
-  // ── Intersection Observer for fade-up animations ──
-  const fadeElements = document.querySelectorAll('.fade-up');
-  const fadeObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        fadeObserver.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-  fadeElements.forEach(el => fadeObserver.observe(el));
+    // Launch dashboard button
+    const launchBtn = document.getElementById('launchBtn');
+    if (launchBtn) launchBtn.addEventListener('click', () => showDashboard());
 
-  // ── Code tab switching ──
-  const codeTabs = document.querySelectorAll('.code-block__tab');
-  const codeSolidity = document.getElementById('code-solidity');
-  const codeJs = document.getElementById('code-js');
-
-  codeTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      codeTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const target = tab.dataset.tab;
-      if (target === 'solidity') {
-        codeSolidity.style.display = 'block';
-        codeJs.style.display = 'none';
-      } else {
-        codeSolidity.style.display = 'none';
-        codeJs.style.display = 'block';
-      }
-    });
-  });
-
-  // ── Copy button ──
-  const copyBtn = document.getElementById('copyBtn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
-      const activeCode = codeSolidity.style.display !== 'none' ? codeSolidity : codeJs;
-      navigator.clipboard.writeText(activeCode.textContent).then(() => {
-        copyBtn.textContent = '✓ copied';
-        setTimeout(() => { copyBtn.textContent = 'copy'; }, 2000);
-      });
-    });
-  }
-
-  // ── Block counter animation ──
-  const statBlocks = document.getElementById('statBlocks');
-  let blockCount = 18_247_391;
-  function updateBlocks() {
-    blockCount += Math.floor(Math.random() * 3) + 1;
-    if (statBlocks) statBlocks.textContent = blockCount.toLocaleString();
-  }
-  updateBlocks();
-  setInterval(updateBlocks, 800);
-
-  // ── TPS counter ──
-  const statTps = document.getElementById('statTps');
-  if (statTps) {
-    setInterval(() => {
-      const base = 1050000;
-      const variance = Math.floor(Math.random() * 5000) - 2500;
-      statTps.textContent = (base + variance).toLocaleString();
-    }, 3000);
-  }
-
-  // ── Smooth scroll ──
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', (e) => {
-      const href = anchor.getAttribute('href');
-      if (href.startsWith('#/')) {
-        return; // Let hashchange router handle it
-      }
-      e.preventDefault();
-      try {
-        const target = document.querySelector(href);
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (err) {
-        console.warn('Smooth scroll fallback failed:', err);
-      }
-    });
-  });
-
-  // ── Hash Router Event Listeners ──
-  window.addEventListener('hashchange', handleRouting);
-  // Trigger initial routing setup
-  handleRouting();
-
-  // ── Capability card tilt ──
-  document.querySelectorAll('.cap-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const rotateX = (y - rect.height / 2) / 20;
-      const rotateY = (rect.width / 2 - x) / 20;
-      card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-4px)';
-    });
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
-    });
-  });
-
-  // ── Sandbox Playground ──
-  const manifestToggle = document.getElementById('manifestToggle');
-  const manifestBody = document.getElementById('manifestBody');
-  if (manifestToggle && manifestBody) {
-    manifestToggle.addEventListener('click', () => {
-      manifestBody.classList.toggle('open');
-      const arrow = manifestToggle.querySelector('.arrow');
-      arrow.textContent = manifestBody.classList.contains('open') ? '▲' : '▼';
-    });
-  }
-
-  // Sandbox simulation (preserved)
-  const btnMove = document.getElementById('btnTrigMove');
-  const btnNPC = document.getElementById('btnTrigNPC');
-  const btnEpoch = document.getElementById('btnTrigEpoch');
-  const steps = ['stepEvent', 'stepAwake', 'stepInference', 'stepMint'].map(id => document.getElementById(id));
-  const terminalBody = document.getElementById('llmTerminalBody');
-  const nftContainer = document.getElementById('nftCardContainer');
-  let isSimulating = false;
-
-  function setStep(index) {
-    steps.forEach((step, i) => {
-      if (!step) return;
-      if (i < index) { step.classList.remove('active'); step.classList.add('done'); }
-      else if (i === index) { step.classList.add('active'); step.classList.remove('done'); }
-      else { step.classList.remove('active', 'done'); }
-    });
-  }
-
-  function updateStepText(type) {
-    if (!steps[0]) return;
-    if (type === 'epoch') {
-      steps[0].querySelector('span').textContent = 'Epoch Reached (Block #1000)';
-      steps[1].querySelector('span').textContent = 'Economy Controller Awakened';
-      steps[2].querySelector('span').textContent = 'Macro Analytics Active';
-      steps[3].querySelector('span').textContent = 'Policy Auto-Executed';
-    } else {
-      steps[0].querySelector('span').textContent = 'Event Emitted (Somnia L1)';
-      steps[1].querySelector('span').textContent = 'Oikono Awakened (Reactivity)';
-      steps[2].querySelector('span').textContent = 'LLM Inference Active';
-      steps[3].querySelector('span').textContent = 'Dynamic NFT Minted';
-    }
-  }
-
-  function termPrint(msg, type) {
-    if (!terminalBody) return;
-    const line = document.createElement('div');
-    line.className = 'terminal__line';
-    line.innerHTML = '<span class="terminal__prompt">▸</span><span class="terminal__' + (type || 'comment') + '">' + msg + '</span>';
-    terminalBody.appendChild(line);
-    terminalBody.scrollTop = terminalBody.scrollHeight;
-  }
-
-  function typeText(text, callback) {
-    if (!terminalBody) { if (callback) callback(); return; }
-    const line = document.createElement('div');
-    line.className = 'terminal__line';
-    line.innerHTML = '<span class="terminal__prompt">▸</span><span class="terminal__msg"></span>';
-    terminalBody.appendChild(line);
-    const span = line.querySelector('.terminal__msg');
-    let i = 0;
-    const interval = setInterval(() => {
-      span.textContent += text[i];
-      terminalBody.scrollTop = terminalBody.scrollHeight;
-      i++;
-      if (i >= text.length) { clearInterval(interval); if (callback) callback(); }
-    }, 15);
-  }
-
-  function generateNFTCard(data) {
-    return '<div class="nft-card">' +
-      '<div class="nft-card__header"><span class="nft-card__type">' + data.element + ' CLASS</span><span class="nft-card__id">#' + (Math.floor(Math.random() * 9000) + 1000) + '</span></div>' +
-      '<div class="nft-card__image"><div class="nft-card__image-glow"></div>' + data.icon + '</div>' +
-      '<div class="nft-card__title">' + data.name + '</div>' +
-      '<div class="nft-card__stats">' +
-        '<div class="stat-box"><div class="stat-box__label">POWER</div><div class="stat-box__val">' + data.power + '</div></div>' +
-        '<div class="stat-box"><div class="stat-box__label">SPEED</div><div class="stat-box__val">' + data.speed + '</div></div>' +
-        '<div class="stat-box"><div class="stat-box__label">INTEL</div><div class="stat-box__val">' + data.intel + '</div></div>' +
-        '<div class="stat-box"><div class="stat-box__label">RARITY</div><div class="stat-box__val">' + data.rarity + '</div></div>' +
-      '</div></div>';
-  }
-
-  function generatePolicyCard(data) {
-    return '<div class="policy-card nft-card">' +
-      '<div class="nft-card__header" style="justify-content:center"><span class="nft-card__type" style="background:rgba(6,182,212,0.2);border-color:#06b6d4;color:#06b6d4">L2 POLICY RESOLUTION</span></div>' +
-      '<div class="nft-card__title" style="text-align:center;margin-bottom:1rem;font-size:0.95rem">Epoch #1000 Adjustments</div>' +
-      '<div class="nft-card__stats" style="grid-template-columns:1fr">' +
-        '<div class="stat-box" style="display:flex;justify-content:space-between"><div class="stat-box__label">REWARD MULTIPLIER</div><div class="stat-box__val" style="color:#ef4444">' + data.multiplier + '</div></div>' +
-        '<div class="stat-box" style="display:flex;justify-content:space-between"><div class="stat-box__label">ENEMY POWER SCALING</div><div class="stat-box__val" style="color:#10b981">' + data.power + '</div></div>' +
-        '<div class="stat-box" style="display:flex;justify-content:space-between"><div class="stat-box__label">TOKEN BURN</div><div class="stat-box__val" style="color:#f59e0b">' + data.burn + '</div></div>' +
-        '<div class="stat-box" style="display:flex;justify-content:space-between"><div class="stat-box__label">MINTING COST</div><div class="stat-box__val" style="color:#a855f7">' + data.mintCost + '</div></div>' +
-      '</div>' +
-      '<div style="margin-top:1rem;font-family:monospace;font-size:0.65rem;color:#52525b;text-align:center">AUTO-EXECUTED ON-CHAIN</div></div>';
-  }
-
-  function runSimulation(type) {
-    if (isSimulating || !terminalBody || !nftContainer) return;
-    isSimulating = true;
-    [btnMove, btnNPC, btnEpoch].forEach(b => { if (b) b.disabled = true });
-    steps.forEach(s => { if (s) s.classList.remove('active', 'done'); });
-    updateStepText(type);
-    terminalBody.innerHTML = '';
-    nftContainer.innerHTML = '<div class="nft-placeholder">Processing on-chain...</div>';
-
-    let rawPayload, llmPrompt, llmOutput, resultData;
-    if (type === 'move') {
-      rawPayload = '0xa9059cbb000000000000000000000000e3d...';
-      llmPrompt = '[SYSTEM] Player(0xe3d...) entered coordinates (42, 88) Dark Forest.';
-      llmOutput = 'Analyzing zone: Dark Forest. Output: "Shadow Wraith", Element: Void, High Evasion.';
-      resultData = { name: "Shadow Wraith", element: "VOID", icon: "🌌", power: 78, speed: 92, intel: 45, rarity: "Epic" };
-    } else if (type === 'npc') {
-      rawPayload = '0x173a82f30000000000000000000000001b8...';
-      llmPrompt = '[SYSTEM] Player(0x1b8...) interacted with NPC #492. Tone: Hostile.';
-      llmOutput = 'Hostile tone detected. Output: "Obsidian Golem", Element: Earth, High Defense.';
-      resultData = { name: "Obsidian Golem", element: "EARTH", icon: "🗿", power: 95, speed: 12, intel: 20, rarity: "Legendary" };
-    } else {
-      rawPayload = '0x3b1c90f4000000000000000000000000000...';
-      llmPrompt = '[SYSTEM] L2 Epoch #1000. Circulation=1.2M STT, WinRate=68%.';
-      llmOutput = 'Win rate too easy. Policy: -15% rewards, +10% enemy power, burn 50k STT, +5% mint cost.';
-      resultData = { multiplier: "-15%", power: "+10%", burn: "50,000 STT", mintCost: "+5%" };
+    // Hero register button
+    const heroRegisterBtn = document.getElementById('heroRegisterBtn');
+    if (heroRegisterBtn) {
+        heroRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('heroRegisterBtn clicked');
+            showRegisterPage();
+        });
     }
 
-    setTimeout(() => { setStep(0); termPrint(type === 'epoch' ? 'Broadcasting L2 Epoch Trigger...' : 'Broadcasting L1 Event Payload...'); termPrint(rawPayload, 'msg'); }, 500);
-    setTimeout(() => { setStep(1); termPrint('Event caught. OIKONO Awakened.'); termPrint('Parsing ABI -> ' + llmPrompt, 'msg'); }, 2000);
-    setTimeout(() => {
-      setStep(2);
-      termPrint('Executing LLM Inference...');
-      typeText(llmOutput, () => {
-        setTimeout(() => {
-          setStep(3);
-          termPrint('Subcommittee consensus verified.');
-          termPrint(type === 'epoch' ? 'Executing Economy Policy...' : 'Minting Dynamic NFT...', 'msg');
-          setTimeout(() => {
-            setStep(4);
-            termPrint('Transaction Confirmed.');
-            nftContainer.innerHTML = type === 'epoch' ? generatePolicyCard(resultData) : generateNFTCard(resultData);
-            setTimeout(() => {
-              const card = nftContainer.querySelector('.nft-card');
-              if (card) card.classList.add('visible');
-              isSimulating = false;
-              [btnMove, btnNPC, btnEpoch].forEach(b => { if (b) b.disabled = false; });
-            }, 100);
-          }, 800);
-        }, 1000);
-      });
-    }, 3500);
-  }
+    // Hero how button
+    const heroHowBtn = document.getElementById('heroHowBtn');
+    if (heroHowBtn) {
+        heroHowBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const el = document.getElementById('how-it-works');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
 
-  if (btnMove) btnMove.addEventListener('click', () => runSimulation('move'));
-  if (btnNPC) btnNPC.addEventListener('click', () => runSimulation('npc'));
-  if (btnEpoch) btnEpoch.addEventListener('click', () => runSimulation('epoch'));
+    // Back to home button
+    const backBtn = document.querySelector('.dashboard__actions .btn');
+    if (backBtn) backBtn.addEventListener('click', showLanding);
 
-  // ── Console branding ──
-  console.log('%c[SYS] OIKONO Agent Interface Loaded', 'color: #a855f7; font-size: 14px; font-weight: bold;');
-  console.log('%c[SYS] Reactive pipeline: ONLINE', 'color: #10b981; font-size: 11px;');
-  console.log('%c[SYS] Somnia Testnet (Chain ID: 50312)', 'color: #8b949e; font-size: 11px;');
+    // Sidebar navigation
+    document.querySelectorAll('.sidebar__link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = link.dataset.view;
+            switchView(view);
+        });
+    });
+
+    // Register form - button onclick handles registration
+    // No form submit listener needed
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+            const href = anchor.getAttribute('href');
+            if (href.length > 1 && !href.startsWith('#/')) {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // Handle routing on page load
+    handleRoute();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleRoute);
+
+    // Check if already connected
+    if (window.ethereum) {
+        window.ethereum.request({ method: 'eth_accounts' })
+            .then(accounts => {
+                if (accounts.length > 0) connectWallet();
+            });
+    }
 });

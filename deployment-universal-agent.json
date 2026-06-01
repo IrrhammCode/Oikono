@@ -1,0 +1,54 @@
+{
+  "network": "Somnia Testnet",
+  "chainId": 50312,
+  "deployer": "0xe255990F02E12b1Ec96Dd80bA6270bA24DDF86C6",
+  "timestamp": "2026-06-01T04:27:57.447Z",
+  "agent": {
+    "OikonoAgent": "0x8292B838ce0C0eB2303e4eE3e8dc256eD8d39E74",
+    "AgentRuntime": "0x42D284771C77bBAbC487a029e081b5504bCA41CA",
+    "AgentMemory": "0x9798995ad174dc01Bd1C6f7177e7EE220937b098",
+    "GameKnowledgeBase": "0x2038D5f321Cd8A9eC2cAbf9CC61Ce77d982585C6",
+    "AgentRegistry": "0x9E3eB05a2131472F457Ab951D404Aa737E4e6FeC",
+    "AgentVault": "0x232A33D72A88836db88DEE4b8f06e379eBC43f7a",
+    "GameRegistry": "0xb1194F6d4245829FAeb9878dfBD8cE2D629B41D5"
+  },
+  "registry": {
+    "GameRegistryBase": "0xb8a9099A12FB05854643844eeDB74C71E295E786",
+    "GameContractManager": "0x0c5502404dc10968a03e4d6B2773Cfc71A490579",
+    "GameTypeManager": "0x20c3dc3eA21bdd79C087775dD23b38290962C7B6",
+    "GameRegistryV2": "0xDcDD689932DD7026C1cDC723F6E49A17953b332f"
+  },
+  "metrics": {
+    "MetricsRegistry": "0xd43e055198f9eeca623249CB7115Ba90537AE6C5",
+    "PatternDetector": "0x3288A2545Df449E1565506a059635b920dfa2E57",
+    "SuggestionEngine": "0x261857a7aC8cB48A40069863774b7ff99EEBF0a2",
+    "GameTypeTemplates": "0xbDdBB6017F3d9238294c45ad8754814d50E27ca4"
+  },
+  "llm": {
+    "LLMInvoker": "0xdA11A6Cc18bA511F0265283d5082adf85C20e69D"
+  },
+  "plugins": {
+    "SpawnPlugin": "0x1362B3a42B7d1d1382f02b597b4f1aeB992547f0",
+    "EconomyPlugin": "0x24D14B259Ac93283e29d4E3536c7fe03aaA0Ae12",
+    "NarrativePlugin": "0xdAAbc5d9Bb026F83D54E9E08F235205a7e5331C1",
+    "BalancePlugin": "0xC8341A97371Cf58B3e57f815B392c9267F7e7C85"
+  },
+  "game": {
+    "SimpleRPG": "0x0000000000000000000000000000000000000000",
+    "SimpleStrategy": "0x0000000000000000000000000000000000000000",
+    "PlayerRegistry": "0x11ec0E392b455212347D44b3B383C7D6B71571bB",
+    "EnemyNFT": "0xdC42BEe9FcFB056eaB5A6654Bd86B3FD8aEdeEdf",
+    "GameMaster": "0x2A59DE2fe88C0cDB36687f0C8056f132D0FE5c42",
+    "BattleArena": "0x3b4D12cCcb9d72Ae40551bc3A3f0eb93ae916683",
+    "RewardDistributor": "0xD151BFc16B340E98A56E03B0663Bda6904F24996"
+  },
+  "economy": {
+    "OIKToken": "0x265661d7D4df3bdE1F374086CA5e2D23cf37Beb9",
+    "EconomyParams": "0xca43CAaaBAF7167A204eb8E97b60a7B93baBE2d5",
+    "Treasury": "0x1cD055B1159bD6C4d1098e5Bb7b70c44aA0aeF3c"
+  },
+  "utils": {
+    "CircuitBreaker": "0xa4176d4Eeee28fa3a3c0efA2678Fbaff053975aD",
+    "AntiSybil": "0x6ed39eF55C2408749a2b11ECE8a87D993332C4C4"
+  }
+}

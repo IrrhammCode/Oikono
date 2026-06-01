@@ -9,7 +9,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Prevents bot farming, movement spam, and flash loan exploitation
  */
 contract AntiSybil is Ownable {
-    constructor(address initialOwner) Ownable(initialOwner) {}
+    // Authorized callers (game contracts)
+    mapping(address => bool) public authorizedCallers;
+
+    constructor(address initialOwner) Ownable(initialOwner) {
+        authorizedCallers[initialOwner] = true;
+    }
+
+    function setAuthorizedCaller(address caller, bool authorized) external onlyOwner {
+        authorizedCallers[caller] = authorized;
+    }
+
+    modifier onlyAuthorized() {
+        require(authorizedCallers[msg.sender] || msg.sender == owner(), "Not authorized");
+        _;
+    }
     // Cooldowns
     uint256 public constant MOVE_COOLDOWN = 30;
     uint256 public constant BATTLE_COOLDOWN = 60;
@@ -50,7 +64,7 @@ contract AntiSybil is Ownable {
     /**
      * @notice Record player movement
      */
-    function recordMove(address player) external {
+    function recordMove(address player) external onlyAuthorized {
         require(
             block.timestamp >= lastMoveTime[player] + MOVE_COOLDOWN,
             "Move cooldown active"
@@ -68,7 +82,7 @@ contract AntiSybil is Ownable {
     /**
      * @notice Record battle
      */
-    function recordBattle(address player, address opponent) external {
+    function recordBattle(address player, address opponent) external onlyAuthorized {
         require(
             block.timestamp >= lastBattleTime[player] + BATTLE_COOLDOWN,
             "Battle cooldown active"
@@ -99,7 +113,7 @@ contract AntiSybil is Ownable {
     /**
      * @notice Record reward earned (for transfer cooldown)
      */
-    function recordRewardEarned(address player) external {
+    function recordRewardEarned(address player) external onlyAuthorized {
         rewardEarnedAt[player] = block.number;
     }
 
@@ -125,7 +139,7 @@ contract AntiSybil is Ownable {
     /**
      * @notice Record stake
      */
-    function recordStake(address player, uint256 amount) external {
+    function recordStake(address player, uint256 amount) external onlyAuthorized {
         require(amount >= MIN_STAKE, "Below minimum stake");
         stakedAmount[player] += amount;
         emit Staked(player, amount);
@@ -134,7 +148,7 @@ contract AntiSybil is Ownable {
     /**
      * @notice Record unstake
      */
-    function recordUnstake(address player, uint256 amount) external {
+    function recordUnstake(address player, uint256 amount) external onlyAuthorized {
         require(stakedAmount[player] >= amount, "Insufficient stake");
         stakedAmount[player] -= amount;
         emit Unstaked(player, amount);
