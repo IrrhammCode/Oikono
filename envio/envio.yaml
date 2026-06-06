@@ -10,7 +10,7 @@ networks:
     start_block: 0
     contracts:
       - name: MetricsRegistry
-        address: "0x05fF035dc85f6b33D08af7ce202efaD245C8eE85"
+        address: "0x5F447735f4A7DEc10F1dA55cbf05688D4A2bD808"
         handler: src/handlers
         events:
           - event: MetricDefined(uint256 indexed gameId, string metricName, string dataType, string source)
@@ -19,14 +19,14 @@ networks:
             name: MetricRecorded
 
       - name: PatternDetector
-        address: "0xB0dE1515787cB8809D4bAfecaA8523CC943F71eE"
+        address: "0x655Cd724318C38284B984A7629EFe05dE57F29eD"
         handler: src/handlers
         events:
           - event: PatternDetected(uint256 indexed gameId, uint256 indexed patternId, string patternType, string description, uint256 severity)
             name: PatternDetected
 
       - name: SuggestionEngine
-        address: "0xF2162A45c05cEB6db4CE8b2Bf3B576b328269a8B"
+        address: "0xe43c42e639170e5c88c2Ae242330473cf5745f8c"
         handler: src/handlers
         events:
           - event: SuggestionCreated(uint256 indexed gameId, uint256 indexed suggestionId, string category, string priority, string description)
@@ -35,14 +35,14 @@ networks:
             name: SuggestionImplemented
 
       - name: GameRegistry
-        address: "0xce4a2319855968E0Bd6E1826f7A8a08e24a34f53"
+        address: "0x6eB1d23419629901F78947B1207024f7F28380a6"
         handler: src/handlers
         events:
           - event: GameRegistered(uint256 indexed gameId, address indexed gameAddress, address indexed owner, string name, string gameType)
             name: GameRegistered
 
       - name: OikonoAgent
-        address: "0x8B32e8C3Be192d37C79fAF14BEf0dbE6452153B2"
+        address: "0x586e9ACF26D76A1aD52054b3EF3e9c72A9917b05"
         handler: src/handlers
         events:
           - event: DecisionRequested(uint256 indexed decisionId, address indexed game, string decisionType, string promptSummary)

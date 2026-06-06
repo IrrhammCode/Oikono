@@ -8,6 +8,7 @@
     "deploy:testnet": "hardhat run scripts/deploy.js --network somnia_testnet",
     "deploy:local": "hardhat run scripts/deploy.js --network localhost",
     "deploy:agent": "hardhat run scripts/deploy-universal-agent.js --network somnia_testnet",
+    "verify": "hardhat run scripts/verify.js --network somnia_testnet",
     "dev": "python3 -m http.server 9090 --directory frontend"
   },
   "devDependencies": {

@@ -20,7 +20,7 @@ WITH games AS (
         VARBINARY_TO_STRING(SUBSTRING(data, 65, 32)) AS name,
         VARBINARY_TO_STRING(SUBSTRING(data, 129, 32)) AS game_type
     FROM ethereum.somnia_testnet.logs
-    WHERE contract_address = 0xce4a2319855968E0Bd6E1826f7A8a08e24a34f53  -- GameRegistry
+    WHERE contract_address = 0x6eB1d23419629901F78947B1207024f7F28380a6  -- GameRegistry
         AND topic0 = 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef  -- Replace with actual event signature
 )
 
