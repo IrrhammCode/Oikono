@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OIKONO — Data-Driven Game Economy Agent</title>
+    <title>OIKONO — Autonomous Game Economy Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
     <!-- Particle Background -->
@@ -17,18 +17,18 @@
     <nav class="nav">
         <div class="nav__inner">
             <a href="#" class="nav__brand">
-                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="36" height="36">
+                <img src="logo_premium_transparent.png" alt="OIKONO" class="nav__logo-image" width="36" height="36">
                 <span class="nav__name">OIKONO</span>
             </a>
             <div class="nav__links">
                 <a href="#features" class="nav__link">Features</a>
                 <a href="#how-it-works" class="nav__link">How It Works</a>
                 <a href="#game-types" class="nav__link">Game Types</a>
-                <a href="#developers" class="nav__link">Developers</a>
+                <a href="#stats" class="nav__link">Stats</a>
             </div>
             <div class="nav__actions">
                 <button class="btn btn--ghost" id="connectBtn">Connect Wallet</button>
-                <button class="btn btn--primary" id="launchBtn" style="display:none">Launch Dashboard</button>
+                <button class="btn btn--primary" id="launchBtn" style="display:none">Dashboard</button>
             </div>
         </div>
     </nav>
@@ -36,18 +36,13 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero__bg"></div>
-
-        <!-- 3D Floating Shapes -->
         <div class="hero__shapes">
             <div class="shape shape--cube"></div>
             <div class="shape shape--sphere"></div>
             <div class="shape shape--hexagon"></div>
             <div class="shape shape--diamond"></div>
             <div class="shape shape--ring"></div>
-            <div class="shape shape--dot"></div>
-            <div class="shape shape--dot2"></div>
         </div>
-
         <div class="container">
             <div class="hero__content reveal">
                 <div class="hero__badge">Data-Driven Intelligence</div>
@@ -79,8 +74,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Scroll Indicator -->
         <div class="scroll-indicator">
             <div class="scroll-indicator__mouse">
                 <div class="scroll-indicator__wheel"></div>
@@ -130,7 +123,7 @@
         </div>
     </section>
 
-    <!-- How It Works Section (Timeline) -->
+    <!-- How It Works Section -->
     <section class="section section--dark" id="how-it-works">
         <div class="container">
             <div class="section__header reveal">
@@ -141,25 +134,25 @@
             <div class="timeline">
                 <div class="timeline-step reveal">
                     <div class="timeline-step__dot"></div>
-                    <div class="timeline-step__number">Step 01</div>
+                    <div class="timeline-step__number">01</div>
                     <h3 class="timeline-step__title">Define Metrics</h3>
                     <p class="timeline-step__desc">Choose a game type template or define custom metrics. Set healthy ranges and alert thresholds.</p>
                 </div>
                 <div class="timeline-step reveal">
                     <div class="timeline-step__dot"></div>
-                    <div class="timeline-step__number">Step 02</div>
+                    <div class="timeline-step__number">02</div>
                     <h3 class="timeline-step__title">Collect Data</h3>
                     <p class="timeline-step__desc">System automatically collects on-chain data. You report off-chain metrics for comprehensive tracking.</p>
                 </div>
                 <div class="timeline-step reveal">
                     <div class="timeline-step__dot"></div>
-                    <div class="timeline-step__number">Step 03</div>
+                    <div class="timeline-step__number">03</div>
                     <h3 class="timeline-step__title">Detect Patterns</h3>
                     <p class="timeline-step__desc">AI analyzes data for anomalies, trends, and correlations. Patterns surface automatically.</p>
                 </div>
                 <div class="timeline-step reveal">
                     <div class="timeline-step__dot"></div>
-                    <div class="timeline-step__number">Step 04</div>
+                    <div class="timeline-step__number">04</div>
                     <h3 class="timeline-step__title">Get Suggestions</h3>
                     <p class="timeline-step__desc">Receive actionable suggestions with confidence levels. Track implementation outcomes.</p>
                 </div>
@@ -170,22 +163,22 @@
     <!-- Stats Section -->
     <section class="section" id="stats">
         <div class="container">
-            <div class="stats-section__grid">
-                <div class="stats-section__card reveal stagger-1">
-                    <div class="stats-section__value" data-count="10">0</div>
-                    <div class="stats-section__label">Game Types</div>
+            <div class="stats__grid">
+                <div class="stats__card reveal stagger-1">
+                    <div class="stats__value" data-count="10">0</div>
+                    <div class="stats__label">Game Types</div>
                 </div>
-                <div class="stats-section__card reveal stagger-2">
-                    <div class="stats-section__value" data-count="60" data-suffix="+">0</div>
-                    <div class="stats-section__label">Metrics Tracked</div>
+                <div class="stats__card reveal stagger-2">
+                    <div class="stats__value" data-count="60" data-suffix="+">0</div>
+                    <div class="stats__label">Metrics Tracked</div>
                 </div>
-                <div class="stats-section__card reveal stagger-3">
-                    <div class="stats-section__value" data-count="30" data-suffix="+">0</div>
-                    <div class="stats-section__label">Detection Rules</div>
+                <div class="stats__card reveal stagger-3">
+                    <div class="stats__value" data-count="30" data-suffix="+">0</div>
+                    <div class="stats__label">Detection Rules</div>
                 </div>
-                <div class="stats-section__card reveal stagger-4">
-                    <div class="stats-section__value" data-count="24" data-suffix="/7">0</div>
-                    <div class="stats-section__label">Monitoring</div>
+                <div class="stats__card reveal stagger-4">
+                    <div class="stats__value" data-count="24" data-suffix="/7">0</div>
+                    <div class="stats__label">Monitoring</div>
                 </div>
             </div>
         </div>
@@ -201,7 +194,7 @@
             </div>
             <div class="game-types__tabs reveal">
                 <button class="game-types__tab active" data-tab="rpg">RPG</button>
-                <button class="game-types__tab" data-tab="card">Card Game</button>
+                <button class="game-types__tab" data-tab="card">Card</button>
                 <button class="game-types__tab" data-tab="pvp">PvP</button>
                 <button class="game-types__tab" data-tab="strategy">Strategy</button>
                 <button class="game-types__tab" data-tab="idle">Idle</button>
@@ -209,654 +202,76 @@
             </div>
             <div class="game-types__content reveal">
                 <div class="game-type-panel active" id="tab-rpg">
-                    <div class="game-type-panel__icon">⚔️</div>
+                    <div class="game-type-panel__icon">&#9876;&#65039;</div>
                     <h3 class="game-type-panel__title">Role-Playing Games</h3>
-                    <p class="game-type-panel__desc">Track player progression, economy balance, and engagement metrics. Monitor win rates, token velocity, and retention curves.</p>
+                    <p class="game-type-panel__desc">Track player progression, economy balance, and engagement metrics.</p>
                     <div class="game-type-panel__metrics">
-                        <div class="game-type-panel__metric">win_rate</div>
-                        <div class="game-type-panel__metric">token_velocity</div>
-                        <div class="game-type-panel__metric">gold_inflation</div>
-                        <div class="game-type-panel__metric">retention_d7</div>
+                        <span class="game-type-panel__metric">win_rate</span>
+                        <span class="game-type-panel__metric">token_velocity</span>
+                        <span class="game-type-panel__metric">gold_inflation</span>
+                        <span class="game-type-panel__metric">retention_d7</span>
                     </div>
                 </div>
                 <div class="game-type-panel" id="tab-card">
-                    <div class="game-type-panel__icon">🃏</div>
+                    <div class="game-type-panel__icon">&#127183;&#65039;</div>
                     <h3 class="game-type-panel__title">Card Games</h3>
-                    <p class="game-type-panel__desc">Monitor pack expected value, meta diversity, and collection rates. Ensure healthy card economy and balanced meta.</p>
+                    <p class="game-type-panel__desc">Monitor pack expected value, meta diversity, and collection rates.</p>
                     <div class="game-type-panel__metrics">
-                        <div class="game-type-panel__metric">pack_ev</div>
-                        <div class="game-type-panel__metric">meta_diversity</div>
-                        <div class="game-type-panel__metric">collection_rate</div>
+                        <span class="game-type-panel__metric">pack_ev</span>
+                        <span class="game-type-panel__metric">meta_diversity</span>
+                        <span class="game-type-panel__metric">collection_rate</span>
                     </div>
                 </div>
                 <div class="game-type-panel" id="tab-pvp">
-                    <div class="game-type-panel__icon">🏟️</div>
+                    <div class="game-type-panel__icon">&#127942;</div>
                     <h3 class="game-type-panel__title">PvP Games</h3>
-                    <p class="game-type-panel__desc">Track matchmaking quality, queue times, and competitive balance. Ensure fair and engaging competitive experience.</p>
+                    <p class="game-type-panel__desc">Track matchmaking quality, queue times, and competitive balance.</p>
                     <div class="game-type-panel__metrics">
-                        <div class="game-type-panel__metric">queue_time</div>
-                        <div class="game-type-panel__metric">match_balance</div>
+                        <span class="game-type-panel__metric">queue_time</span>
+                        <span class="game-type-panel__metric">match_balance</span>
                     </div>
                 </div>
                 <div class="game-type-panel" id="tab-strategy">
-                    <div class="game-type-panel__icon">🏰</div>
+                    <div class="game-type-panel__icon">&#127963;</div>
                     <h3 class="game-type-panel__title">Strategy Games</h3>
-                    <p class="game-type-panel__desc">Monitor resource economy, build times, and faction balance. Track long-term engagement and progression curves.</p>
+                    <p class="game-type-panel__desc">Monitor resource economy, build times, and faction balance.</p>
                     <div class="game-type-panel__metrics">
-                        <div class="game-type-panel__metric">resource_balance</div>
-                        <div class="game-type-panel__metric">faction_win_rate</div>
-                        <div class="game-type-panel__metric">avg_game_length</div>
+                        <span class="game-type-panel__metric">resource_balance</span>
+                        <span class="game-type-panel__metric">faction_win_rate</span>
+                        <span class="game-type-panel__metric">avg_game_length</span>
                     </div>
                 </div>
                 <div class="game-type-panel" id="tab-idle">
-                    <div class="game-type-panel__icon">⏰</div>
-                    <h3 class="game-type-panel__title">Idle / Clicker</h3>
-                    <p class="game-type-panel__desc">Track progression speed, prestige rates, and monetization health. Balance idle rewards with active engagement.</p>
+                    <div class="game-type-panel__icon">&#9200;</div>
+                    <h3 class="game-type-panel__title">Idle Games</h3>
+                    <p class="game-type-panel__desc">Track income rates, upgrade frequency, and session patterns.</p>
                     <div class="game-type-panel__metrics">
-                        <div class="game-type-panel__metric">progression_speed</div>
-                        <div class="game-type-panel__metric">prestige_rate</div>
-                        <div class="game-type-panel__metric">session_frequency</div>
+                        <span class="game-type-panel__metric">income_per_hour</span>
+                        <span class="game-type-panel__metric">upgrade_frequency</span>
+                        <span class="game-type-panel__metric">session_length</span>
                     </div>
                 </div>
                 <div class="game-type-panel" id="tab-defi">
-                    <div class="game-type-panel__icon">💎</div>
-                    <h3 class="game-type-panel__title">DeFi / GameFi</h3>
-                    <p class="game-type-panel__desc">Monitor TVL, yield sustainability, and token economics. Track player earnings vs protocol health.</p>
+                    <div class="game-type-panel__icon">&#128176;</div>
+                    <h3 class="game-type-panel__title">DeFi Games</h3>
+                    <p class="game-type-panel__desc">Monitor APY, TVL, liquidity depth, and deposit/withdraw ratios.</p>
                     <div class="game-type-panel__metrics">
-                        <div class="game-type-panel__metric">tvl_ratio</div>
-                        <div class="game-type-panel__metric">yield_sustainability</div>
-                        <div class="game-type-panel__metric">earn_to_play_ratio</div>
+                        <span class="game-type-panel__metric">apy</span>
+                        <span class="game-type-panel__metric">tvl</span>
+                        <span class="game-type-panel__metric">liquidity_depth</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Registration Section -->
-    <section class="section" id="developers" style="display:none">
+    <!-- CTA Section -->
+    <section class="section" id="cta">
         <div class="container">
-            <div class="section__header">
-                <div class="section__label">For Developers</div>
-                <h2 class="section__title">Register Your Game</h2>
-                <p class="section__desc">Choose a game type template or define custom metrics.</p>
-                <button class="btn btn--ghost" onclick="showLanding()" style="margin-top: 1rem;">← Back to Home</button>
-            </div>
-            <div class="register-form">
-                <div class="register-form__card">
-                    <div class="register-form__header">
-                        <h3>Game Registration</h3>
-                        <span class="badge badge--testnet">Somnia Testnet</span>
-                    </div>
-                    <form id="registerForm" class="register-form__body">
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 1.5">
-                                <label class="form-label">Game Name</label>
-                                <input type="text" class="form-input" id="gameName" placeholder="My Awesome Game" required>
-                            </div>
-                            <div class="form-group" style="flex: 1">
-                                <label class="form-label">Game Type</label>
-                                <select class="form-input" id="gameType" required onchange="updateTemplatePreview()">
-                                    <option value="">Select type...</option>
-                                    <option value="rpg">RPG</option>
-                                    <option value="card">Card Game</option>
-                                    <option value="strategy">Strategy</option>
-                                    <option value="pvp">PvP</option>
-                                    <option value="simulation">Simulation</option>
-                                    <option value="puzzle">Puzzle</option>
-                                    <option value="racing">Racing</option>
-                                    <option value="idle">Idle/Clicker</option>
-                                    <option value="sandbox">Sandbox</option>
-                                    <option value="defi">DeFi/GameFi</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 1.5">
-                                <label class="form-label">Description</label>
-                                <input type="text" class="form-input" id="gameDesc" placeholder="Brief description...">
-                            </div>
-                            <div class="form-group" style="flex: 1">
-                                <label class="form-label">Website <span class="form-optional">(optional)</span></label>
-                                <input type="text" class="form-input" id="gameWebsite" placeholder="https://mygame.com">
-                            </div>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Primary Game Contract</h4>
-                        <p class="form-section-desc">The main game contract address (required for reactivity)</p>
-
-                        <div class="form-group">
-                            <label class="form-label">Game Contract Address <span style="color:var(--accent-danger)">*</span></label>
-                            <input type="text" class="form-input" id="primaryGameAddress" placeholder="0x..." required>
-                            <span class="form-hint">This is the main contract your game runs on. Required for on-chain reactivity.</span>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Additional Contracts</h4>
-                        <p class="form-section-desc">Add more game contracts (token, NFT, marketplace, etc.)</p>
-
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2">
-                                <label class="form-label">Contract Address</label>
-                                <input type="text" class="form-input" id="contractAddress" placeholder="0x...">
-                            </div>
-                            <div class="form-group" style="flex: 1">
-                                <label class="form-label">Role</label>
-                                <select class="form-input" id="contractRole">
-                                    <option value="token">Token</option>
-                                    <option value="nft">NFT</option>
-                                    <option value="marketplace">Marketplace</option>
-                                    <option value="staking">Staking</option>
-                                    <option value="game_logic">Game Logic</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="flex: 0; align-self: flex-end">
-                                <button type="button" class="btn btn--ghost btn--sm" onclick="addGameContract()" style="height: 38px; min-width: 60px; padding: 0 var(--space-4)">Add</button>
-                            </div>
-                        </div>
-
-                        <div id="contractList" class="contract-list">
-                            <p class="form-hint">No contracts added yet</p>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Economy Goals</h4>
-                        <p class="form-section-desc">What do you want to achieve with your game economy?</p>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Target Win Rate</label>
-                                <div class="form-range">
-                                    <input type="range" id="targetWinRate" min="30" max="80" value="55" oninput="updateRangeDisplay(this, 'winRateDisplay')">
-                                    <span id="winRateDisplay" class="form-range__value">55%</span>
-                                </div>
-                                <span class="form-hint">Ideal: 45-65% for RPG, 50-60% for PvP</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Target D7 Retention</label>
-                                <div class="form-range">
-                                    <input type="range" id="targetRetention" min="10" max="60" value="30" oninput="updateRangeDisplay(this, 'retentionDisplay')">
-                                    <span id="retentionDisplay" class="form-range__value">30%</span>
-                                </div>
-                                <span class="form-hint">Industry average: 20-40%</span>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Inflation Tolerance</label>
-                                <select class="form-input" id="inflationTolerance">
-                                    <option value="low">Low (0-2%/day)</option>
-                                    <option value="medium" selected>Medium (2-5%/day)</option>
-                                    <option value="high">High (5-10%/day)</option>
-                                </select>
-                                <span class="form-hint">How much token inflation is acceptable?</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Economy Style</label>
-                                <select class="form-input" id="economyStyle">
-                                    <option value="deflationary">Deflationary (burn > mint)</option>
-                                    <option value="balanced" selected>Balanced (burn ≈ mint)</option>
-                                    <option value="inflationary">Inflationary (mint > burn)</option>
-                                </select>
-                                <span class="form-hint">Overall token economy direction</span>
-                            </div>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Agent Permissions</h4>
-                        <p class="form-section-desc">What can the AI agent do for your game?</p>
-
-                        <div class="form-checks">
-                            <label class="form-check">
-                                <input type="checkbox" id="permSpawn" checked>
-                                <span class="form-check__label">Spawn Entities</span>
-                                <span class="form-check__desc">Generate enemies, NPCs, items based on player behavior</span>
-                            </label>
-                            <label class="form-check">
-                                <input type="checkbox" id="permEconomy" checked>
-                                <span class="form-check__label">Adjust Economy</span>
-                                <span class="form-check__desc">Modify rewards, burn rates, token distribution</span>
-                            </label>
-                            <label class="form-check">
-                                <input type="checkbox" id="permNarrative">
-                                <span class="form-check__label">Generate Narrative</span>
-                                <span class="form-check__desc">Create quests, dialogues, story events</span>
-                            </label>
-                            <label class="form-check">
-                                <input type="checkbox" id="permDifficulty" checked>
-                                <span class="form-check__label">Adjust Difficulty</span>
-                                <span class="form-check__desc">Balance game difficulty based on player performance</span>
-                            </label>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Max Change Per Epoch</label>
-                                <div class="form-range">
-                                    <input type="range" id="maxChange" min="5" max="50" value="20" oninput="updateRangeDisplay(this, 'maxChangeDisplay')">
-                                    <span id="maxChangeDisplay" class="form-range__value">20%</span>
-                                </div>
-                                <span class="form-hint">Maximum percentage the agent can change per adjustment cycle</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Epoch Length (blocks)</label>
-                                <input type="number" class="form-input" id="epochLength" placeholder="e.g., 6500" value="6500" min="1">
-                                <span class="form-hint">Number of blocks per epoch (~1 hour at 550ms/block on Somnia)</span>
-                            </div>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Alert Thresholds</h4>
-                        <p class="form-section-desc">When should the agent alert you?</p>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Win Rate Alert</label>
-                                <div class="form-row" style="gap: 8px">
-                                    <input type="number" class="form-input" id="winRateLow" placeholder="40" value="40" style="width: 80px">
-                                    <span class="form-hint" style="align-self: center">to</span>
-                                    <input type="number" class="form-input" id="winRateHigh" placeholder="70" value="70" style="width: 80px">
-                                    <span class="form-hint" style="align-self: center">%</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Token Velocity Alert</label>
-                                <input type="number" class="form-input" id="velocityAlert" placeholder="50000" value="50000">
-                                <span class="form-hint">Alert if velocity exceeds this value</span>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Retention Drop Alert</label>
-                                <div class="form-range">
-                                    <input type="range" id="retentionDrop" min="5" max="50" value="15" oninput="updateRangeDisplay(this, 'retentionDropDisplay')">
-                                    <span id="retentionDropDisplay" class="form-range__value">15%</span>
-                                </div>
-                                <span class="form-hint">Alert if retention drops by this percentage</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Inflation Alert</label>
-                                <div class="form-range">
-                                    <input type="range" id="inflationAlert" min="1" max="20" value="10" oninput="updateRangeDisplay(this, 'inflationAlertDisplay')">
-                                    <span id="inflationAlertDisplay" class="form-range__value">10%</span>
-                                </div>
-                                <span class="form-hint">Alert if daily inflation exceeds this</span>
-                            </div>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Token Economics</h4>
-                        <p class="form-section-desc">Tell us about your game's token model</p>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Token Name</label>
-                                <input type="text" class="form-input" id="tokenName" placeholder="e.g., Gold, OIK, Gems">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Token Symbol</label>
-                                <input type="text" class="form-input" id="tokenSymbol" placeholder="e.g., OIK, GOLD">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Total Supply</label>
-                                <input type="text" class="form-input" id="totalSupply" placeholder="1,500,000,000">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Circulating Supply</label>
-                                <input type="text" class="form-input" id="circSupply" placeholder="420,000,000">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Token Utility</label>
-                            <select class="form-input" id="tokenUtility">
-                                <option value="currency">Currency (in-game money)</option>
-                                <option value="governance">Governance (voting rights)</option>
-                                <option value="utility">Utility (access features)</option>
-                                <option value="reward">Reward (earn by playing)</option>
-                                <option value="mixed" selected>Mixed (multiple uses)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Main Token Sinks <span class="form-optional">(where tokens are burned)</span></label>
-                            <div class="form-checks form-checks--compact">
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="sinkEntry" checked>
-                                    <span class="form-check__label">Entry fees</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="sinkCraft" checked>
-                                    <span class="form-check__label">Crafting/Upgrading</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="sinkMarket" checked>
-                                    <span class="form-check__label">Marketplace fees</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="sinkStaking">
-                                    <span class="form-check__label">Staking</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="sinkCosmetic">
-                                    <span class="form-check__label">Cosmetics</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Main Token Sources <span class="form-optional">(where tokens are minted)</span></label>
-                            <div class="form-checks form-checks--compact">
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="srcBattle" checked>
-                                    <span class="form-check__label">Battle rewards</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="srcQuest" checked>
-                                    <span class="form-check__label">Quest rewards</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="srcStaking">
-                                    <span class="form-check__label">Staking yields</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="srcAirdrop">
-                                    <span class="form-check__label">Airdrops</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Player Economics</h4>
-                        <p class="form-section-desc">How do players interact with your economy?</p>
-
-                        <div class="form-group">
-                            <label class="form-label">Entry Model</label>
-                            <div class="form-radio-group">
-                                <label class="form-radio">
-                                    <input type="radio" name="entryModel" value="free" checked>
-                                    <span class="form-radio__label">Free to Play</span>
-                                    <span class="form-radio__desc">No cost to start</span>
-                                </label>
-                                <label class="form-radio">
-                                    <input type="radio" name="entryModel" value="freemium">
-                                    <span class="form-radio__label">Freemium</span>
-                                    <span class="form-radio__desc">Free with optional purchases</span>
-                                </label>
-                                <label class="form-radio">
-                                    <input type="radio" name="entryModel" value="paid">
-                                    <span class="form-radio__label">Paid Entry</span>
-                                    <span class="form-radio__desc">Requires purchase to play</span>
-                                </label>
-                                <label class="form-radio">
-                                    <input type="radio" name="entryModel" value="subscription">
-                                    <span class="form-radio__label">Subscription</span>
-                                    <span class="form-radio__desc">Monthly/annual fee</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Player Segments</label>
-                            <div class="form-checks form-checks--compact">
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="segCasual" checked>
-                                    <span class="form-check__label">Casual players</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="segHardcore" checked>
-                                    <span class="form-check__label">Hardcore players</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="segWhale">
-                                    <span class="form-check__label">Whales (big spenders)</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="segTrader">
-                                    <span class="form-check__label">Traders</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Integration Settings</h4>
-                        <p class="form-section-desc">How should the agent work with your game?</p>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Agent Check Frequency</label>
-                                <select class="form-input" id="checkFrequency">
-                                    <option value="realtime">Real-time (every block)</option>
-                                    <option value="hourly" selected>Hourly</option>
-                                    <option value="daily">Daily</option>
-                                    <option value="weekly">Weekly</option>
-                                </select>
-                                <span class="form-hint">How often should the agent analyze your game?</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Autonomy Level</label>
-                                <select class="form-input" id="autonomyLevel">
-                                    <option value="suggest">Suggest Only</option>
-                                    <option value="semi-auto" selected>Semi-Auto</option>
-                                    <option value="full-auto">Full Auto</option>
-                                </select>
-                                <span class="form-hint">How much control should the agent have?</span>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Notification Preferences</label>
-                            <div class="form-checks form-checks--compact">
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="notifOnChain" checked>
-                                    <span class="form-check__label">On-chain events</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="notifEmail">
-                                    <span class="form-check__label">Email</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="notifDiscord">
-                                    <span class="form-check__label">Discord webhook</span>
-                                </label>
-                                <label class="form-check form-check--small">
-                                    <input type="checkbox" id="notifTelegram">
-                                    <span class="form-check__label">Telegram bot</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-divider"></div>
-                        <h4 class="form-section-title">Template Preview</h4>
-                        <div id="templatePreview" class="template-preview">
-                            <p class="form-section-desc">Select a game type to see included metrics</p>
-                        </div>
-                        <button type="button" class="btn btn--large btn--primary btn--full" onclick="registerGame()">Register Game</button>
-                    </form>
-                </div>
-                <div class="register-form__info">
-                    <div class="info-card">
-                        <h4>What happens after registration?</h4>
-                        <ul class="info-list">
-                            <li><span class="info-icon">1</span><span>Game type template applied automatically</span></li>
-                            <li><span class="info-icon">2</span><span>Metrics collection begins</span></li>
-                            <li><span class="info-icon">3</span><span>Pattern detection runs continuously</span></li>
-                            <li><span class="info-icon">4</span><span>Suggestions generated when patterns detected</span></li>
-                        </ul>
-                    </div>
-                    <div class="info-card info-card--dark">
-                        <h4>Supported Game Types</h4>
-                        <div class="game-types-grid">
-                            <span class="game-type-tag">RPG</span>
-                            <span class="game-type-tag">Card</span>
-                            <span class="game-type-tag">Strategy</span>
-                            <span class="game-type-tag">PvP</span>
-                            <span class="game-type-tag">Simulation</span>
-                            <span class="game-type-tag">Puzzle</span>
-                            <span class="game-type-tag">Racing</span>
-                            <span class="game-type-tag">Idle</span>
-                            <span class="game-type-tag">Sandbox</span>
-                            <span class="game-type-tag">DeFi</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Dashboard -->
-    <section class="dashboard" id="dashboard" style="display:none">
-        <div class="dashboard__sidebar">
-            <div class="sidebar__header">
-                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="36" height="36">
-                <span class="nav__name">OIKONO</span>
-            </div>
-            <nav class="sidebar__nav">
-                <a href="#/dashboard/overview" class="sidebar__link sidebar__link--active" data-view="overview">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    Overview
-                </a>
-                <a href="#/dashboard/metrics" class="sidebar__link" data-view="metrics">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-                    Metrics
-                </a>
-                <a href="#/dashboard/patterns" class="sidebar__link" data-view="patterns">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                    Patterns
-                </a>
-                <a href="#/dashboard/suggestions" class="sidebar__link" data-view="suggestions">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-                    Suggestions
-                </a>
-                <a href="#/dashboard/games" class="sidebar__link" data-view="games">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="16" cy="10" r="1"/><circle cx="18" cy="12" r="1"/></svg>
-                    My Games
-                </a>
-            </nav>
-            <div class="sidebar__footer">
-                <div class="sidebar__wallet">
-                    <div class="wallet__avatar"></div>
-                    <div class="wallet__info">
-                        <div class="wallet__address" id="walletAddress">-</div>
-                        <div class="wallet__network">Somnia Testnet</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="dashboard__main">
-            <div class="dashboard__header">
-                <h2 class="dashboard__title" id="dashboardTitle">Overview</h2>
-                <div class="dashboard__actions">
-                    <button class="btn btn--ghost" onclick="showLanding()">← Back to Home</button>
-                </div>
-            </div>
-            <div class="dashboard__content">
-                <div class="view" id="view-overview">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-card__label">Registered Games</div>
-                            <div class="stat-card__value" id="statGames">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card__label">Active Patterns</div>
-                            <div class="stat-card__value" id="statPatterns">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card__label">Pending Suggestions</div>
-                            <div class="stat-card__value" id="statSuggestions">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card__label">Success Rate</div>
-                            <div class="stat-card__value" id="statSuccess">0%</div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card__header"><h3>Recent Activity</h3></div>
-                        <div class="card__body">
-                            <div class="activity-list" id="activityList">
-                                <div class="empty-state"><p>No activity yet. Register a game to get started.</p></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="view" id="view-metrics" style="display:none">
-                    <div class="card">
-                        <div class="card__header">
-                            <h3>Game Metrics</h3>
-                            <select class="form-input" id="metricsGameSelect" style="width:200px" onchange="loadMetrics()">
-                                <option value="">Select game...</option>
-                            </select>
-                        </div>
-                        <div class="card__body">
-                            <div class="metrics-grid" id="metricsGrid">
-                                <div class="empty-state"><p>Select a game to view metrics</p></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card" style="margin-top: var(--space-6);">
-                        <div class="card__header"><h3>Record Metric</h3></div>
-                        <div class="card__body">
-                            <div class="form-row">
-                                <div class="form-group" style="flex: 1">
-                                    <label class="form-label">Metric Name</label>
-                                    <input type="text" class="form-input" id="recordMetricName" placeholder="e.g., win_rate, retention_d7">
-                                </div>
-                                <div class="form-group" style="flex: 1">
-                                    <label class="form-label">Value</label>
-                                    <input type="number" class="form-input" id="recordMetricValue" placeholder="e.g., 6500">
-                                </div>
-                                <div class="form-group" style="flex: 0; align-self: flex-end">
-                                    <button type="button" class="btn btn--primary" onclick="recordMetric()">Record</button>
-                                </div>
-                            </div>
-                            <p class="form-hint">Record metric values for pattern detection. Values are in basis points (e.g., 6500 = 65%).</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="view" id="view-patterns" style="display:none">
-                    <div class="card">
-                        <div class="card__header">
-                            <h3>Detected Patterns</h3>
-                            <button class="btn btn--primary btn--sm" onclick="detectPatterns(event)">Scan Now</button>
-                        </div>
-                        <div class="card__body">
-                            <div class="patterns-list" id="patternsList">
-                                <div class="empty-state"><p>No patterns detected yet.</p></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="view" id="view-suggestions" style="display:none">
-                    <div class="card">
-                        <div class="card__header">
-                            <h3>Suggestions</h3>
-                            <button class="btn btn--primary btn--sm" onclick="generateSuggestions(event)">Generate</button>
-                        </div>
-                        <div class="card__body">
-                            <div class="suggestions-list" id="suggestionsList">
-                                <div class="empty-state"><p>No suggestions yet.</p></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="view" id="view-games" style="display:none">
-                    <div class="card">
-                        <div class="card__header"><h3>My Games</h3></div>
-                        <div class="card__body">
-                            <div class="games-list" id="gamesList">
-                                <div class="empty-state">
-                                    <p>No games registered yet.</p>
-                                    <button class="btn btn--primary" onclick="showLanding()">Register Game</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="cta reveal">
+                <h2 class="cta__title">Ready to Build Smarter Games?</h2>
+                <p class="cta__desc">Register your game and let the agent learn what works for your economy.</p>
+                <button class="btn btn--large btn--primary" id="ctaRegisterBtn">Register Your Game</button>
             </div>
         </div>
     </section>
@@ -866,25 +281,374 @@
         <div class="container">
             <div class="footer__inner">
                 <div class="footer__brand">
-                    <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="36" height="36">
-                    <span class="nav__name">OIKONO</span>
-                    <p class="footer__desc">Data-driven game economy agent on Somnia. Track, detect, suggest, learn.</p>
+                    <img src="logo_premium_transparent.png" alt="OIKONO" width="28" height="28">
+                    <span>OIKONO</span>
                 </div>
                 <div class="footer__links">
-                    <a href="#" class="footer__link">Documentation</a>
-                    <a href="#" class="footer__link">GitHub</a>
-                    <a href="#" class="footer__link">Discord</a>
+                    <a href="https://github.com/IrrhammCode/Oikono" target="_blank">GitHub</a>
+                    <a href="https://discord.gg/somnia" target="_blank">Discord</a>
+                    <a href="https://twitter.com/Somnia_Network" target="_blank">Twitter</a>
                 </div>
-            </div>
-            <div class="footer__bottom">
-                <span>Built on Somnia Agentic L1</span>
-                <span>Chain ID: 50312</span>
+                <div class="footer__copy">Built on Somnia</div>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
-    <script src="config.js?v=25"></script>
-    <script src="app.js?v=30"></script>
+    <!-- Register Page -->
+    <section class="developers" id="developers" style="display:none">
+        <div class="container">
+            <div class="register-page">
+                <div class="register-page__header">
+                    <button class="btn btn--ghost btn--sm" id="backToHomeBtn">&larr; Back</button>
+                    <h2 class="register-page__title">Register Your Game</h2>
+                    <p class="register-page__desc">Connect your game to the Oikono agent system.</p>
+                </div>
+
+                <form id="registerForm" class="register-form">
+                    <!-- Step 1: Game Info -->
+                    <div class="form-step active" data-step="1">
+                        <div class="form-step__header">
+                            <span class="form-step__number">1</span>
+                            <h3 class="form-step__title">Game Information</h3>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Game Name *</label>
+                            <input type="text" class="form-input" id="gameName" placeholder="My Awesome Game" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Game Type *</label>
+                            <select class="form-input" id="gameType" required>
+                                <option value="">Select type...</option>
+                                <option value="rpg">RPG</option>
+                                <option value="card">Card Game</option>
+                                <option value="pvp">PvP</option>
+                                <option value="strategy">Strategy</option>
+                                <option value="simulation">Simulation</option>
+                                <option value="puzzle">Puzzle</option>
+                                <option value="racing">Racing</option>
+                                <option value="idle">Idle</option>
+                                <option value="sandbox">Sandbox</option>
+                                <option value="defi">DeFi</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input" id="gameDesc" rows="3" placeholder="Brief description of your game"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Primary Game Contract *</label>
+                            <input type="text" class="form-input" id="primaryContract" placeholder="0x..." required>
+                            <span class="form-hint">The main contract address for your game</span>
+                        </div>
+                        <button type="button" class="btn btn--primary" onclick="nextStep(2)">Next &rarr;</button>
+                    </div>
+
+                    <!-- Step 2: Contracts -->
+                    <div class="form-step" data-step="2">
+                        <div class="form-step__header">
+                            <span class="form-step__number">2</span>
+                            <h3 class="form-step__title">Additional Contracts</h3>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" class="form-input" id="contractAddress" placeholder="0x...">
+                            </div>
+                            <div class="form-group">
+                                <select class="form-input" id="contractRole">
+                                    <option value="token">Token</option>
+                                    <option value="nft">NFT</option>
+                                    <option value="marketplace">Marketplace</option>
+                                    <option value="staking">Staking</option>
+                                    <option value="game_logic">Game Logic</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn--ghost btn--sm" onclick="addGameContract()">Add</button>
+                        </div>
+                        <div id="contractList" class="contract-list"></div>
+                        <div class="form-nav">
+                            <button type="button" class="btn btn--ghost" onclick="prevStep(1)">&larr; Back</button>
+                            <button type="button" class="btn btn--primary" onclick="nextStep(3)">Next &rarr;</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Economy -->
+                    <div class="form-step" data-step="3">
+                        <div class="form-step__header">
+                            <span class="form-step__number">3</span>
+                            <h3 class="form-step__title">Economy Goals</h3>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Target Win Rate (%)</label>
+                                <input type="number" class="form-input" id="targetWinRate" value="55" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Target D7 Retention (%)</label>
+                                <input type="number" class="form-input" id="targetRetention" value="30" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Inflation Tolerance</label>
+                                <select class="form-input" id="inflationTolerance">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Economy Style</label>
+                                <select class="form-input" id="economyStyle">
+                                    <option value="deflationary">Deflationary</option>
+                                    <option value="balanced" selected>Balanced</option>
+                                    <option value="inflationary">Inflationary</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Max Change Per Epoch (%)</label>
+                                <input type="number" class="form-input" id="maxChange" value="20" min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Epoch Length (blocks)</label>
+                                <input type="number" class="form-input" id="epochLength" value="6500" min="100">
+                            </div>
+                        </div>
+                        <div class="form-nav">
+                            <button type="button" class="btn btn--ghost" onclick="prevStep(2)">&larr; Back</button>
+                            <button type="button" class="btn btn--primary" onclick="nextStep(4)">Next &rarr;</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Permissions -->
+                    <div class="form-step" data-step="4">
+                        <div class="form-step__header">
+                            <span class="form-step__number">4</span>
+                            <h3 class="form-step__title">Agent Permissions</h3>
+                        </div>
+                        <div class="form-checks">
+                            <label class="form-check">
+                                <input type="checkbox" id="permSpawn" checked>
+                                <span class="form-check__label">Spawn Entities</span>
+                                <span class="form-check__desc">Allow agent to generate enemies, NPCs, items</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="checkbox" id="permEconomy" checked>
+                                <span class="form-check__label">Adjust Economy</span>
+                                <span class="form-check__desc">Allow agent to modify rewards, burn rates</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="checkbox" id="permNarrative">
+                                <span class="form-check__label">Generate Narrative</span>
+                                <span class="form-check__desc">Allow agent to create quests and dialogues</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="checkbox" id="permDifficulty" checked>
+                                <span class="form-check__label">Adjust Difficulty</span>
+                                <span class="form-check__desc">Allow agent to scale challenge dynamically</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Autonomy Level</label>
+                            <select class="form-input" id="autonomyLevel">
+                                <option value="manual">Manual (suggestions only)</option>
+                                <option value="semi-auto" selected>Semi-Auto (approve before execution)</option>
+                                <option value="full-auto">Full Auto (agent acts independently)</option>
+                            </select>
+                        </div>
+                        <div class="form-nav">
+                            <button type="button" class="btn btn--ghost" onclick="prevStep(3)">&larr; Back</button>
+                            <button type="button" class="btn btn--primary" onclick="nextStep(5)">Next &rarr;</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Token -->
+                    <div class="form-step" data-step="5">
+                        <div class="form-step__header">
+                            <span class="form-step__number">5</span>
+                            <h3 class="form-step__title">Token Economics</h3>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Token Name</label>
+                                <input type="text" class="form-input" id="tokenName" placeholder="Gold, Gems, OIK">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Token Symbol</label>
+                                <input type="text" class="form-input" id="tokenSymbol" placeholder="GOLD, GEMS">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Total Supply</label>
+                                <input type="number" class="form-input" id="totalSupply" placeholder="100000000">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Circulating Supply</label>
+                                <input type="number" class="form-input" id="circSupply" placeholder="25000000">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Token Utility</label>
+                            <select class="form-input" id="tokenUtility">
+                                <option value="governance">Governance</option>
+                                <option value="utility">Utility</option>
+                                <option value="mixed" selected>Mixed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sinks</label>
+                            <div class="form-checks form-checks--inline">
+                                <label class="form-check"><input type="checkbox" id="sinkEntry" checked><span>Entry</span></label>
+                                <label class="form-check"><input type="checkbox" id="sinkCraft" checked><span>Craft</span></label>
+                                <label class="form-check"><input type="checkbox" id="sinkMarket" checked><span>Market</span></label>
+                                <label class="form-check"><input type="checkbox" id="sinkStaking"><span>Staking</span></label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sources</label>
+                            <div class="form-checks form-checks--inline">
+                                <label class="form-check"><input type="checkbox" id="srcBattle" checked><span>Battle</span></label>
+                                <label class="form-check"><input type="checkbox" id="srcQuest" checked><span>Quest</span></label>
+                                <label class="form-check"><input type="checkbox" id="srcStaking"><span>Staking</span></label>
+                            </div>
+                        </div>
+                        <div class="form-nav">
+                            <button type="button" class="btn btn--ghost" onclick="prevStep(4)">&larr; Back</button>
+                            <button type="submit" class="btn btn--primary btn--large">Register Game</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Progress Bar -->
+                <div class="form-progress">
+                    <div class="form-progress__step active" data-step="1">1</div>
+                    <div class="form-progress__line"></div>
+                    <div class="form-progress__step" data-step="2">2</div>
+                    <div class="form-progress__line"></div>
+                    <div class="form-progress__step" data-step="3">3</div>
+                    <div class="form-progress__line"></div>
+                    <div class="form-progress__step" data-step="4">4</div>
+                    <div class="form-progress__line"></div>
+                    <div class="form-progress__step" data-step="5">5</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard" style="display:none">
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <img src="logo_premium_transparent.png" alt="OIKONO" width="28" height="28">
+                <span>OIKONO</span>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="#" class="sidebar__link sidebar__link--active" data-view="overview">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Overview
+                </a>
+                <a href="#" class="sidebar__link" data-view="metrics">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                    Metrics
+                </a>
+                <a href="#" class="sidebar__link" data-view="patterns">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    Patterns
+                </a>
+                <a href="#" class="sidebar__link" data-view="suggestions">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/></svg>
+                    Suggestions
+                </a>
+                <a href="#" class="sidebar__link" data-view="games">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01M17 12h.01M7 10v4M5 12h4"/></svg>
+                    My Games
+                </a>
+            </nav>
+            <div class="sidebar__footer">
+                <button class="btn btn--ghost btn--sm" id="backToHomeBtn2">Back to Site</button>
+            </div>
+        </aside>
+
+        <main class="dashboard__main">
+            <header class="dashboard__header">
+                <h1 class="dashboard__title" id="dashboardTitle">Overview</h1>
+                <div class="dashboard__actions">
+                    <span class="dashboard__address" id="walletAddress">-</span>
+                </div>
+            </header>
+
+            <!-- Overview View -->
+            <div class="view view--active" id="view-overview">
+                <div class="overview__stats">
+                    <div class="stat-card">
+                        <div class="stat-card__label">Games</div>
+                        <div class="stat-card__value" id="statGames">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__label">Patterns</div>
+                        <div class="stat-card__value" id="statPatterns">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__label">Suggestions</div>
+                        <div class="stat-card__value" id="statSuggestions">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__label">Agent Status</div>
+                        <div class="stat-card__value" id="statSuccess">N/A</div>
+                    </div>
+                </div>
+                <div class="overview__activity">
+                    <h3 class="view__subtitle">Activity</h3>
+                    <div id="activityList" class="activity-list"></div>
+                </div>
+            </div>
+
+            <!-- Metrics View -->
+            <div class="view" id="view-metrics">
+                <div class="view__toolbar">
+                    <select class="form-input form-input--sm" id="metricsGameSelect">
+                        <option value="">Select game...</option>
+                    </select>
+                    <div class="view__toolbar-actions">
+                        <input type="text" class="form-input form-input--sm" id="recordMetricName" placeholder="Metric name">
+                        <input type="number" class="form-input form-input--sm" id="recordMetricValue" placeholder="Value">
+                        <button class="btn btn--primary btn--sm" onclick="recordMetric()">Record</button>
+                    </div>
+                </div>
+                <div id="metricsGrid" class="metrics-grid"></div>
+            </div>
+
+            <!-- Patterns View -->
+            <div class="view" id="view-patterns">
+                <div class="view__toolbar">
+                    <button class="btn btn--primary btn--sm" onclick="detectPatterns(event)">Scan Now</button>
+                </div>
+                <div id="patternsList" class="patterns-list"></div>
+            </div>
+
+            <!-- Suggestions View -->
+            <div class="view" id="view-suggestions">
+                <div class="view__toolbar">
+                    <button class="btn btn--primary btn--sm" onclick="generateSuggestions(event)">Generate</button>
+                </div>
+                <div id="suggestionsList" class="suggestions-list"></div>
+            </div>
+
+            <!-- Games View -->
+            <div class="view" id="view-games">
+                <div id="gamesList" class="games-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notifications" class="notifications"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js?v=12"></script>
 </body>
 </html>
