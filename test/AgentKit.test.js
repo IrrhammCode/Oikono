@@ -48,11 +48,7 @@ describe("OIKONO Agent Kit - Universal AI Agent Framework", function () {
         enemyNFT = await EnemyNFT.deploy(owner.address);
 
         const GameMaster = await ethers.getContractFactory("GameMaster");
-        gameMaster = await GameMaster.deploy(
-            await playerRegistry.getAddress(),
-            await enemyNFT.getAddress(),
-            await antiSybil.getAddress()
-        );
+        gameMaster = await GameMaster.deploy(await playerRegistry.getAddress(), await enemyNFT.getAddress(), await antiSybil.getAddress(), await circuitBreaker.getAddress());
 
         // Set minter
         await enemyNFT.setMinter(await gameMaster.getAddress());

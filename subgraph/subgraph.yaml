@@ -7,7 +7,7 @@ dataSources:
     name: GameRegistry
     network: somnia-testnet
     source:
-      address: "0xce4a2319855968E0Bd6E1826f7A8a08e24a34f53"
+      address: "0x6eB1d23419629901F78947B1207024f7F28380a6"
       abi: GameRegistry
       startBlock: 0
     mapping:
@@ -30,7 +30,7 @@ dataSources:
     name: MetricsRegistry
     network: somnia-testnet
     source:
-      address: "0x05fF035dc85f6b33D08af7ce202efaD245C8eE85"
+      address: "0x5F447735f4A7DEc10F1dA55cbf05688D4A2bD808"
       abi: MetricsRegistry
       startBlock: 0
     mapping:
@@ -55,7 +55,7 @@ dataSources:
     name: PatternDetector
     network: somnia-testnet
     source:
-      address: "0xB0dE1515787cB8809D4bAfecaA8523CC943F71eE"
+      address: "0x655Cd724318C38284B984A7629EFe05dE57F29eD"
       abi: PatternDetector
       startBlock: 0
     mapping:
@@ -77,7 +77,7 @@ dataSources:
     name: SuggestionEngine
     network: somnia-testnet
     source:
-      address: "0xF2162A45c05cEB6db4CE8b2Bf3B576b328269a8B"
+      address: "0xe43c42e639170e5c88c2Ae242330473cf5745f8c"
       abi: SuggestionEngine
       startBlock: 0
     mapping:
@@ -101,7 +101,7 @@ dataSources:
     name: OikonoAgent
     network: somnia-testnet
     source:
-      address: "0x8B32e8C3Be192d37C79fAF14BEf0dbE6452153B2"
+      address: "0x586e9ACF26D76A1aD52054b3EF3e9c72A9917b05"
       abi: OikonoAgent
       startBlock: 0
     mapping:
@@ -127,7 +127,7 @@ dataSources:
     name: LLMInvoker
     network: somnia-testnet
     source:
-      address: "0x0000000000000000000000000000000000000000"  # Update after deploy
+      address: "0x7b7a8B51348ef9e8D233775455D50ED7Daa653de"
       abi: LLMInvoker
       startBlock: 0
     mapping:

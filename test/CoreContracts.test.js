@@ -32,11 +32,7 @@ describe("OIKONO Core Contracts", function () {
         enemyNFT = await EnemyNFT.deploy(owner.address);
 
         const GameMaster = await ethers.getContractFactory("GameMaster");
-        gameMaster = await GameMaster.deploy(
-            await playerRegistry.getAddress(),
-            await enemyNFT.getAddress(),
-            await antiSybil.getAddress()
-        );
+        gameMaster = await GameMaster.deploy(await playerRegistry.getAddress(), await enemyNFT.getAddress(), await antiSybil.getAddress(), await circuitBreaker.getAddress());
         await enemyNFT.setMinter(await gameMaster.getAddress());
 
         // Authorize game contracts to call AntiSybil

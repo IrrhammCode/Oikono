@@ -69,11 +69,7 @@ describe("OIKONO Universal AI Agent", function () {
         await enemyNFT.setMinter(await gameMaster?.getAddress() ?? owner.address);
 
         const GameMaster = await ethers.getContractFactory("GameMaster");
-        gameMaster = await GameMaster.deploy(
-            await playerRegistry.getAddress(),
-            await enemyNFT.getAddress(),
-            await antiSybil.getAddress()
-        );
+        gameMaster = await GameMaster.deploy(await playerRegistry.getAddress(), await enemyNFT.getAddress(), await antiSybil.getAddress(), await circuitBreaker.getAddress());
         await enemyNFT.setMinter(await gameMaster.getAddress());
         await playerRegistry.setGameMaster(await gameMaster.getAddress());
 

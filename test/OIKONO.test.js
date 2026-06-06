@@ -44,11 +44,7 @@ describe("OIKONO - Autonomous Game Master", function () {
 
         // Deploy GameMaster
         const GameMaster = await ethers.getContractFactory("GameMaster");
-        gameMaster = await GameMaster.deploy(
-            await playerRegistry.getAddress(),
-            await enemyNFT.getAddress(),
-            await antiSybil.getAddress()
-        );
+        gameMaster = await GameMaster.deploy(await playerRegistry.getAddress(), await enemyNFT.getAddress(), await antiSybil.getAddress(), await circuitBreaker.getAddress());
 
         await playerRegistry.setGameMaster(await gameMaster.getAddress());
         await enemyNFT.setMinter(await gameMaster.getAddress());
