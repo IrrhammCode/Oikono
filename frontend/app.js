@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════
 // OIKONO - Data-Driven Game Economy Agent
-// With proper routing and game registration
+// Premium Design + Full Functionality
 // ═══════════════════════════════════════════════
 
 const SOMNIA_CHAIN_ID = '0xC488';
@@ -12,6 +12,164 @@ let userAddress = null;
 let contracts = {};
 let registeredGames = [];
 let currentView = 'overview';
+
+// ══════════════════════════════════════════════
+// PARTICLE BACKGROUND
+// ══════════════════════════════════════════════
+
+function initParticles() {
+    const canvas = document.getElementById('particleCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    const particles = [];
+    const PARTICLE_COUNT = 60;
+    const COLORS = ['rgba(0,240,255,', 'rgba(168,85,247,', 'rgba(255,215,0,'];
+
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            r: Math.random() * 2 + 0.5,
+            color: COLORS[Math.floor(Math.random() * COLORS.length)],
+            opacity: Math.random() * 0.4 + 0.1,
+            pulse: Math.random() * Math.PI * 2,
+            pulseSpeed: Math.random() * 0.02 + 0.005,
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        for (const p of particles) {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.pulse += p.pulseSpeed;
+            if (p.x < 0) p.x = w;
+            if (p.x > w) p.x = 0;
+            if (p.y < 0) p.y = h;
+            if (p.y > h) p.y = 0;
+
+            const alpha = p.opacity * (0.6 + 0.4 * Math.sin(p.pulse));
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = p.color + alpha + ')';
+            ctx.fill();
+
+            // Glow
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+            ctx.fillStyle = p.color + (alpha * 0.15) + ')';
+            ctx.fill();
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ══════════════════════════════════════════════
+// TYPEWRITER EFFECT
+// ══════════════════════════════════════════════
+
+function initTypewriter() {
+    const desc = document.querySelector('.hero__desc');
+    if (!desc) return;
+    const fullText = desc.textContent.trim();
+    desc.textContent = '';
+    desc.innerHTML = '<span class="hero__tagline"></span><span class="hero__cursor"></span>';
+    const tagline = desc.querySelector('.hero__tagline');
+    let i = 0;
+
+    function type() {
+        if (i < fullText.length) {
+            tagline.textContent += fullText[i];
+            i++;
+            setTimeout(type, 18 + Math.random() * 22);
+        }
+    }
+    setTimeout(type, 800);
+}
+
+// ══════════════════════════════════════════════
+// INTERSECTION OBSERVER (Scroll Animations)
+// ══════════════════════════════════════════════
+
+function initScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-scale, .timeline-step').forEach(el => {
+        observer.observe(el);
+    });
+}
+
+// ══════════════════════════════════════════════
+// ANIMATED COUNTERS
+// ══════════════════════════════════════════════
+
+function initCounters() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.dataset.counted) {
+                entry.target.dataset.counted = 'true';
+                animateCounter(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('[data-count]').forEach(el => observer.observe(el));
+}
+
+function animateCounter(el) {
+    const target = parseInt(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1500;
+    const start = performance.now();
+
+    function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        const current = Math.round(target * eased);
+        el.textContent = current + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+}
+
+// ══════════════════════════════════════════════
+// GAME TYPE TABS
+// ══════════════════════════════════════════════
+
+function initGameTypeTabs() {
+    const tabs = document.querySelectorAll('.game-types__tab');
+    const panels = document.querySelectorAll('.game-type-panel');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.dataset.tab;
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            panels.forEach(p => {
+                p.classList.remove('active');
+                if (p.id === 'tab-' + target) p.classList.add('active');
+            });
+        });
+    });
+}
 
 // ══════════════════════════════════════════════
 // WALLET CONNECTION
@@ -38,10 +196,8 @@ async function connectWallet() {
 
         showNotification('Connected: ' + shortAddr(userAddress), 'success');
 
-        // Start pattern auto-detection
         startPatternAutoDetection();
 
-        // If on landing page, stay there. If trying to access dashboard, go there
         if (window.location.hash.startsWith('#/dashboard')) {
             showDashboard();
         }
@@ -79,7 +235,6 @@ async function ensureSomniaNetwork() {
 
 function initContracts() {
     if (!CONFIG || !CONFIG.CONTRACTS) return;
-
     for (const [name, abi] of Object.entries(CONFIG.ABI)) {
         if (CONFIG.CONTRACTS[name] && CONFIG.CONTRACTS[name] !== '0x0000000000000000000000000000000000000000') {
             contracts[name] = new ethers.Contract(CONFIG.CONTRACTS[name], abi, signer);
@@ -124,7 +279,6 @@ function showLanding() {
 }
 
 function showRegisterPage() {
-    console.log('showRegisterPage called');
     window.location.hash = '#/register';
     showRegisterPageDirect();
 }
@@ -148,17 +302,13 @@ function scrollToSection(id) {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Handle hash changes for routing
 function handleRoute() {
     const hash = window.location.hash || '#/';
-    console.log('handleRoute called, hash:', hash);
 
     if (hash === '#/register') {
-        // Show register page (without changing hash again)
         showRegisterPageDirect();
     } else if (hash.startsWith('#/dashboard')) {
         if (!userAddress) {
-            // Not connected, redirect to landing
             window.location.hash = '#/';
             return;
         }
@@ -168,38 +318,24 @@ function handleRoute() {
         document.querySelectorAll('body > section:not(#dashboard):not(#developers)').forEach(el => {
             el.style.display = 'none';
         });
-        // Hide nav and footer on dashboard
         const nav = document.querySelector('.nav');
         const footer = document.querySelector('.footer');
         if (nav) nav.style.display = 'none';
         if (footer) footer.style.display = 'none';
         switchView(view);
     } else {
-        // Landing page
         showLandingDirect();
     }
 }
 
-// Direct versions (don't change hash to avoid loops)
 function showRegisterPageDirect() {
-    console.log('showRegisterPageDirect called');
-
-    // Hide dashboard
     const dashboard = document.getElementById('dashboard');
     if (dashboard) dashboard.style.display = 'none';
-
-    // Hide landing sections
     document.querySelectorAll('body > section:not(#dashboard):not(#developers)').forEach(el => {
         el.style.display = 'none';
     });
-
-    // Show register page
     const developers = document.getElementById('developers');
-    if (developers) {
-        developers.style.display = 'block';
-    }
-
-    // Hide nav and footer
+    if (developers) developers.style.display = 'block';
     const nav = document.querySelector('.nav');
     const footer = document.querySelector('.footer');
     if (nav) nav.style.display = 'none';
@@ -230,7 +366,6 @@ async function loadDashboardData() {
             for (const id of gameIds) {
                 try {
                     const game = await contracts.GameRegistry.getGame(Number(id));
-                    // ABI returns: owner, name, gameType, description, metadata, isActive, isVerified, totalEvents, totalActions
                     registeredGames.push({
                         id: Number(id),
                         owner: game[0],
@@ -249,10 +384,8 @@ async function loadDashboardData() {
             }
         }
 
-        // Update overview stats
         document.getElementById('statGames').textContent = registeredGames.length;
 
-        // Load patterns count
         if (contracts.PatternDetector && registeredGames.length > 0) {
             try {
                 const count = await contracts.PatternDetector.getPatternCount(registeredGames[0].id);
@@ -260,7 +393,6 @@ async function loadDashboardData() {
             } catch (e) {}
         }
 
-        // Load suggestions count
         if (contracts.SuggestionEngine && registeredGames.length > 0) {
             try {
                 const count = await contracts.SuggestionEngine.getSuggestionCount(registeredGames[0].id);
@@ -268,7 +400,6 @@ async function loadDashboardData() {
             } catch (e) {}
         }
 
-        // Update success rate via OikonoAgent stats
         if (contracts.OikonoAgent) {
             try {
                 const agentStats = await contracts.OikonoAgent.getStats();
@@ -282,10 +413,7 @@ async function loadDashboardData() {
             document.getElementById('statSuccess').textContent = 'N/A';
         }
 
-        // Update activity feed
         updateActivityFeed();
-
-        // Update games list
         updateGamesList();
 
     } catch (err) {
@@ -295,21 +423,11 @@ async function loadDashboardData() {
 
 function loadViewData(view) {
     switch (view) {
-        case 'overview':
-            loadDashboardData();
-            break;
-        case 'metrics':
-            loadMetrics();
-            break;
-        case 'patterns':
-            loadPatterns();
-            break;
-        case 'suggestions':
-            loadSuggestions();
-            break;
-        case 'games':
-            updateGamesList();
-            break;
+        case 'overview': loadDashboardData(); break;
+        case 'metrics': loadMetrics(); break;
+        case 'patterns': loadPatterns(); break;
+        case 'suggestions': loadSuggestions(); break;
+        case 'games': updateGamesList(); break;
     }
 }
 
@@ -321,7 +439,6 @@ async function loadMetrics() {
     const grid = document.getElementById('metricsGrid');
     const select = document.getElementById('metricsGameSelect');
 
-    // Populate game select (preserve current selection)
     const prevSelected = select.value;
     select.innerHTML = '<option value="">Select game...</option>';
     registeredGames.forEach(game => {
@@ -340,7 +457,6 @@ async function loadMetrics() {
 
     try {
         const metricNames = await contracts.MetricsRegistry.getMetricNames(gameId);
-
         if (metricNames.length === 0) {
             grid.innerHTML = '<div class="empty-state"><p>No metrics defined yet. Apply a game type template first.</p></div>';
             return;
@@ -355,7 +471,6 @@ async function loadMetrics() {
                 const max = stats[2];
                 const avg = stats[3];
                 const count = stats[4];
-                // stats[5] = lastUpdated (unused in display)
                 const isHealthy = await contracts.MetricsRegistry.isHealthy(gameId, name);
                 let changeText = '';
                 try {
@@ -403,12 +518,10 @@ async function recordMetric() {
         showNotification('Please select a game first', 'error');
         return;
     }
-
     if (!metricName || !metricValue) {
         showNotification('Please enter metric name and value', 'error');
         return;
     }
-
     if (!contracts.MetricsRegistry) {
         showNotification('MetricsRegistry contract not available', 'error');
         return;
@@ -416,31 +529,23 @@ async function recordMetric() {
 
     try {
         showNotification('Recording metric...', 'info');
-        const tx = await contracts.MetricsRegistry.recordMetric(
-            gameId,
-            metricName,
-            parseInt(metricValue)
-        );
+        const tx = await contracts.MetricsRegistry.recordMetric(gameId, metricName, parseInt(metricValue));
         showNotification('TX sent: ' + tx.hash, 'info');
         await tx.wait();
         showNotification('Metric recorded: ' + metricName + ' = ' + metricValue, 'success');
 
-        // Clear inputs
         document.getElementById('recordMetricName').value = '';
         document.getElementById('recordMetricValue').value = '';
 
-        // Auto-detect patterns after metric recording
         if (contracts.PatternDetector && registeredGames.length > 0) {
             try {
-                const tx = await contracts.PatternDetector.detectPatterns(gameId);
-                await tx.wait();
-                console.log('Auto-detected patterns after metric recording');
+                const tx2 = await contracts.PatternDetector.detectPatterns(gameId);
+                await tx2.wait();
             } catch (e) {
                 console.error('Auto-detection after metric failed:', e);
             }
         }
 
-        // Reload metrics
         loadMetrics();
     } catch (err) {
         showNotification('Failed to record metric: ' + parseError(err), 'error');
@@ -459,7 +564,6 @@ async function loadPatterns() {
         return;
     }
 
-    // Collect patterns from ALL registered games
     let allPatterns = [];
     for (const game of registeredGames) {
         try {
@@ -533,7 +637,6 @@ async function loadSuggestions() {
         return;
     }
 
-    // Collect suggestions from ALL registered games
     let allSuggestions = [];
     for (const game of registeredGames) {
         try {
@@ -619,14 +722,12 @@ function updateGamesList() {
 
     let html = '';
 
-    // Selalu tampilkan tombol Register Game
     html += `
         <div class="game-card" style="border-style: dashed; text-align: center; padding: var(--space-4);">
             <button class="btn btn--primary" id="addGameBtn">+ Register Game</button>
         </div>
     `;
 
-    // Tambahkan game cards
     if (registeredGames.length > 0) {
         html += registeredGames.map(game => `
             <div class="game-card">
@@ -668,16 +769,13 @@ function updateGamesList() {
 
     list.innerHTML = html;
 
-    // Attach event listeners after rendering
     document.getElementById('addGameBtn')?.addEventListener('click', showRegisterPage);
 
     list.querySelectorAll('[data-action="view"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const gameId = parseInt(btn.dataset.gameId);
-            console.log('View Details clicked, gameId:', gameId);
-            viewGameDetails(gameId);
+            viewGameDetails(parseInt(btn.dataset.gameId));
         });
     });
 
@@ -685,17 +783,12 @@ function updateGamesList() {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const gameId = parseInt(btn.dataset.gameId);
-            const isActive = btn.dataset.active === 'true';
-            console.log('Toggle clicked, gameId:', gameId, 'isActive:', isActive);
-            toggleGameStatus(gameId, isActive);
+            toggleGameStatus(parseInt(btn.dataset.gameId), btn.dataset.active === 'true');
         });
     });
 }
 
 async function toggleGameStatus(gameId, currentlyActive) {
-    console.log('toggleGameStatus called', { gameId, currentlyActive });
-
     if (!contracts.GameRegistry) {
         showNotification('GameRegistry not available', 'error');
         return;
@@ -705,11 +798,9 @@ async function toggleGameStatus(gameId, currentlyActive) {
         const tx = currentlyActive
             ? await contracts.GameRegistry.deactivateGame(gameId)
             : await contracts.GameRegistry.activateGame(gameId);
-
         showNotification('Transaction sent: ' + tx.hash, 'info');
         await tx.wait();
         showNotification('Game ' + (currentlyActive ? 'deactivated' : 'activated'), 'success');
-
         await loadDashboardData();
         updateGamesList();
     } catch (err) {
@@ -721,26 +812,19 @@ async function toggleGameStatus(gameId, currentlyActive) {
 // REGISTRATION
 // ══════════════════════════════════════════════
 
-// Use templates from config.js
 const GAME_TYPE_TEMPLATES = CONFIG.GAME_TYPE_TEMPLATES || {};
-
-// Multi-contract state
 let gameContracts = [];
 
 function addGameContract() {
     const addressInput = document.getElementById('contractAddress');
     const roleSelect = document.getElementById('contractRole');
-
     const address = addressInput.value.trim();
     const role = roleSelect.value;
-
-    console.log('addGameContract called', { address, role });
 
     if (!address || !address.startsWith('0x')) {
         showNotification('Invalid! Contract address must start with 0x', 'error');
         return;
     }
-
     if (gameContracts.find(c => c.address.toLowerCase() === address.toLowerCase())) {
         showNotification('Contract already added', 'error');
         return;
@@ -748,8 +832,6 @@ function addGameContract() {
 
     gameContracts.push({ address, role });
     updateContractList();
-
-    // Clear input
     addressInput.value = '';
 }
 
@@ -782,9 +864,7 @@ function updateContractList() {
 
 function updateRangeDisplay(input, displayId) {
     const display = document.getElementById(displayId);
-    if (display) {
-        display.textContent = input.value + '%';
-    }
+    if (display) display.textContent = input.value + '%';
 }
 
 function updateTemplatePreview() {
@@ -797,8 +877,6 @@ function updateTemplatePreview() {
     }
 
     const template = GAME_TYPE_TEMPLATES[gameType];
-
-    // Get all config from form
     const targetWinRate = document.getElementById('targetWinRate')?.value || 55;
     const targetRetention = document.getElementById('targetRetention')?.value || 30;
     const inflationTolerance = document.getElementById('inflationTolerance')?.value || 'medium';
@@ -807,8 +885,6 @@ function updateTemplatePreview() {
     const checkFrequency = document.getElementById('checkFrequency')?.value || 'hourly';
     const autonomyLevel = document.getElementById('autonomyLevel')?.value || 'semi-auto';
     const entryModel = document.querySelector('input[name="entryModel"]:checked')?.value || 'free';
-
-    // Get permissions
     const permSpawn = document.getElementById('permSpawn')?.checked ?? true;
     const permEconomy = document.getElementById('permEconomy')?.checked ?? true;
     const permNarrative = document.getElementById('permNarrative')?.checked ?? false;
@@ -820,106 +896,50 @@ function updateTemplatePreview() {
                 <h5>${template.name} Template</h5>
                 <p class="template-desc">${template.description}</p>
             </div>
-
             <div class="template-config">
                 <h6>Economy Goals:</h6>
                 <div class="template-config__grid">
-                    <div class="template-config__item">
-                        <span class="template-config__label">Target Win Rate</span>
-                        <span class="template-config__value">${targetWinRate}%</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Target D7 Retention</span>
-                        <span class="template-config__value">${targetRetention}%</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Inflation Tolerance</span>
-                        <span class="template-config__value">${inflationTolerance}</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Economy Style</span>
-                        <span class="template-config__value">${economyStyle}</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Max Change/Epoch</span>
-                        <span class="template-config__value">${maxChange}%</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Entry Model</span>
-                        <span class="template-config__value">${entryModel}</span>
-                    </div>
+                    <div class="template-config__item"><span class="template-config__label">Target Win Rate</span><span class="template-config__value">${targetWinRate}%</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Target D7 Retention</span><span class="template-config__value">${targetRetention}%</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Inflation Tolerance</span><span class="template-config__value">${inflationTolerance}</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Economy Style</span><span class="template-config__value">${economyStyle}</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Max Change/Epoch</span><span class="template-config__value">${maxChange}%</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Entry Model</span><span class="template-config__value">${entryModel}</span></div>
                 </div>
             </div>
-
             <div class="template-config">
                 <h6>Agent Permissions:</h6>
                 <div class="template-config__grid">
-                    <div class="template-config__item">
-                        <span class="template-config__label">Spawn Entities</span>
-                        <span class="template-config__value">${permSpawn ? 'Yes' : 'No'}</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Adjust Economy</span>
-                        <span class="template-config__value">${permEconomy ? 'Yes' : 'No'}</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Generate Narrative</span>
-                        <span class="template-config__value">${permNarrative ? 'Yes' : 'No'}</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Adjust Difficulty</span>
-                        <span class="template-config__value">${permDifficulty ? 'Yes' : 'No'}</span>
-                    </div>
+                    <div class="template-config__item"><span class="template-config__label">Spawn Entities</span><span class="template-config__value">${permSpawn ? 'Yes' : 'No'}</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Adjust Economy</span><span class="template-config__value">${permEconomy ? 'Yes' : 'No'}</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Generate Narrative</span><span class="template-config__value">${permNarrative ? 'Yes' : 'No'}</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Adjust Difficulty</span><span class="template-config__value">${permDifficulty ? 'Yes' : 'No'}</span></div>
                 </div>
             </div>
-
             <div class="template-config">
                 <h6>Integration:</h6>
                 <div class="template-config__grid">
-                    <div class="template-config__item">
-                        <span class="template-config__label">Check Frequency</span>
-                        <span class="template-config__value">${checkFrequency}</span>
-                    </div>
-                    <div class="template-config__item">
-                        <span class="template-config__label">Autonomy Level</span>
-                        <span class="template-config__value">${autonomyLevel}</span>
-                    </div>
+                    <div class="template-config__item"><span class="template-config__label">Check Frequency</span><span class="template-config__value">${checkFrequency}</span></div>
+                    <div class="template-config__item"><span class="template-config__label">Autonomy Level</span><span class="template-config__value">${autonomyLevel}</span></div>
                 </div>
             </div>
-
             <div class="template-metrics__list">
                 <h6>Metrics Tracked:</h6>
-                ${template.metrics.map(m => `
-                    <div class="template-metric-item">
-                        <span class="template-metric-name">${m.name}</span>
-                        <span class="template-metric-healthy">${m.healthy}</span>
-                    </div>
-                `).join('')}
+                ${template.metrics.map(m => `<div class="template-metric-item"><span class="template-metric-name">${m.name}</span><span class="template-metric-healthy">${m.healthy}</span></div>`).join('')}
             </div>
-
             <div class="template-rules">
                 <h6>Detection Rules:</h6>
-                ${template.rules.map(r => `
-                    <div class="template-rule-item">
-                        <span class="template-rule-type">${r.type}</span>
-                        <span class="template-rule-metric">${r.metric}</span>
-                        <span class="template-rule-threshold">${r.threshold}</span>
-                    </div>
-                `).join('')}
+                ${template.rules.map(r => `<div class="template-rule-item"><span class="template-rule-type">${r.type}</span><span class="template-rule-metric">${r.metric}</span><span class="template-rule-threshold">${r.threshold}</span></div>`).join('')}
             </div>
         </div>
     `;
 }
 
 async function registerGame() {
-    console.log('registerGame called');
-
-    // Check wallet connection
     if (!userAddress) {
         showNotification('Please connect wallet first', 'error');
         return;
     }
-
     if (!contracts.GameRegistry) {
         showNotification('Contracts not loaded. Please reconnect wallet.', 'error');
         return;
@@ -930,51 +950,32 @@ async function registerGame() {
     const description = document.getElementById('gameDesc').value;
     const primaryGameAddress = document.getElementById('primaryGameAddress')?.value?.trim();
 
-    console.log('Form values:', { name, gameType, description, primaryGameAddress });
-
     if (!name || name.trim() === '') {
         showNotification('Please enter a game name', 'error');
         return;
     }
-
     if (!gameType) {
         showNotification('Please select a game type', 'error');
         return;
     }
-
     if (!primaryGameAddress || !primaryGameAddress.startsWith('0x') || primaryGameAddress.length !== 42) {
         showNotification('Please enter a valid primary game contract address', 'error');
         return;
     }
 
     const btn = document.querySelector('#registerForm .btn--primary');
-    if (!btn) {
-        console.error('Register button not found');
-        return;
-    }
-
+    if (!btn) return;
     setButtonLoading(btn, true, 'Registering...');
 
     try {
         showNotification('Preparing transaction...', 'info');
 
-        if (!contracts.GameRegistry) {
-            showNotification('GameRegistry contract not available', 'error');
-            return;
-        }
-
-        console.log('GameRegistry target:', contracts.GameRegistry.target);
-        console.log('Wallet:', userAddress);
-
         let gameId;
 
-        // Build metadata JSON with full configuration
         const metadata = JSON.stringify({
             website: document.getElementById('gameWebsite')?.value || '',
             primaryAddress: primaryGameAddress,
             contracts: gameContracts.map(c => ({ address: c.address, role: c.role })),
-
-            // Token Economics
             token: {
                 name: document.getElementById('tokenName')?.value || '',
                 symbol: document.getElementById('tokenSymbol')?.value || '',
@@ -995,8 +996,6 @@ async function registerGame() {
                     airdrop: document.getElementById('srcAirdrop')?.checked ?? false,
                 }
             },
-
-            // Player Economics
             player: {
                 entryModel: document.querySelector('input[name="entryModel"]:checked')?.value || 'free',
                 segments: {
@@ -1006,8 +1005,6 @@ async function registerGame() {
                     trader: document.getElementById('segTrader')?.checked ?? false,
                 }
             },
-
-            // Economy Goals
             economy: {
                 targetWinRate: parseInt(document.getElementById('targetWinRate')?.value || 55),
                 targetRetention: parseInt(document.getElementById('targetRetention')?.value || 30),
@@ -1015,16 +1012,12 @@ async function registerGame() {
                 economyStyle: document.getElementById('economyStyle')?.value || 'balanced',
                 maxChangePerEpoch: parseInt(document.getElementById('maxChange')?.value || 20),
             },
-
-            // Agent Permissions
             permissions: {
                 canSpawn: document.getElementById('permSpawn')?.checked ?? true,
                 canAdjustEconomy: document.getElementById('permEconomy')?.checked ?? true,
                 canGenerateNarrative: document.getElementById('permNarrative')?.checked ?? false,
                 canAdjustDifficulty: document.getElementById('permDifficulty')?.checked ?? true,
             },
-
-            // Alert Thresholds
             alerts: {
                 winRateLow: parseInt(document.getElementById('winRateLow')?.value || 40),
                 winRateHigh: parseInt(document.getElementById('winRateHigh')?.value || 70),
@@ -1032,8 +1025,6 @@ async function registerGame() {
                 retentionDrop: parseInt(document.getElementById('retentionDrop')?.value || 15),
                 inflationAlert: parseInt(document.getElementById('inflationAlert')?.value || 10),
             },
-
-            // Integration Settings
             integration: {
                 checkFrequency: document.getElementById('checkFrequency')?.value || 'hourly',
                 autonomyLevel: document.getElementById('autonomyLevel')?.value || 'semi-auto',
@@ -1046,7 +1037,6 @@ async function registerGame() {
             }
         });
 
-        // Encode AgentConfig struct from form data
         const agentConfig = {
             canSpawn: document.getElementById('permSpawn')?.checked ?? true,
             canAdjustEconomy: document.getElementById('permEconomy')?.checked ?? true,
@@ -1056,39 +1046,25 @@ async function registerGame() {
             epochLength: parseInt(document.getElementById('epochLength')?.value || 6500),
         };
 
-        console.log('AgentConfig:', agentConfig);
-
         const tx = await contracts.GameRegistry.registerGame(
-            name.trim(),
-            gameType,
-            description || 'No description provided',
-            primaryGameAddress,
-            metadata,
-            agentConfig
+            name.trim(), gameType, description || 'No description provided',
+            primaryGameAddress, metadata, agentConfig
         );
 
         showNotification('TX sent: ' + tx.hash, 'info');
         const receipt = await tx.wait();
 
-        // Parse GameRegistered event to get gameId
         const log = receipt.logs.find(l => {
-            try {
-                return contracts.GameRegistry.interface.parseLog(l)?.name === 'GameRegistered';
-            } catch { return false; }
+            try { return contracts.GameRegistry.interface.parseLog(l)?.name === 'GameRegistered'; }
+            catch { return false; }
         });
 
         if (log) {
             gameId = contracts.GameRegistry.interface.parseLog(log).args.gameId;
             showNotification('Game registered! ID: ' + gameId, 'success');
 
-            // Link primary game contract via GameRegistry.addContract
             try {
-                const addPrimaryTx = await contracts.GameRegistry.addContract(
-                    gameId,
-                    primaryGameAddress,
-                    'game_logic',
-                    [] // Event hashes - can be added later
-                );
+                const addPrimaryTx = await contracts.GameRegistry.addContract(gameId, primaryGameAddress, 'game_logic', []);
                 await addPrimaryTx.wait();
                 showNotification('Primary contract linked', 'success');
             } catch (e) {
@@ -1096,15 +1072,9 @@ async function registerGame() {
                 showNotification('Failed to link primary contract: ' + parseError(e), 'error');
             }
 
-            // Add additional contracts via GameRegistry.addContract(gameId, address, role, eventHashes)
             for (const c of gameContracts) {
                 try {
-                    const addTx = await contracts.GameRegistry.addContract(
-                        gameId,
-                        c.address,
-                        c.role,
-                        [] // Event hashes - can be added later
-                    );
+                    const addTx = await contracts.GameRegistry.addContract(gameId, c.address, c.role, []);
                     await addTx.wait();
                     showNotification('Contract added: ' + c.role, 'success');
                 } catch (e) {
@@ -1113,11 +1083,9 @@ async function registerGame() {
                 }
             }
 
-            // Apply game type template via GameTypeManager contract
             try {
                 showNotification('Applying game type template...', 'info');
                 if (!contracts.GameTypeManager) {
-                    console.error('GameTypeManager contract not available');
                     showNotification('Template skipped - GameTypeManager not loaded', 'warning');
                 } else {
                     const templateTx = await contracts.GameTypeManager.applyTemplate(gameId, gameType);
@@ -1132,7 +1100,6 @@ async function registerGame() {
             showNotification('Game registered but could not parse event', 'warning');
         }
 
-        // Reset form
         const form = document.getElementById('registerForm');
         if (form) form.reset();
         const preview = document.getElementById('templatePreview');
@@ -1140,13 +1107,8 @@ async function registerGame() {
         gameContracts = [];
         updateContractList();
 
-        // Reload dashboard data
         await loadDashboardData();
-
-        // Auto-subscribe to reactivity events for the new game
         await autoSubscribeReactivity(gameId, primaryGameAddress);
-
-        // Switch to dashboard
         showDashboard('games');
 
     } catch (err) {
@@ -1169,13 +1131,10 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
 
     try {
         showNotification('Setting up on-chain reactivity...', 'info');
-
-        // PlayerMoved event signature
         const playerMovedSig = ethers.id('PlayerMoved(address,uint256,uint256,uint256,uint256)');
 
-        // Subscribe via GameMaster (uses Somnia Reactivity Precompile)
         try {
-            const subscriptionDeposit = ethers.parseEther('0.01'); // Small deposit for subscription
+            const subscriptionDeposit = ethers.parseEther('0.01');
             const tx = await contracts.GameMaster.subscribeToPlayerMoved(playerMovedSig, { value: subscriptionDeposit });
             await tx.wait();
             showNotification('GameMaster subscribed to PlayerMoved events', 'success');
@@ -1184,27 +1143,23 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
             showNotification('GameMaster subscription failed: ' + parseError(e), 'warning');
         }
 
-        // Also register the game with AgentRuntime for plugin-based handling
         try {
             if (contracts.SpawnPlugin) {
                 const pluginAddr = contracts.SpawnPlugin.target;
                 const regTx = await contracts.AgentRuntime.registerGame(
-                    document.getElementById('gameName')?.value || 'Game ' + gameId,
-                    pluginAddr
+                    document.getElementById('gameName')?.value || 'Game ' + gameId, pluginAddr
                 );
                 await regTx.wait();
                 showNotification('Game registered with AgentRuntime', 'success');
             }
         } catch (e) {
             console.error('AgentRuntime registration failed:', e);
-            // Non-fatal — game still works without agent runtime
         }
 
-        // Subscribe AgentRuntime to game events
         try {
             const subscriptionDeposit = ethers.parseEther('0.01');
-            const playerMovedSig = ethers.id('PlayerMoved(address,uint256,uint256,uint256,uint256)');
-            const subTx = await contracts.AgentRuntime.subscribeToEvent(playerMovedSig, subscriptionDeposit, { value: subscriptionDeposit });
+            const playerMovedSig2 = ethers.id('PlayerMoved(address,uint256,uint256,uint256,uint256)');
+            const subTx = await contracts.AgentRuntime.subscribeToEvent(playerMovedSig2, subscriptionDeposit, { value: subscriptionDeposit });
             await subTx.wait();
             showNotification('AgentRuntime subscribed to game events', 'success');
         } catch (e) {
@@ -1223,14 +1178,13 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
 // ══════════════════════════════════════════════
 
 let patternDetectionInterval = null;
-const PATTERN_DETECTION_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const PATTERN_DETECTION_INTERVAL = 5 * 60 * 1000;
 
 function startPatternAutoDetection() {
-    if (patternDetectionInterval) return; // Already running
+    if (patternDetectionInterval) return;
 
     patternDetectionInterval = setInterval(async () => {
         if (!contracts.PatternDetector || registeredGames.length === 0) return;
-
         try {
             for (const game of registeredGames) {
                 if (!game.isActive) continue;
@@ -1239,7 +1193,6 @@ function startPatternAutoDetection() {
                     await tx.wait();
                     console.log('Auto-detected patterns for game:', game.name);
                 } catch (e) {
-                    // Silently fail — don't spam notifications
                     console.error('Auto-detection failed for game', game.id, e);
                 }
             }
@@ -1255,7 +1208,6 @@ function stopPatternAutoDetection() {
     if (patternDetectionInterval) {
         clearInterval(patternDetectionInterval);
         patternDetectionInterval = null;
-        console.log('Pattern auto-detection stopped');
     }
 }
 
@@ -1264,16 +1216,12 @@ function stopPatternAutoDetection() {
 // ══════════════════════════════════════════════
 
 async function viewGameDetails(gameId) {
-    console.log('viewGameDetails called', gameId);
     const game = registeredGames.find(g => g.id === gameId);
-    console.log('Found game:', game);
-
     if (!game) {
         showNotification('Game not found', 'error');
         return;
     }
 
-    // Create a modal-style detail view
     let detailHtml = `
         <div class="game-detail-overlay" id="gameDetailOverlay">
             <div class="game-detail-modal">
@@ -1286,54 +1234,31 @@ async function viewGameDetails(gameId) {
                     <div class="detail-section">
                         <h4>📋 Game Info</h4>
                         <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Game ID</span>
-                                <span class="detail-value">${game.id}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Type</span>
-                                <span class="detail-value">${game.gameType}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Description</span>
-                                <span class="detail-value">${game.description}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Verified</span>
-                                <span class="detail-value">${game.isVerified ? '✅ Yes' : '❌ No'}</span>
-                            </div>
+                            <div class="detail-item"><span class="detail-label">Game ID</span><span class="detail-value">${game.id}</span></div>
+                            <div class="detail-item"><span class="detail-label">Type</span><span class="detail-value">${game.gameType}</span></div>
+                            <div class="detail-item"><span class="detail-label">Description</span><span class="detail-value">${game.description}</span></div>
+                            <div class="detail-item"><span class="detail-label">Verified</span><span class="detail-value">${game.isVerified ? '✅ Yes' : '❌ No'}</span></div>
                         </div>
                     </div>
-
                     <div class="detail-section">
                         <h4>📊 Activity Stats</h4>
                         <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Total Events</span>
-                                <span class="detail-value detail-value--lg">${game.totalEvents}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Total Actions</span>
-                                <span class="detail-value detail-value--lg">${game.totalActions}</span>
-                            </div>
+                            <div class="detail-item"><span class="detail-label">Total Events</span><span class="detail-value detail-value--lg">${game.totalEvents}</span></div>
+                            <div class="detail-item"><span class="detail-label">Total Actions</span><span class="detail-value detail-value--lg">${game.totalActions}</span></div>
                         </div>
                     </div>
-
                     <div class="detail-section" id="detailMetrics-${gameId}">
                         <h4>📈 Metrics Overview</h4>
                         <div class="detail-loading">Loading metrics...</div>
                     </div>
-
                     <div class="detail-section" id="detailPatterns-${gameId}">
                         <h4>🔍 Recent Patterns</h4>
                         <div class="detail-loading">Loading patterns...</div>
                     </div>
-
                     <div class="detail-section" id="detailSuggestions-${gameId}">
                         <h4>💡 Active Suggestions</h4>
                         <div class="detail-loading">Loading suggestions...</div>
                     </div>
-
                     <div class="detail-section">
                         <h4>🔗 Contract Addresses</h4>
                         <div class="detail-grid">
@@ -1341,9 +1266,7 @@ async function viewGameDetails(gameId) {
                                 try {
                                     const meta = JSON.parse(game.metadata);
                                     let html = '';
-                                    if (meta.primaryAddress) {
-                                        html += `<div class="detail-item"><span class="detail-label">Primary</span><span class="detail-value detail-value--mono">${shortAddr(meta.primaryAddress)}</span></div>`;
-                                    }
+                                    if (meta.primaryAddress) html += `<div class="detail-item"><span class="detail-label">Primary</span><span class="detail-value detail-value--mono">${shortAddr(meta.primaryAddress)}</span></div>`;
                                     if (meta.contracts && meta.contracts.length > 0) {
                                         meta.contracts.forEach(c => {
                                             const roleInfo = CONFIG.CONTRACT_ROLES[c.role] || { label: c.role };
@@ -1351,32 +1274,24 @@ async function viewGameDetails(gameId) {
                                         });
                                     }
                                     return html;
-                                } catch (e) {
-                                    return '<div class="detail-item"><span class="detail-value">No contract info</span></div>';
-                                }
+                                } catch (e) { return '<div class="detail-item"><span class="detail-value">No contract info</span></div>'; }
                             })() : '<div class="detail-item"><span class="detail-value">No metadata</span></div>'}
                         </div>
                     </div>
-
                     <div class="detail-section">
                         <h4>🤖 Agent Config</h4>
                         <div class="detail-grid" id="detailAgentConfig-${gameId}">
                             <div class="detail-loading">Loading config...</div>
                         </div>
                     </div>
-
                     <div class="detail-section">
                         <h4>⚙️ Actions</h4>
                         <div class="detail-actions">
                             <button class="btn btn--ghost btn--sm" onclick="toggleGameStatus(${gameId}, ${game.isActive}); closeGameDetails();">
                                 ${game.isActive ? '⏸ Deactivate' : '▶ Activate'}
                             </button>
-                            <button class="btn btn--ghost btn--sm" onclick="detectPatterns(); closeGameDetails();">
-                                🔍 Scan Patterns
-                            </button>
-                            <button class="btn btn--ghost btn--sm" onclick="generateSuggestions(); closeGameDetails();">
-                                💡 Generate Suggestions
-                            </button>
+                            <button class="btn btn--ghost btn--sm" onclick="detectPatterns(); closeGameDetails();">🔍 Scan Patterns</button>
+                            <button class="btn btn--ghost btn--sm" onclick="generateSuggestions(); closeGameDetails();">💡 Generate Suggestions</button>
                         </div>
                     </div>
                 </div>
@@ -1384,55 +1299,7 @@ async function viewGameDetails(gameId) {
         </div>
     `;
 
-    // Add modal styles if not present
-    if (!document.getElementById('gameDetailStyles')) {
-        const style = document.createElement('style');
-        style.id = 'gameDetailStyles';
-        style.textContent = `
-            .game-detail-overlay {
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.7); z-index: 2000;
-                display: flex; align-items: center; justify-content: center;
-                padding: 20px;
-            }
-            .game-detail-modal {
-                background: var(--bg-card, #1a1a2e); border-radius: 12px;
-                max-width: 700px; width: 100%; max-height: 85vh;
-                overflow-y: auto; border: 1px solid var(--border, #333);
-            }
-            .game-detail-header {
-                display: flex; align-items: center; gap: 12px;
-                padding: 20px 24px; border-bottom: 1px solid var(--border, #333);
-                position: sticky; top: 0; background: var(--bg-card, #1a1a2e); z-index: 1;
-            }
-            .game-detail-header h3 { flex: 1; margin: 0; }
-            .game-detail-body { padding: 0 24px 24px; }
-            .detail-section { margin-top: 20px; }
-            .detail-section h4 { margin-bottom: 12px; font-size: 14px; color: var(--text-secondary, #888); }
-            .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-            .detail-item { padding: 8px 12px; background: var(--bg-secondary, #16213e); border-radius: 8px; }
-            .detail-label { display: block; font-size: 11px; color: var(--text-secondary, #888); margin-bottom: 2px; }
-            .detail-value { font-size: 14px; }
-            .detail-value--lg { font-size: 24px; font-weight: bold; color: var(--accent-primary, #00d4ff); }
-            .detail-value--mono { font-family: monospace; font-size: 12px; }
-            .detail-loading { color: var(--text-secondary, #888); font-style: italic; padding: 8px; }
-            .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-            .detail-pattern-item, .detail-suggestion-item {
-                padding: 8px 12px; background: var(--bg-secondary, #16213e);
-                border-radius: 8px; margin-bottom: 6px; font-size: 13px;
-            }
-            .detail-pattern-item .severity { font-weight: bold; }
-            .severity--high { color: #ff4444; }
-            .severity--medium { color: #ffaa00; }
-            .severity--low { color: #44ff44; }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // Insert modal
     document.body.insertAdjacentHTML('beforeend', detailHtml);
-
-    // Load async details
     loadGameDetailMetrics(gameId);
     loadGameDetailPatterns(gameId);
     loadGameDetailSuggestions(gameId);
@@ -1450,25 +1317,18 @@ async function loadGameDetailMetrics(gameId) {
         if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Metrics not available</span></div>';
         return;
     }
-
     try {
         const metricNames = await contracts.MetricsRegistry.getMetricNames(gameId);
         if (metricNames.length === 0) {
             container.innerHTML = '<div class="detail-item"><span class="detail-value">No metrics defined. Apply a game type template first.</span></div>';
             return;
         }
-
         let html = '<div class="detail-grid">';
-        for (const name of metricNames.slice(0, 10)) { // Limit to 10 for display
+        for (const name of metricNames.slice(0, 10)) {
             try {
                 const stats = await contracts.MetricsRegistry.getStats(gameId, name);
                 const isHealthy = await contracts.MetricsRegistry.isHealthy(gameId, name);
-                html += `
-                    <div class="detail-item">
-                        <span class="detail-label">${name} ${isHealthy ? '🟢' : '🟡'}</span>
-                        <span class="detail-value">${stats[0]} <small>(avg: ${stats[3]})</small></span>
-                    </div>
-                `;
+                html += `<div class="detail-item"><span class="detail-label">${name} ${isHealthy ? '🟢' : '🟡'}</span><span class="detail-value">${stats[0]} <small>(avg: ${stats[3]})</small></span></div>`;
             } catch (e) {}
         }
         html += '</div>';
@@ -1484,24 +1344,16 @@ async function loadGameDetailPatterns(gameId) {
         if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Pattern detector not available</span></div>';
         return;
     }
-
     try {
         const patterns = await contracts.PatternDetector.getActivePatterns(gameId);
         if (patterns.length === 0) {
             container.innerHTML = '<div class="detail-item"><span class="detail-value">No patterns detected yet</span></div>';
             return;
         }
-
         let html = '';
         for (const p of patterns.slice(0, 5)) {
             const sev = Number(p.severity) >= 7 ? 'high' : Number(p.severity) >= 4 ? 'medium' : 'low';
-            html += `
-                <div class="detail-pattern-item">
-                    <span class="severity severity--${sev}">${p.patternType}</span>
-                    — ${p.description}
-                    <small>(severity: ${p.severity}/10, confidence: ${(Number(p.confidence)/100).toFixed(0)}%)</small>
-                </div>
-            `;
+            html += `<div class="detail-pattern-item"><span class="severity severity--${sev}">${p.patternType}</span> — ${p.description} <small>(severity: ${p.severity}/10, confidence: ${(Number(p.confidence)/100).toFixed(0)}%)</small></div>`;
         }
         container.innerHTML = html;
     } catch (e) {
@@ -1515,23 +1367,15 @@ async function loadGameDetailSuggestions(gameId) {
         if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Suggestion engine not available</span></div>';
         return;
     }
-
     try {
         const suggestions = await contracts.SuggestionEngine.getActiveSuggestions(gameId);
         if (suggestions.length === 0) {
             container.innerHTML = '<div class="detail-item"><span class="detail-value">No suggestions yet. Detect patterns first.</span></div>';
             return;
         }
-
         let html = '';
         for (const s of suggestions.slice(0, 5)) {
-            html += `
-                <div class="detail-suggestion-item">
-                    <strong>${s.category}</strong> <span class="badge badge--sm">${s.priority}</span>
-                    — ${s.description}
-                    <br><small>💡 ${s.action}</small>
-                </div>
-            `;
+            html += `<div class="detail-suggestion-item"><strong>${s.category}</strong> <span class="badge badge--sm">${s.priority}</span> — ${s.description}<br><small>💡 ${s.action}</small></div>`;
         }
         container.innerHTML = html;
     } catch (e) {
@@ -1545,34 +1389,15 @@ async function loadGameDetailAgentConfig(gameId) {
         if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Config not available</span></div>';
         return;
     }
-
     try {
         const config = await contracts.GameRegistry.getConfig(gameId);
         container.innerHTML = `
-            <div class="detail-item">
-                <span class="detail-label">Spawn Entities</span>
-                <span class="detail-value">${config.canSpawn ? '✅' : '❌'}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Adjust Economy</span>
-                <span class="detail-value">${config.canAdjustEconomy ? '✅' : '❌'}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Generate Narrative</span>
-                <span class="detail-value">${config.canGenerateNarrative ? '✅' : '❌'}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Adjust Difficulty</span>
-                <span class="detail-value">${config.canAdjustDifficulty ? '✅' : '❌'}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Max Change/Epoch</span>
-                <span class="detail-value">${Number(config.maxChangePerEpoch) / 100}%</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Epoch Length</span>
-                <span class="detail-value">${Number(config.epochLength)} blocks</span>
-            </div>
+            <div class="detail-item"><span class="detail-label">Spawn Entities</span><span class="detail-value">${config.canSpawn ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Economy</span><span class="detail-value">${config.canAdjustEconomy ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Generate Narrative</span><span class="detail-value">${config.canGenerateNarrative ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Difficulty</span><span class="detail-value">${config.canAdjustDifficulty ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Max Change/Epoch</span><span class="detail-value">${Number(config.maxChangePerEpoch) / 100}%</span></div>
+            <div class="detail-item"><span class="detail-label">Epoch Length</span><span class="detail-value">${Number(config.epochLength)} blocks</span></div>
         `;
     } catch (e) {
         container.innerHTML = '<div class="detail-item"><span class="detail-value">Failed to load agent config</span></div>';
@@ -1593,8 +1418,6 @@ function updateActivityFeed() {
     }
 
     let html = '';
-
-    // Show registered games as activity
     for (const game of registeredGames) {
         html += `
             <div class="activity-item">
@@ -1602,8 +1425,8 @@ function updateActivityFeed() {
                 <div class="activity-item__content">
                     <div class="activity-item__title">${game.name} <span class="badge badge--sm">${game.gameType}</span></div>
                     <div class="activity-item__desc">
-                        ${game.isActive ? 'Active' : 'Inactive'} · 
-                        ${game.totalEvents} events · 
+                        ${game.isActive ? 'Active' : 'Inactive'} ·
+                        ${game.totalEvents} events ·
                         ${game.totalActions} actions
                         ${game.isVerified ? ' · ✓ Verified' : ''}
                     </div>
@@ -1611,7 +1434,6 @@ function updateActivityFeed() {
             </div>
         `;
     }
-
     list.innerHTML = html;
 }
 
@@ -1636,7 +1458,6 @@ function showNotification(message, type = 'info') {
 function createNotificationContainer() {
     const container = document.createElement('div');
     container.id = 'notifications';
-    container.style.cssText = 'position:fixed;top:80px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px;';
     document.body.appendChild(container);
     return container;
 }
@@ -1705,7 +1526,12 @@ window.stopPatternAutoDetection = stopPatternAutoDetection;
 // ══════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded fired');
+    // Premium animations
+    initParticles();
+    initTypewriter();
+    initScrollAnimations();
+    initCounters();
+    initGameTypeTabs();
 
     // Connect wallet button
     const connectBtn = document.getElementById('connectBtn');
@@ -1720,7 +1546,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (heroRegisterBtn) {
         heroRegisterBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('heroRegisterBtn clicked');
             showRegisterPage();
         });
     }
@@ -1743,13 +1568,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.sidebar__link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const view = link.dataset.view;
-            switchView(view);
+            switchView(link.dataset.view);
         });
     });
-
-    // Register form - button onclick handles registration
-    // No form submit listener needed
 
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

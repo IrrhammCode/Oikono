@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OIKONO - Data-Driven Game Economy Agent</title>
+    <title>OIKONO — Data-Driven Game Economy Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
+    <!-- Particle Background -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Navigation -->
     <nav class="nav">
         <div class="nav__inner">
             <a href="#" class="nav__brand">
-                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="44" height="44">
+                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="36" height="36">
                 <span class="nav__name">OIKONO</span>
             </a>
             <div class="nav__links">
                 <a href="#features" class="nav__link">Features</a>
                 <a href="#how-it-works" class="nav__link">How It Works</a>
+                <a href="#game-types" class="nav__link">Game Types</a>
                 <a href="#developers" class="nav__link">Developers</a>
             </div>
             <div class="nav__actions">
@@ -27,16 +33,26 @@
         </div>
     </nav>
 
+    <!-- Hero Section -->
     <section class="hero">
-        <div class="hero__bg">
-            <div class="hero__grid"></div>
-            <div class="hero__glow"></div>
+        <div class="hero__bg"></div>
+
+        <!-- 3D Floating Shapes -->
+        <div class="hero__shapes">
+            <div class="shape shape--cube"></div>
+            <div class="shape shape--sphere"></div>
+            <div class="shape shape--hexagon"></div>
+            <div class="shape shape--diamond"></div>
+            <div class="shape shape--ring"></div>
+            <div class="shape shape--dot"></div>
+            <div class="shape shape--dot2"></div>
         </div>
+
         <div class="container">
-            <div class="hero__content">
-                <div class="hero__badge">Data-Driven</div>
+            <div class="hero__content reveal">
+                <div class="hero__badge">Data-Driven Intelligence</div>
                 <h1 class="hero__title">
-                    Autonomous Game Economy<br>
+                    Autonomous Game Economy
                     <span class="gradient">Powered by Real Data</span>
                 </h1>
                 <p class="hero__desc">
@@ -49,54 +65,63 @@
                 </div>
                 <div class="hero__stats">
                     <div class="hero__stat">
-                        <div class="hero__stat-value">10</div>
+                        <div class="hero__stat-value" data-count="10">10</div>
                         <div class="hero__stat-label">Game Types</div>
                     </div>
                     <div class="hero__stat">
-                        <div class="hero__stat-value">60+</div>
+                        <div class="hero__stat-value" data-count="60" data-suffix="+">0</div>
                         <div class="hero__stat-label">Metrics</div>
                     </div>
                     <div class="hero__stat">
-                        <div class="hero__stat-value">30+</div>
+                        <div class="hero__stat-value" data-count="30" data-suffix="+">0</div>
                         <div class="hero__stat-label">Detection Rules</div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <div class="scroll-indicator__mouse">
+                <div class="scroll-indicator__wheel"></div>
+            </div>
+            <span class="scroll-indicator__text">Scroll</span>
+        </div>
     </section>
 
+    <!-- Features Section -->
     <section class="section" id="features">
         <div class="container">
-            <div class="section__header">
+            <div class="section__header reveal">
                 <div class="section__label">Capabilities</div>
                 <h2 class="section__title">Data-Driven Approach</h2>
                 <p class="section__desc">We don't assume formulas. We track data, detect patterns, and learn from outcomes.</p>
             </div>
             <div class="features__grid">
-                <div class="feature-card">
+                <div class="feature-card reveal stagger-1">
                     <div class="feature-card__icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                     </div>
                     <h3 class="feature-card__title">Flexible Metrics</h3>
                     <p class="feature-card__desc">Define your own metrics or use pre-built templates for 10+ game types.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card reveal stagger-2">
                     <div class="feature-card__icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                     </div>
                     <h3 class="feature-card__title">Pattern Detection</h3>
                     <p class="feature-card__desc">Automatically detect anomalies, trends, and correlations in your game data.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card reveal stagger-3">
                     <div class="feature-card__icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                     </div>
                     <h3 class="feature-card__title">Smart Suggestions</h3>
                     <p class="feature-card__desc">Get actionable suggestions based on detected patterns. System learns from outcomes.</p>
                 </div>
-                <div class="feature-card">
+                <div class="feature-card reveal stagger-4">
                     <div class="feature-card__icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
                     </div>
                     <h3 class="feature-card__title">Continuous Learning</h3>
                     <p class="feature-card__desc">Track what suggestions you implemented and what happened. System improves over time.</p>
@@ -105,53 +130,156 @@
         </div>
     </section>
 
+    <!-- How It Works Section (Timeline) -->
     <section class="section section--dark" id="how-it-works">
         <div class="container">
-            <div class="section__header">
+            <div class="section__header reveal">
                 <div class="section__label">Process</div>
                 <h2 class="section__title">From Data to Decisions</h2>
                 <p class="section__desc">A continuous cycle of tracking, analyzing, suggesting, and learning.</p>
             </div>
-            <div class="steps">
-                <div class="step">
-                    <div class="step__number">01</div>
-                    <div class="step__content">
-                        <h3 class="step__title">Define Metrics</h3>
-                        <p class="step__desc">Choose a game type template or define custom metrics.</p>
+            <div class="timeline">
+                <div class="timeline-step reveal">
+                    <div class="timeline-step__dot"></div>
+                    <div class="timeline-step__number">Step 01</div>
+                    <h3 class="timeline-step__title">Define Metrics</h3>
+                    <p class="timeline-step__desc">Choose a game type template or define custom metrics. Set healthy ranges and alert thresholds.</p>
+                </div>
+                <div class="timeline-step reveal">
+                    <div class="timeline-step__dot"></div>
+                    <div class="timeline-step__number">Step 02</div>
+                    <h3 class="timeline-step__title">Collect Data</h3>
+                    <p class="timeline-step__desc">System automatically collects on-chain data. You report off-chain metrics for comprehensive tracking.</p>
+                </div>
+                <div class="timeline-step reveal">
+                    <div class="timeline-step__dot"></div>
+                    <div class="timeline-step__number">Step 03</div>
+                    <h3 class="timeline-step__title">Detect Patterns</h3>
+                    <p class="timeline-step__desc">AI analyzes data for anomalies, trends, and correlations. Patterns surface automatically.</p>
+                </div>
+                <div class="timeline-step reveal">
+                    <div class="timeline-step__dot"></div>
+                    <div class="timeline-step__number">Step 04</div>
+                    <h3 class="timeline-step__title">Get Suggestions</h3>
+                    <p class="timeline-step__desc">Receive actionable suggestions with confidence levels. Track implementation outcomes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section" id="stats">
+        <div class="container">
+            <div class="stats-section__grid">
+                <div class="stats-section__card reveal stagger-1">
+                    <div class="stats-section__value" data-count="10">0</div>
+                    <div class="stats-section__label">Game Types</div>
+                </div>
+                <div class="stats-section__card reveal stagger-2">
+                    <div class="stats-section__value" data-count="60" data-suffix="+">0</div>
+                    <div class="stats-section__label">Metrics Tracked</div>
+                </div>
+                <div class="stats-section__card reveal stagger-3">
+                    <div class="stats-section__value" data-count="30" data-suffix="+">0</div>
+                    <div class="stats-section__label">Detection Rules</div>
+                </div>
+                <div class="stats-section__card reveal stagger-4">
+                    <div class="stats-section__value" data-count="24" data-suffix="/7">0</div>
+                    <div class="stats-section__label">Monitoring</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Game Types Section -->
+    <section class="section section--dark" id="game-types">
+        <div class="container">
+            <div class="section__header reveal">
+                <div class="section__label">Game Types</div>
+                <h2 class="section__title">Built for Every Genre</h2>
+                <p class="section__desc">Pre-configured templates with genre-specific metrics and detection rules.</p>
+            </div>
+            <div class="game-types__tabs reveal">
+                <button class="game-types__tab active" data-tab="rpg">RPG</button>
+                <button class="game-types__tab" data-tab="card">Card Game</button>
+                <button class="game-types__tab" data-tab="pvp">PvP</button>
+                <button class="game-types__tab" data-tab="strategy">Strategy</button>
+                <button class="game-types__tab" data-tab="idle">Idle</button>
+                <button class="game-types__tab" data-tab="defi">DeFi</button>
+            </div>
+            <div class="game-types__content reveal">
+                <div class="game-type-panel active" id="tab-rpg">
+                    <div class="game-type-panel__icon">⚔️</div>
+                    <h3 class="game-type-panel__title">Role-Playing Games</h3>
+                    <p class="game-type-panel__desc">Track player progression, economy balance, and engagement metrics. Monitor win rates, token velocity, and retention curves.</p>
+                    <div class="game-type-panel__metrics">
+                        <div class="game-type-panel__metric">win_rate</div>
+                        <div class="game-type-panel__metric">token_velocity</div>
+                        <div class="game-type-panel__metric">gold_inflation</div>
+                        <div class="game-type-panel__metric">retention_d7</div>
                     </div>
                 </div>
-                <div class="step">
-                    <div class="step__number">02</div>
-                    <div class="step__content">
-                        <h3 class="step__title">Collect Data</h3>
-                        <p class="step__desc">System automatically collects on-chain data. You report off-chain metrics.</p>
+                <div class="game-type-panel" id="tab-card">
+                    <div class="game-type-panel__icon">🃏</div>
+                    <h3 class="game-type-panel__title">Card Games</h3>
+                    <p class="game-type-panel__desc">Monitor pack expected value, meta diversity, and collection rates. Ensure healthy card economy and balanced meta.</p>
+                    <div class="game-type-panel__metrics">
+                        <div class="game-type-panel__metric">pack_ev</div>
+                        <div class="game-type-panel__metric">meta_diversity</div>
+                        <div class="game-type-panel__metric">collection_rate</div>
                     </div>
                 </div>
-                <div class="step">
-                    <div class="step__number">03</div>
-                    <div class="step__content">
-                        <h3 class="step__title">Detect Patterns</h3>
-                        <p class="step__desc">AI analyzes data for anomalies, trends, and correlations.</p>
+                <div class="game-type-panel" id="tab-pvp">
+                    <div class="game-type-panel__icon">🏟️</div>
+                    <h3 class="game-type-panel__title">PvP Games</h3>
+                    <p class="game-type-panel__desc">Track matchmaking quality, queue times, and competitive balance. Ensure fair and engaging competitive experience.</p>
+                    <div class="game-type-panel__metrics">
+                        <div class="game-type-panel__metric">queue_time</div>
+                        <div class="game-type-panel__metric">match_balance</div>
                     </div>
                 </div>
-                <div class="step">
-                    <div class="step__number">04</div>
-                    <div class="step__content">
-                        <h3 class="step__title">Get Suggestions</h3>
-                        <p class="step__desc">Receive actionable suggestions with confidence levels.</p>
+                <div class="game-type-panel" id="tab-strategy">
+                    <div class="game-type-panel__icon">🏰</div>
+                    <h3 class="game-type-panel__title">Strategy Games</h3>
+                    <p class="game-type-panel__desc">Monitor resource economy, build times, and faction balance. Track long-term engagement and progression curves.</p>
+                    <div class="game-type-panel__metrics">
+                        <div class="game-type-panel__metric">resource_balance</div>
+                        <div class="game-type-panel__metric">faction_win_rate</div>
+                        <div class="game-type-panel__metric">avg_game_length</div>
+                    </div>
+                </div>
+                <div class="game-type-panel" id="tab-idle">
+                    <div class="game-type-panel__icon">⏰</div>
+                    <h3 class="game-type-panel__title">Idle / Clicker</h3>
+                    <p class="game-type-panel__desc">Track progression speed, prestige rates, and monetization health. Balance idle rewards with active engagement.</p>
+                    <div class="game-type-panel__metrics">
+                        <div class="game-type-panel__metric">progression_speed</div>
+                        <div class="game-type-panel__metric">prestige_rate</div>
+                        <div class="game-type-panel__metric">session_frequency</div>
+                    </div>
+                </div>
+                <div class="game-type-panel" id="tab-defi">
+                    <div class="game-type-panel__icon">💎</div>
+                    <h3 class="game-type-panel__title">DeFi / GameFi</h3>
+                    <p class="game-type-panel__desc">Monitor TVL, yield sustainability, and token economics. Track player earnings vs protocol health.</p>
+                    <div class="game-type-panel__metrics">
+                        <div class="game-type-panel__metric">tvl_ratio</div>
+                        <div class="game-type-panel__metric">yield_sustainability</div>
+                        <div class="game-type-panel__metric">earn_to_play_ratio</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Registration Section -->
     <section class="section" id="developers" style="display:none">
         <div class="container">
             <div class="section__header">
                 <div class="section__label">For Developers</div>
                 <h2 class="section__title">Register Your Game</h2>
                 <p class="section__desc">Choose a game type template or define custom metrics.</p>
-                <button class="btn btn--ghost" onclick="showLanding()" style="margin-top: 1rem;">Back to Home</button>
+                <button class="btn btn--ghost" onclick="showLanding()" style="margin-top: 1rem;">← Back to Home</button>
             </div>
             <div class="register-form">
                 <div class="register-form__card">
@@ -223,7 +351,7 @@
                                 </select>
                             </div>
                             <div class="form-group" style="flex: 0; align-self: flex-end">
-                                <button type="button" class="btn btn--ghost btn--sm" onclick="addGameContract()" style="height: 36px; min-width: 60px; padding: 0 var(--space-4)">Add</button>
+                                <button type="button" class="btn btn--ghost btn--sm" onclick="addGameContract()" style="height: 38px; min-width: 60px; padding: 0 var(--space-4)">Add</button>
                             </div>
                         </div>
 
@@ -581,31 +709,32 @@
         </div>
     </section>
 
+    <!-- Dashboard -->
     <section class="dashboard" id="dashboard" style="display:none">
         <div class="dashboard__sidebar">
             <div class="sidebar__header">
-                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="44" height="44">
+                <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="36" height="36">
                 <span class="nav__name">OIKONO</span>
             </div>
             <nav class="sidebar__nav">
                 <a href="#/dashboard/overview" class="sidebar__link sidebar__link--active" data-view="overview">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                     Overview
                 </a>
                 <a href="#/dashboard/metrics" class="sidebar__link" data-view="metrics">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
                     Metrics
                 </a>
                 <a href="#/dashboard/patterns" class="sidebar__link" data-view="patterns">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                     Patterns
                 </a>
                 <a href="#/dashboard/suggestions" class="sidebar__link" data-view="suggestions">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
                     Suggestions
                 </a>
                 <a href="#/dashboard/games" class="sidebar__link" data-view="games">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="16" cy="10" r="1"/><circle cx="18" cy="12" r="1"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4"/><circle cx="16" cy="10" r="1"/><circle cx="18" cy="12" r="1"/></svg>
                     My Games
                 </a>
             </nav>
@@ -623,7 +752,7 @@
             <div class="dashboard__header">
                 <h2 class="dashboard__title" id="dashboardTitle">Overview</h2>
                 <div class="dashboard__actions">
-                    <button class="btn btn--ghost" onclick="showLanding()">Back to Home</button>
+                    <button class="btn btn--ghost" onclick="showLanding()">← Back to Home</button>
                 </div>
             </div>
             <div class="dashboard__content">
@@ -669,11 +798,8 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="card" style="margin-top: var(--space-6);">
-                        <div class="card__header">
-                            <h3>Record Metric</h3>
-                        </div>
+                        <div class="card__header"><h3>Record Metric</h3></div>
                         <div class="card__body">
                             <div class="form-row">
                                 <div class="form-group" style="flex: 1">
@@ -735,13 +861,14 @@
         </div>
     </section>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer__inner">
                 <div class="footer__brand">
-                    <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="44" height="44">
+                    <img src="logo_premium_transparent.png" alt="OIKONO Logo" class="nav__logo-image" width="36" height="36">
                     <span class="nav__name">OIKONO</span>
-                    <p class="footer__desc">Data-driven game economy agent on Somnia.</p>
+                    <p class="footer__desc">Data-driven game economy agent on Somnia. Track, detect, suggest, learn.</p>
                 </div>
                 <div class="footer__links">
                     <a href="#" class="footer__link">Documentation</a>
@@ -758,6 +885,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
     <script src="config.js?v=25"></script>
-    <script src="app.js?v=25"></script>
+    <script src="app.js?v=30"></script>
 </body>
 </html>
