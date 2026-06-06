@@ -79,7 +79,8 @@ async function main() {
     const gameMaster = await GameMaster.deploy(
         await playerRegistry.getAddress(),
         await enemyNFT.getAddress(),
-        await antiSybil.getAddress()
+        await antiSybil.getAddress(),
+        await circuitBreaker.getAddress()
     );
     await gameMaster.waitForDeployment();
     console.log("✅ GameMaster:", await gameMaster.getAddress());

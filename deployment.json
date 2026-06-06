@@ -1,0 +1,20 @@
+{
+  "network": "Somnia Testnet",
+  "chainId": 50312,
+  "deployer": "0xe255990F02E12b1Ec96Dd80bA6270bA24DDF86C6",
+  "timestamp": "2026-06-06T14:32:08.671Z",
+  "contracts": {
+    "OIKToken": "0x956B050AEeF843aCb531eb8148176dF392A8AcD6",
+    "EnemyNFT": "0xF82E935687b789bDe68CE7A325C427aa521bD846",
+    "PlayerRegistry": "0x8761C9FfF624C619161cBe7f44e155b649ad52B5",
+    "GameMaster": "0x3881e6c59a70888DD963ca75C47890F87703ae27",
+    "BattleArena": "0x3308B75095517df446cf496b2Ff2adE8b907a543",
+    "EconomyController": "0xb5Dd7AF5C9b4bA67bAD21D8f48Bc1Ec7a1Bcb031",
+    "EconomyParams": "0x85a8854751c7F13961B20EA3dEc563EDbB85D381",
+    "Treasury": "0x37D1ba0478E32598EF84E9c03C19619A86Cc26B2",
+    "RewardDistributor": "0xEe73824732D21Dc6AD1039a6F4CAE2f11d7B0cA9",
+    "CircuitBreaker": "0x4A34809454df50aF9A9581f2E60292c56dAD1bB3",
+    "AntiSybil": "0x3cBF6d53DF9bb052a348706F0f01b6D36EBeb241",
+    "TWAPOracle": "0x1dcEC3807fca337f54C81cDe01985594427F18b6"
+  }
+}
