@@ -62,6 +62,9 @@ contract GameRegistry is Ownable {
     mapping(string => uint256) public gameTypeCount;
     string[] public registeredGameTypes;
 
+    // KnowledgeBase reference
+    address public knowledgeBase;
+
     // ============ Events ============
 
     event GameRegistered(
@@ -84,7 +87,9 @@ contract GameRegistry is Ownable {
         address _agent,
         address _agentMemory,
         address _knowledgeBase
-    ) Ownable(msg.sender) {}
+    ) Ownable(msg.sender) {
+        knowledgeBase = _knowledgeBase;
+    }
 
     // ============ Registration ============
 
@@ -357,7 +362,13 @@ contract GameRegistry is Ownable {
     // ============ Internal ============
 
     function _getKnowledgeBase() internal view returns (address) {
-        // This would need to be set in constructor or via admin
-        return address(0); // Placeholder
+        return knowledgeBase;
+    }
+
+    /**
+     * @notice Set KnowledgeBase address
+     */
+    function setKnowledgeBase(address _knowledgeBase) external onlyOwner {
+        knowledgeBase = _knowledgeBase;
     }
 }

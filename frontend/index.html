@@ -194,8 +194,18 @@
                         </div>
 
                         <div class="form-divider"></div>
-                        <h4 class="form-section-title">Game Contracts</h4>
-                        <p class="form-section-desc">Add your game contracts (token, NFT, marketplace, etc.)</p>
+                        <h4 class="form-section-title">Primary Game Contract</h4>
+                        <p class="form-section-desc">The main game contract address (required for reactivity)</p>
+
+                        <div class="form-group">
+                            <label class="form-label">Game Contract Address <span style="color:var(--accent-danger)">*</span></label>
+                            <input type="text" class="form-input" id="primaryGameAddress" placeholder="0x..." required>
+                            <span class="form-hint">This is the main contract your game runs on. Required for on-chain reactivity.</span>
+                        </div>
+
+                        <div class="form-divider"></div>
+                        <h4 class="form-section-title">Additional Contracts</h4>
+                        <p class="form-section-desc">Add more game contracts (token, NFT, marketplace, etc.)</p>
 
                         <div class="form-row">
                             <div class="form-group" style="flex: 2">
@@ -292,13 +302,20 @@
                             </label>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Max Change Per Epoch</label>
-                            <div class="form-range">
-                                <input type="range" id="maxChange" min="5" max="50" value="20" oninput="updateRangeDisplay(this, 'maxChangeDisplay')">
-                                <span id="maxChangeDisplay" class="form-range__value">20%</span>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Max Change Per Epoch</label>
+                                <div class="form-range">
+                                    <input type="range" id="maxChange" min="5" max="50" value="20" oninput="updateRangeDisplay(this, 'maxChangeDisplay')">
+                                    <span id="maxChangeDisplay" class="form-range__value">20%</span>
+                                </div>
+                                <span class="form-hint">Maximum percentage the agent can change per adjustment cycle</span>
                             </div>
-                            <span class="form-hint">Maximum percentage the agent can change per adjustment cycle</span>
+                            <div class="form-group">
+                                <label class="form-label">Epoch Length (blocks)</label>
+                                <input type="number" class="form-input" id="epochLength" placeholder="e.g., 6500" value="6500" min="1">
+                                <span class="form-hint">Number of blocks per epoch (~1 hour at 550ms/block on Somnia)</span>
+                            </div>
                         </div>
 
                         <div class="form-divider"></div>

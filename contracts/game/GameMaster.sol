@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./PlayerRegistry.sol";
 import "./EnemyNFT.sol";
 import "../utils/AntiSybil.sol";
+import "../utils/CircuitBreaker.sol";
 
 /**
  * @title IAgentRequester
@@ -71,6 +72,7 @@ contract GameMaster is Ownable {
     PlayerRegistry public playerRegistry;
     EnemyNFT public enemyNFT;
     AntiSybil public antiSybil;
+    CircuitBreaker public circuitBreaker;
 
     // LLM Mode: true = use Somnia LLM Agent, false = use deterministic fallback
     bool public useLLMAgent;
@@ -120,11 +122,20 @@ contract GameMaster is Ownable {
     constructor(
         address _playerRegistry,
         address _enemyNFT,
-        address _antiSybil
+        address _antiSybil,
+        address _circuitBreaker
     ) Ownable(msg.sender) {
         playerRegistry = PlayerRegistry(_playerRegistry);
         enemyNFT = EnemyNFT(_enemyNFT);
         antiSybil = AntiSybil(_antiSybil);
+        circuitBreaker = CircuitBreaker(_circuitBreaker);
+    }
+
+    // ============ Modifiers ============
+
+    modifier whenSystemActive() {
+        require(!circuitBreaker.paused(), "System paused by circuit breaker");
+        _;
     }
 
     /**
@@ -133,6 +144,13 @@ contract GameMaster is Ownable {
      */
     function setLLMMode(bool _useLLM) external onlyOwner {
         useLLMAgent = _useLLM;
+    }
+
+    /**
+     * @notice Set CircuitBreaker reference
+     */
+    function setCircuitBreaker(address _circuitBreaker) external onlyOwner {
+        circuitBreaker = CircuitBreaker(_circuitBreaker);
     }
 
     // ========================================
@@ -194,7 +212,7 @@ contract GameMaster is Ownable {
         address emitter,
         bytes32[] calldata topics,
         bytes calldata data
-    ) external {
+    ) external whenSystemActive {
         // Only Somnia validators can call this
         require(msg.sender == address(0x100) || msg.sender == REACTIVITY_PRECOMPILE,
             "Only Somnia validators");
@@ -212,7 +230,7 @@ contract GameMaster is Ownable {
      * @notice Manually trigger enemy generation (for testing/fallback)
      * @dev Can be called by player directly or by admin
      */
-    function triggerEnemyGeneration(address player) external {
+    function triggerEnemyGeneration(address player) external whenSystemActive {
         require(
             msg.sender == player || msg.sender == owner(),
             "Not authorized"
@@ -290,8 +308,15 @@ contract GameMaster is Ownable {
             " at position (", _toString(x), ", ", _toString(y), ")",
             " with ", _toString(xp), " XP and Level ", _toString(level),
             ". Generate a challenging enemy NPC.",
-            " Return JSON: {\"name\":\"...\",\"class\":\"assassin|tank|mage|berserker|healer|ranger\",",
-            "\"element\":\"fire|ice|shadow|lightning|void|earth\",\"power\":40-100,\"threat_level\":1-10}"
+            "\n\nRESPONSE FORMAT - Return ONLY pipe-separated values:\n",
+            "name|class|element|power|threat_level\n\n",
+            "Fields:\n",
+            "- name: Creative enemy name (no pipes)\n",
+            "- class: assassin|tank|mage|berserker|healer|ranger\n",
+            "- element: fire|ice|shadow|lightning|void|earth\n",
+            "- power: 40 to 100\n",
+            "- threat_level: 1 to 10\n\n",
+            "Example: Shadow Wraith|assassin|shadow|75|7"
         ));
     }
 
@@ -379,8 +404,9 @@ contract GameMaster is Ownable {
 
     /**
      * @notice Callback handler for Somnia LLM Inference response
-     * @dev In production, this is called by Somnia after subcommittee consensus
-     *      CRITICAL: Verify msg.sender is Somnia Platform
+     * @dev Parses pipe-separated response and mints enemy NFT
+     *      Format: name|class|element|power|threat_level
+     *      Verify msg.sender is Somnia Platform
      */
     function handleAIResponse(
         uint256 requestId,
@@ -395,23 +421,122 @@ contract GameMaster is Ownable {
 
         request.processed = true;
 
-        // Decode AI response (JSON string)
+        // Decode AI response (pipe-separated string)
         string memory aiResponse = abi.decode(responseData, (string));
 
-        // Parse and mint enemy (simplified - in production use proper JSON parsing)
-        // For now, use deterministic generation based on AI response hash
-        bytes32 responseHash = keccak256(abi.encodePacked(aiResponse));
+        // Parse pipe-separated response: name|class|element|power|threat_level
+        (string memory name, string memory enemyClass, string memory element,
+         uint256 power, uint256 threatLevel) = _parseEnemyResponse(aiResponse);
 
-        _generateEnemyDeterministic(
-            request.player,
-            request.x,
-            request.y,
-            request.xp,
-            request.level,
-            aiResponse
-        );
+        // Validate parsed values
+        if (power < 40 || power > 100 || bytes(name).length == 0) {
+            // Fallback to deterministic generation if parsing fails
+            _generateEnemyDeterministic(
+                request.player,
+                request.x,
+                request.y,
+                request.xp,
+                request.level,
+                aiResponse
+            );
+        } else {
+            // Use LLM-generated enemy
+            if (threatLevel < 1) threatLevel = 1;
+            if (threatLevel > 10) threatLevel = 10;
+
+            // Create metadata URI
+            string memory metadataURI = string(abi.encodePacked(
+                "data:application/json,{\"name\":\"", name,
+                "\",\"class\":\"", enemyClass,
+                "\",\"element\":\"", element,
+                "\",\"power\":", _toString(power),
+                ",\"threat_level\":", _toString(threatLevel),
+                ",\"creator\":\"", _shortAddress(request.player), "\",\"source\":\"llm\"}"
+            ));
+
+            // Mint EnemyNFT with LLM-generated data
+            uint256 tokenId = enemyNFT.mintFromAI(
+                request.player,
+                name,
+                enemyClass,
+                element,
+                power,
+                threatLevel,
+                metadataURI
+            );
+
+            totalEnemiesGenerated++;
+            emit EnemyGenerated(request.player, tokenId, name, enemyClass, power);
+        }
 
         emit LLMResponseReceived(requestId, aiResponse);
+    }
+
+    /**
+     * @notice Parse pipe-separated LLM response for enemy generation
+     * @dev Format: name|class|element|power|threat_level
+     */
+    function _parseEnemyResponse(
+        string memory response
+    ) internal pure returns (
+        string memory name,
+        string memory enemyClass,
+        string memory element,
+        uint256 power,
+        uint256 threatLevel
+    ) {
+        bytes memory data = bytes(response);
+
+        // Default values
+        name = "";
+        enemyClass = "assassin";
+        element = "fire";
+        power = 50;
+        threatLevel = 5;
+
+        // Find pipe positions
+        uint256[] memory pipes = new uint256[](4);
+        uint256 pipeCount = 0;
+
+        for (uint256 i = 0; i < data.length && pipeCount < 4; i++) {
+            if (data[i] == '|') {
+                pipes[pipeCount] = i;
+                pipeCount++;
+            }
+        }
+
+        // Need at least 4 pipes for 5 fields
+        if (pipeCount < 4) {
+            return (name, enemyClass, element, power, threatLevel);
+        }
+
+        // Parse fields
+        name = _extractString(data, 0, pipes[0]);
+        enemyClass = _extractString(data, pipes[0] + 1, pipes[1]);
+        element = _extractString(data, pipes[1] + 1, pipes[2]);
+        power = _extractUint(data, pipes[2] + 1, pipes[3]);
+        threatLevel = _extractUint(data, pipes[3] + 1, data.length);
+
+        return (name, enemyClass, element, power, threatLevel);
+    }
+
+    function _extractString(bytes memory data, uint256 start, uint256 end) internal pure returns (string memory) {
+        uint256 len = end - start;
+        bytes memory result = new bytes(len);
+        for (uint256 i = 0; i < len; i++) {
+            result[i] = data[start + i];
+        }
+        return string(result);
+    }
+
+    function _extractUint(bytes memory data, uint256 start, uint256 end) internal pure returns (uint256) {
+        uint256 result = 0;
+        for (uint256 i = start; i < end; i++) {
+            if (data[i] >= '0' && data[i] <= '9') {
+                result = result * 10 + uint256(uint8(data[i]) - 48);
+            }
+        }
+        return result;
     }
 
     // ========================================

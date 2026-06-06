@@ -11,6 +11,16 @@ import "./AgentMemory.sol";
 import "./GameKnowledgeBase.sol";
 
 /**
+ * @title ICircuitBreaker
+ * @notice Interface for CircuitBreaker contract
+ */
+interface ICircuitBreaker {
+    function paused() external view returns (bool);
+    function voteToPause() external;
+    function emergencyPause() external;
+}
+
+/**
  * @title IGameRegistry
  * @notice Interface for GameRegistry
  */
@@ -122,6 +132,13 @@ contract OikonoAgent is Ownable {
         uint256 memorySize
     );
 
+    // ============ Modifiers ============
+
+    modifier whenSystemActive() {
+        require(circuitBreaker == address(0) || !ICircuitBreaker(circuitBreaker).paused(), "System paused by circuit breaker");
+        _;
+    }
+
     // ============ Constructor ============
 
     constructor(
@@ -163,7 +180,7 @@ contract OikonoAgent is Ownable {
         uint256 gameId,
         string calldata actionType,
         bytes calldata gameData
-    ) external returns (uint256 decisionId) {
+    ) external whenSystemActive returns (uint256 decisionId) {
         // Verify game is registered and active
         require(address(gameRegistry) != address(0), "Registry not set");
         (, address gameAddress, , , , , bool isActive, , , , , ) = gameRegistry.games(gameId);
@@ -214,7 +231,7 @@ contract OikonoAgent is Ownable {
         uint256 decisionId,
         bool success,
         bytes calldata resultData
-    ) external {
+    ) external whenSystemActive {
         PendingDecision storage decision = pendingDecisions[decisionId];
         require(!decision.processed, "Already processed");
 
@@ -474,6 +491,7 @@ contract OikonoAgent is Ownable {
 
     /**
      * @notice Build the LLM prompt with full context
+     * @dev Requests pipe-separated response for gas-efficient on-chain parsing
      */
     function _buildLLMPrompt(
         address game,
@@ -485,14 +503,20 @@ contract OikonoAgent is Ownable {
         GameContext storage ctx = gameContexts[game];
 
         return string(abi.encodePacked(
-            "You are OIKONO, an autonomous AI agent managing a Web3 game. ",
-            "Game: ", ctx.gameType, ". ",
-            "Decision type: ", decisionType, ". ",
+            "You are OIKONO, an autonomous AI agent managing a Web3 game.\n",
+            "Game: ", ctx.gameType, ". Decision type: ", decisionType, ".\n",
             "Context size: ", _toString(contextData.length), " bytes. ",
             "State size: ", _toString(gameState.length), " bytes. ",
-            "Memory entries: ", _toString(memoryData.length > 0 ? 1 : 0), ". ",
-            "Analyze and recommend action. ",
-            "Return JSON: {\"action\":\"...\",\"params\":{...},\"confidence\":0-100,\"reasoning\":\"...\"}"
+            "Memory entries: ", _toString(memoryData.length > 0 ? 1 : 0), ".\n",
+            "Analyze and recommend an action.\n\n",
+            "RESPONSE FORMAT - Return ONLY pipe-separated values:\n",
+            "success|action|confidence|reasoning\n\n",
+            "Fields:\n",
+            "- success: true or false\n",
+            "- action: spawn_balanced|spawn_challenging|spawn_easy|increase_difficulty|decrease_difficulty|maintain_difficulty|trigger_deflation|stimulate_economy|maintain_economy|no_action\n",
+            "- confidence: 0 to 100\n",
+            "- reasoning: Brief explanation (no pipes)\n\n",
+            "Example: true|spawn_balanced|85|Player at moderate level, balanced challenge needed"
         ));
     }
 
@@ -637,7 +661,8 @@ contract OikonoAgent is Ownable {
 
     /**
      * @notice Handle LLM response from Somnia Inference
-     * @dev In production, this is called by Somnia after subcommittee consensus
+     * @dev Parses pipe-separated response and executes the recommended action
+     *      Format: success|action|confidence|reasoning
      */
     function handleLLMResponse(
         uint256 decisionId,
@@ -648,24 +673,136 @@ contract OikonoAgent is Ownable {
         PendingDecision storage decision = pendingDecisions[decisionId];
         require(!decision.processed, "Already processed");
 
-        // Parse LLM response
-        // Expected: {"action":"spawn","params":{"name":"...","power":75},...}
+        // Decode pipe-separated response
         string memory response = abi.decode(responseData, (string));
 
-        // Execute based on LLM recommendation
-        // For now, record the decision
+        // Parse the response
+        (bool success, string memory action, uint256 confidence, string memory reasoning) =
+            _parseLLMResponse(response);
+
         decision.processed = true;
 
+        bool executed = false;
+
+        if (success && confidence >= 50) {
+            // Execute the LLM-recommended action
+            if (_startsWith(action, "spawn")) {
+                (executed, ) = _executeSpawnDecision(decision.game, decision.contextData);
+            } else if (_startsWith(action, "increase_difficulty") || _startsWith(action, "decrease_difficulty") || _startsWith(action, "maintain_difficulty")) {
+                (executed, ) = _executeBalanceDecision(decision.game, decision.contextData);
+            } else if (_startsWith(action, "trigger_deflation") || _startsWith(action, "stimulate_economy") || _startsWith(action, "maintain_economy")) {
+                (executed, ) = _executeEconomyDecision(decision.game, decision.contextData);
+            } else {
+                executed = true; // no_action
+            }
+        } else {
+            // Low confidence or parse failure — use rule-based fallback
+            _executeDecision(decisionId, decision.game, decision.decisionType, decision.contextData, decision.gameState);
+            executed = true;
+        }
+
+        // Record in memory for learning
         memory_.recordDecision(
             decision.game,
             decision.player,
             decision.decisionType,
             decision.contextData,
-            true,
-            responseData
+            executed,
+            abi.encode(action, confidence)
         );
 
+        emit DecisionExecuted(decisionId, decision.game, action, executed);
+        emit AgentActionTaken(decision.game, decision.decisionType, action);
+
         totalLLMCalls++;
+        totalAutoActions++;
+    }
+
+    /**
+     * @notice Parse pipe-separated LLM response
+     * @dev Format: success|action|confidence|reasoning
+     */
+    function _parseLLMResponse(
+        string memory response
+    ) internal pure returns (
+        bool success,
+        string memory action,
+        uint256 confidence,
+        string memory reasoning
+    ) {
+        bytes memory data = bytes(response);
+
+        // Default values
+        success = false;
+        action = "no_action";
+        confidence = 0;
+        reasoning = "";
+
+        // Find pipe positions
+        uint256[] memory pipes = new uint256[](3);
+        uint256 pipeCount = 0;
+
+        for (uint256 i = 0; i < data.length && pipeCount < 3; i++) {
+            if (data[i] == '|') {
+                pipes[pipeCount] = i;
+                pipeCount++;
+            }
+        }
+
+        // Need at least 3 pipes for 4 fields
+        if (pipeCount < 3) {
+            return (false, "no_action", 0, "Invalid response format");
+        }
+
+        // Parse success (field 1)
+        success = _parseBool(data, 0, pipes[0]);
+
+        // Parse action (field 2)
+        action = _parseString(data, pipes[0] + 1, pipes[1]);
+
+        // Parse confidence (field 3)
+        confidence = _parseUint(data, pipes[1] + 1, pipes[2]);
+
+        // Parse reasoning (field 4 - rest of string)
+        reasoning = _parseString(data, pipes[2] + 1, data.length);
+
+        return (success, action, confidence, reasoning);
+    }
+
+    function _parseBool(bytes memory data, uint256 start, uint256 end) internal pure returns (bool) {
+        if (end - start == 4) {
+            return data[start] == 't' && data[start+1] == 'r' && data[start+2] == 'u' && data[start+3] == 'e';
+        }
+        return false;
+    }
+
+    function _parseString(bytes memory data, uint256 start, uint256 end) internal pure returns (string memory) {
+        uint256 len = end - start;
+        bytes memory result = new bytes(len);
+        for (uint256 i = 0; i < len; i++) {
+            result[i] = data[start + i];
+        }
+        return string(result);
+    }
+
+    function _parseUint(bytes memory data, uint256 start, uint256 end) internal pure returns (uint256) {
+        uint256 result = 0;
+        for (uint256 i = start; i < end; i++) {
+            if (data[i] >= '0' && data[i] <= '9') {
+                result = result * 10 + uint256(uint8(data[i]) - 48);
+            }
+        }
+        return result;
+    }
+
+    function _startsWith(string memory s, string memory prefix) internal pure returns (bool) {
+        bytes memory sBytes = bytes(s);
+        bytes memory pBytes = bytes(prefix);
+        if (sBytes.length < pBytes.length) return false;
+        for (uint256 i = 0; i < pBytes.length; i++) {
+            if (sBytes[i] != pBytes[i]) return false;
+        }
+        return true;
     }
 
     // ============ View Functions ============

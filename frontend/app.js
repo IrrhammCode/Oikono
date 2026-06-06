@@ -38,6 +38,9 @@ async function connectWallet() {
 
         showNotification('Connected: ' + shortAddr(userAddress), 'success');
 
+        // Start pattern auto-detection
+        startPatternAutoDetection();
+
         // If on landing page, stay there. If trying to access dashboard, go there
         if (window.location.hash.startsWith('#/dashboard')) {
             showDashboard();
@@ -426,6 +429,17 @@ async function recordMetric() {
         document.getElementById('recordMetricName').value = '';
         document.getElementById('recordMetricValue').value = '';
 
+        // Auto-detect patterns after metric recording
+        if (contracts.PatternDetector && registeredGames.length > 0) {
+            try {
+                const tx = await contracts.PatternDetector.detectPatterns(gameId);
+                await tx.wait();
+                console.log('Auto-detected patterns after metric recording');
+            } catch (e) {
+                console.error('Auto-detection after metric failed:', e);
+            }
+        }
+
         // Reload metrics
         loadMetrics();
     } catch (err) {
@@ -703,19 +717,6 @@ async function toggleGameStatus(gameId, currentlyActive) {
     }
 }
 
-async function viewGameDetails(gameId) {
-    console.log('viewGameDetails called', gameId);
-    const game = registeredGames.find(g => g.id === gameId);
-    console.log('Found game:', game);
-
-    if (!game) {
-        showNotification('Game not found', 'error');
-        return;
-    }
-
-    showNotification(`Game: ${game.name} (${game.gameType}) - Events: ${game.totalEvents}, Actions: ${game.totalActions}`, 'info');
-}
-
 // ══════════════════════════════════════════════
 // REGISTRATION
 // ══════════════════════════════════════════════
@@ -927,8 +928,9 @@ async function registerGame() {
     const name = document.getElementById('gameName').value;
     const gameType = document.getElementById('gameType').value;
     const description = document.getElementById('gameDesc').value;
+    const primaryGameAddress = document.getElementById('primaryGameAddress')?.value?.trim();
 
-    console.log('Form values:', { name, gameType, description });
+    console.log('Form values:', { name, gameType, description, primaryGameAddress });
 
     if (!name || name.trim() === '') {
         showNotification('Please enter a game name', 'error');
@@ -937,6 +939,11 @@ async function registerGame() {
 
     if (!gameType) {
         showNotification('Please select a game type', 'error');
+        return;
+    }
+
+    if (!primaryGameAddress || !primaryGameAddress.startsWith('0x') || primaryGameAddress.length !== 42) {
+        showNotification('Please enter a valid primary game contract address', 'error');
         return;
     }
 
@@ -964,6 +971,7 @@ async function registerGame() {
         // Build metadata JSON with full configuration
         const metadata = JSON.stringify({
             website: document.getElementById('gameWebsite')?.value || '',
+            primaryAddress: primaryGameAddress,
             contracts: gameContracts.map(c => ({ address: c.address, role: c.role })),
 
             // Token Economics
@@ -1038,11 +1046,25 @@ async function registerGame() {
             }
         });
 
+        // Encode AgentConfig struct from form data
+        const agentConfig = {
+            canSpawn: document.getElementById('permSpawn')?.checked ?? true,
+            canAdjustEconomy: document.getElementById('permEconomy')?.checked ?? true,
+            canGenerateNarrative: document.getElementById('permNarrative')?.checked ?? false,
+            canAdjustDifficulty: document.getElementById('permDifficulty')?.checked ?? true,
+            maxChangePerEpoch: parseInt(document.getElementById('maxChange')?.value || 20),
+            epochLength: parseInt(document.getElementById('epochLength')?.value || 6500),
+        };
+
+        console.log('AgentConfig:', agentConfig);
+
         const tx = await contracts.GameRegistry.registerGame(
             name.trim(),
             gameType,
             description || 'No description provided',
-            metadata
+            primaryGameAddress,
+            metadata,
+            agentConfig
         );
 
         showNotification('TX sent: ' + tx.hash, 'info');
@@ -1059,7 +1081,22 @@ async function registerGame() {
             gameId = contracts.GameRegistry.interface.parseLog(log).args.gameId;
             showNotification('Game registered! ID: ' + gameId, 'success');
 
-            // Add contracts via GameRegistry.addContract(gameId, address, role, eventHashes)
+            // Link primary game contract via GameRegistry.addContract
+            try {
+                const addPrimaryTx = await contracts.GameRegistry.addContract(
+                    gameId,
+                    primaryGameAddress,
+                    'game_logic',
+                    [] // Event hashes - can be added later
+                );
+                await addPrimaryTx.wait();
+                showNotification('Primary contract linked', 'success');
+            } catch (e) {
+                console.error('Failed to link primary contract:', e);
+                showNotification('Failed to link primary contract: ' + parseError(e), 'error');
+            }
+
+            // Add additional contracts via GameRegistry.addContract(gameId, address, role, eventHashes)
             for (const c of gameContracts) {
                 try {
                     const addTx = await contracts.GameRegistry.addContract(
@@ -1076,24 +1113,20 @@ async function registerGame() {
                 }
             }
 
-            // Apply game type template
+            // Apply game type template via GameTypeManager contract
             try {
                 showNotification('Applying game type template...', 'info');
-                const templateTx = await contracts.GameRegistry.applyTemplate(gameId, gameType);
-                await templateTx.wait();
-                showNotification('Template applied!', 'success');
+                if (!contracts.GameTypeManager) {
+                    console.error('GameTypeManager contract not available');
+                    showNotification('Template skipped - GameTypeManager not loaded', 'warning');
+                } else {
+                    const templateTx = await contracts.GameTypeManager.applyTemplate(gameId, gameType);
+                    await templateTx.wait();
+                    showNotification('Template applied! Metrics and rules configured.', 'success');
+                }
             } catch (e) {
                 console.error('Template application failed:', e);
-                // Try via GameTypeManager contract as fallback
-                if (contracts.GameTypeManager) {
-                    try {
-                        const templateTx = await contracts.GameTypeManager.applyTemplate(gameId, gameType);
-                        await templateTx.wait();
-                        showNotification('Template applied via fallback!', 'success');
-                    } catch (e2) {
-                        console.error('Fallback template failed:', e2);
-                    }
-                }
+                showNotification('Template application failed: ' + parseError(e), 'warning');
             }
         } else {
             showNotification('Game registered but could not parse event', 'warning');
@@ -1110,6 +1143,9 @@ async function registerGame() {
         // Reload dashboard data
         await loadDashboardData();
 
+        // Auto-subscribe to reactivity events for the new game
+        await autoSubscribeReactivity(gameId, primaryGameAddress);
+
         // Switch to dashboard
         showDashboard('games');
 
@@ -1118,6 +1154,428 @@ async function registerGame() {
         showNotification('Registration failed: ' + parseError(err), 'error');
     } finally {
         setButtonLoading(btn, false, 'Register Game');
+    }
+}
+
+// ══════════════════════════════════════════════
+// AUTO-SUBSCRIBE REACTIVITY
+// ══════════════════════════════════════════════
+
+async function autoSubscribeReactivity(gameId, gameAddress) {
+    if (!contracts.GameMaster || !contracts.AgentRuntime) {
+        console.log('GameMaster or AgentRuntime not available for reactivity subscription');
+        return;
+    }
+
+    try {
+        showNotification('Setting up on-chain reactivity...', 'info');
+
+        // PlayerMoved event signature
+        const playerMovedSig = ethers.id('PlayerMoved(address,uint256,uint256,uint256,uint256)');
+
+        // Subscribe via GameMaster (uses Somnia Reactivity Precompile)
+        try {
+            const subscriptionDeposit = ethers.parseEther('0.01'); // Small deposit for subscription
+            const tx = await contracts.GameMaster.subscribeToPlayerMoved(playerMovedSig, { value: subscriptionDeposit });
+            await tx.wait();
+            showNotification('GameMaster subscribed to PlayerMoved events', 'success');
+        } catch (e) {
+            console.error('GameMaster subscription failed:', e);
+            showNotification('GameMaster subscription failed: ' + parseError(e), 'warning');
+        }
+
+        // Also register the game with AgentRuntime for plugin-based handling
+        try {
+            if (contracts.SpawnPlugin) {
+                const pluginAddr = contracts.SpawnPlugin.target;
+                const regTx = await contracts.AgentRuntime.registerGame(
+                    document.getElementById('gameName')?.value || 'Game ' + gameId,
+                    pluginAddr
+                );
+                await regTx.wait();
+                showNotification('Game registered with AgentRuntime', 'success');
+            }
+        } catch (e) {
+            console.error('AgentRuntime registration failed:', e);
+            // Non-fatal — game still works without agent runtime
+        }
+
+        // Subscribe AgentRuntime to game events
+        try {
+            const subscriptionDeposit = ethers.parseEther('0.01');
+            const playerMovedSig = ethers.id('PlayerMoved(address,uint256,uint256,uint256,uint256)');
+            const subTx = await contracts.AgentRuntime.subscribeToEvent(playerMovedSig, subscriptionDeposit, { value: subscriptionDeposit });
+            await subTx.wait();
+            showNotification('AgentRuntime subscribed to game events', 'success');
+        } catch (e) {
+            console.error('AgentRuntime event subscription failed:', e);
+        }
+
+        showNotification('On-chain reactivity configured!', 'success');
+    } catch (err) {
+        console.error('Auto-subscribe reactivity failed:', err);
+        showNotification('Reactivity setup failed: ' + parseError(err), 'warning');
+    }
+}
+
+// ══════════════════════════════════════════════
+// PATTERN DETECTOR AUTO-RUN
+// ══════════════════════════════════════════════
+
+let patternDetectionInterval = null;
+const PATTERN_DETECTION_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+function startPatternAutoDetection() {
+    if (patternDetectionInterval) return; // Already running
+
+    patternDetectionInterval = setInterval(async () => {
+        if (!contracts.PatternDetector || registeredGames.length === 0) return;
+
+        try {
+            for (const game of registeredGames) {
+                if (!game.isActive) continue;
+                try {
+                    const tx = await contracts.PatternDetector.detectPatterns(game.id);
+                    await tx.wait();
+                    console.log('Auto-detected patterns for game:', game.name);
+                } catch (e) {
+                    // Silently fail — don't spam notifications
+                    console.error('Auto-detection failed for game', game.id, e);
+                }
+            }
+        } catch (e) {
+            console.error('Pattern auto-detection error:', e);
+        }
+    }, PATTERN_DETECTION_INTERVAL);
+
+    console.log('Pattern auto-detection started (every 5 minutes)');
+}
+
+function stopPatternAutoDetection() {
+    if (patternDetectionInterval) {
+        clearInterval(patternDetectionInterval);
+        patternDetectionInterval = null;
+        console.log('Pattern auto-detection stopped');
+    }
+}
+
+// ══════════════════════════════════════════════
+// GAME DETAILS VIEW
+// ══════════════════════════════════════════════
+
+async function viewGameDetails(gameId) {
+    console.log('viewGameDetails called', gameId);
+    const game = registeredGames.find(g => g.id === gameId);
+    console.log('Found game:', game);
+
+    if (!game) {
+        showNotification('Game not found', 'error');
+        return;
+    }
+
+    // Create a modal-style detail view
+    let detailHtml = `
+        <div class="game-detail-overlay" id="gameDetailOverlay">
+            <div class="game-detail-modal">
+                <div class="game-detail-header">
+                    <h3>${game.name}</h3>
+                    <span class="badge badge--${game.isActive ? 'active' : 'inactive'}">${game.isActive ? 'Active' : 'Inactive'}</span>
+                    <button class="btn btn--ghost btn--sm" onclick="closeGameDetails()">✕ Close</button>
+                </div>
+                <div class="game-detail-body">
+                    <div class="detail-section">
+                        <h4>📋 Game Info</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Game ID</span>
+                                <span class="detail-value">${game.id}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Type</span>
+                                <span class="detail-value">${game.gameType}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Description</span>
+                                <span class="detail-value">${game.description}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Verified</span>
+                                <span class="detail-value">${game.isVerified ? '✅ Yes' : '❌ No'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>📊 Activity Stats</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Total Events</span>
+                                <span class="detail-value detail-value--lg">${game.totalEvents}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Total Actions</span>
+                                <span class="detail-value detail-value--lg">${game.totalActions}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section" id="detailMetrics-${gameId}">
+                        <h4>📈 Metrics Overview</h4>
+                        <div class="detail-loading">Loading metrics...</div>
+                    </div>
+
+                    <div class="detail-section" id="detailPatterns-${gameId}">
+                        <h4>🔍 Recent Patterns</h4>
+                        <div class="detail-loading">Loading patterns...</div>
+                    </div>
+
+                    <div class="detail-section" id="detailSuggestions-${gameId}">
+                        <h4>💡 Active Suggestions</h4>
+                        <div class="detail-loading">Loading suggestions...</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>🔗 Contract Addresses</h4>
+                        <div class="detail-grid">
+                            ${game.metadata ? (() => {
+                                try {
+                                    const meta = JSON.parse(game.metadata);
+                                    let html = '';
+                                    if (meta.primaryAddress) {
+                                        html += `<div class="detail-item"><span class="detail-label">Primary</span><span class="detail-value detail-value--mono">${shortAddr(meta.primaryAddress)}</span></div>`;
+                                    }
+                                    if (meta.contracts && meta.contracts.length > 0) {
+                                        meta.contracts.forEach(c => {
+                                            const roleInfo = CONFIG.CONTRACT_ROLES[c.role] || { label: c.role };
+                                            html += `<div class="detail-item"><span class="detail-label">${roleInfo.label}</span><span class="detail-value detail-value--mono">${shortAddr(c.address)}</span></div>`;
+                                        });
+                                    }
+                                    return html;
+                                } catch (e) {
+                                    return '<div class="detail-item"><span class="detail-value">No contract info</span></div>';
+                                }
+                            })() : '<div class="detail-item"><span class="detail-value">No metadata</span></div>'}
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>🤖 Agent Config</h4>
+                        <div class="detail-grid" id="detailAgentConfig-${gameId}">
+                            <div class="detail-loading">Loading config...</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>⚙️ Actions</h4>
+                        <div class="detail-actions">
+                            <button class="btn btn--ghost btn--sm" onclick="toggleGameStatus(${gameId}, ${game.isActive}); closeGameDetails();">
+                                ${game.isActive ? '⏸ Deactivate' : '▶ Activate'}
+                            </button>
+                            <button class="btn btn--ghost btn--sm" onclick="detectPatterns(); closeGameDetails();">
+                                🔍 Scan Patterns
+                            </button>
+                            <button class="btn btn--ghost btn--sm" onclick="generateSuggestions(); closeGameDetails();">
+                                💡 Generate Suggestions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal styles if not present
+    if (!document.getElementById('gameDetailStyles')) {
+        const style = document.createElement('style');
+        style.id = 'gameDetailStyles';
+        style.textContent = `
+            .game-detail-overlay {
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.7); z-index: 2000;
+                display: flex; align-items: center; justify-content: center;
+                padding: 20px;
+            }
+            .game-detail-modal {
+                background: var(--bg-card, #1a1a2e); border-radius: 12px;
+                max-width: 700px; width: 100%; max-height: 85vh;
+                overflow-y: auto; border: 1px solid var(--border, #333);
+            }
+            .game-detail-header {
+                display: flex; align-items: center; gap: 12px;
+                padding: 20px 24px; border-bottom: 1px solid var(--border, #333);
+                position: sticky; top: 0; background: var(--bg-card, #1a1a2e); z-index: 1;
+            }
+            .game-detail-header h3 { flex: 1; margin: 0; }
+            .game-detail-body { padding: 0 24px 24px; }
+            .detail-section { margin-top: 20px; }
+            .detail-section h4 { margin-bottom: 12px; font-size: 14px; color: var(--text-secondary, #888); }
+            .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+            .detail-item { padding: 8px 12px; background: var(--bg-secondary, #16213e); border-radius: 8px; }
+            .detail-label { display: block; font-size: 11px; color: var(--text-secondary, #888); margin-bottom: 2px; }
+            .detail-value { font-size: 14px; }
+            .detail-value--lg { font-size: 24px; font-weight: bold; color: var(--accent-primary, #00d4ff); }
+            .detail-value--mono { font-family: monospace; font-size: 12px; }
+            .detail-loading { color: var(--text-secondary, #888); font-style: italic; padding: 8px; }
+            .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+            .detail-pattern-item, .detail-suggestion-item {
+                padding: 8px 12px; background: var(--bg-secondary, #16213e);
+                border-radius: 8px; margin-bottom: 6px; font-size: 13px;
+            }
+            .detail-pattern-item .severity { font-weight: bold; }
+            .severity--high { color: #ff4444; }
+            .severity--medium { color: #ffaa00; }
+            .severity--low { color: #44ff44; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Insert modal
+    document.body.insertAdjacentHTML('beforeend', detailHtml);
+
+    // Load async details
+    loadGameDetailMetrics(gameId);
+    loadGameDetailPatterns(gameId);
+    loadGameDetailSuggestions(gameId);
+    loadGameDetailAgentConfig(gameId);
+}
+
+function closeGameDetails() {
+    const overlay = document.getElementById('gameDetailOverlay');
+    if (overlay) overlay.remove();
+}
+
+async function loadGameDetailMetrics(gameId) {
+    const container = document.getElementById(`detailMetrics-${gameId}`);
+    if (!container || !contracts.MetricsRegistry) {
+        if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Metrics not available</span></div>';
+        return;
+    }
+
+    try {
+        const metricNames = await contracts.MetricsRegistry.getMetricNames(gameId);
+        if (metricNames.length === 0) {
+            container.innerHTML = '<div class="detail-item"><span class="detail-value">No metrics defined. Apply a game type template first.</span></div>';
+            return;
+        }
+
+        let html = '<div class="detail-grid">';
+        for (const name of metricNames.slice(0, 10)) { // Limit to 10 for display
+            try {
+                const stats = await contracts.MetricsRegistry.getStats(gameId, name);
+                const isHealthy = await contracts.MetricsRegistry.isHealthy(gameId, name);
+                html += `
+                    <div class="detail-item">
+                        <span class="detail-label">${name} ${isHealthy ? '🟢' : '🟡'}</span>
+                        <span class="detail-value">${stats[0]} <small>(avg: ${stats[3]})</small></span>
+                    </div>
+                `;
+            } catch (e) {}
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (e) {
+        container.innerHTML = '<div class="detail-item"><span class="detail-value">Failed to load metrics</span></div>';
+    }
+}
+
+async function loadGameDetailPatterns(gameId) {
+    const container = document.getElementById(`detailPatterns-${gameId}`);
+    if (!container || !contracts.PatternDetector) {
+        if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Pattern detector not available</span></div>';
+        return;
+    }
+
+    try {
+        const patterns = await contracts.PatternDetector.getActivePatterns(gameId);
+        if (patterns.length === 0) {
+            container.innerHTML = '<div class="detail-item"><span class="detail-value">No patterns detected yet</span></div>';
+            return;
+        }
+
+        let html = '';
+        for (const p of patterns.slice(0, 5)) {
+            const sev = Number(p.severity) >= 7 ? 'high' : Number(p.severity) >= 4 ? 'medium' : 'low';
+            html += `
+                <div class="detail-pattern-item">
+                    <span class="severity severity--${sev}">${p.patternType}</span>
+                    — ${p.description}
+                    <small>(severity: ${p.severity}/10, confidence: ${(Number(p.confidence)/100).toFixed(0)}%)</small>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    } catch (e) {
+        container.innerHTML = '<div class="detail-item"><span class="detail-value">Failed to load patterns</span></div>';
+    }
+}
+
+async function loadGameDetailSuggestions(gameId) {
+    const container = document.getElementById(`detailSuggestions-${gameId}`);
+    if (!container || !contracts.SuggestionEngine) {
+        if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Suggestion engine not available</span></div>';
+        return;
+    }
+
+    try {
+        const suggestions = await contracts.SuggestionEngine.getActiveSuggestions(gameId);
+        if (suggestions.length === 0) {
+            container.innerHTML = '<div class="detail-item"><span class="detail-value">No suggestions yet. Detect patterns first.</span></div>';
+            return;
+        }
+
+        let html = '';
+        for (const s of suggestions.slice(0, 5)) {
+            html += `
+                <div class="detail-suggestion-item">
+                    <strong>${s.category}</strong> <span class="badge badge--sm">${s.priority}</span>
+                    — ${s.description}
+                    <br><small>💡 ${s.action}</small>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    } catch (e) {
+        container.innerHTML = '<div class="detail-item"><span class="detail-value">Failed to load suggestions</span></div>';
+    }
+}
+
+async function loadGameDetailAgentConfig(gameId) {
+    const container = document.getElementById(`detailAgentConfig-${gameId}`);
+    if (!container || !contracts.GameRegistry) {
+        if (container) container.innerHTML = '<div class="detail-item"><span class="detail-value">Config not available</span></div>';
+        return;
+    }
+
+    try {
+        const config = await contracts.GameRegistry.getConfig(gameId);
+        container.innerHTML = `
+            <div class="detail-item">
+                <span class="detail-label">Spawn Entities</span>
+                <span class="detail-value">${config.canSpawn ? '✅' : '❌'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Adjust Economy</span>
+                <span class="detail-value">${config.canAdjustEconomy ? '✅' : '❌'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Generate Narrative</span>
+                <span class="detail-value">${config.canGenerateNarrative ? '✅' : '❌'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Adjust Difficulty</span>
+                <span class="detail-value">${config.canAdjustDifficulty ? '✅' : '❌'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Max Change/Epoch</span>
+                <span class="detail-value">${Number(config.maxChangePerEpoch) / 100}%</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Epoch Length</span>
+                <span class="detail-value">${Number(config.epochLength)} blocks</span>
+            </div>
+        `;
+    } catch (e) {
+        container.innerHTML = '<div class="detail-item"><span class="detail-value">Failed to load agent config</span></div>';
     }
 }
 
@@ -1238,6 +1696,9 @@ window.loadMetrics = loadMetrics;
 window.recordMetric = recordMetric;
 window.toggleGameStatus = toggleGameStatus;
 window.viewGameDetails = viewGameDetails;
+window.closeGameDetails = closeGameDetails;
+window.startPatternAutoDetection = startPatternAutoDetection;
+window.stopPatternAutoDetection = stopPatternAutoDetection;
 
 // ══════════════════════════════════════════════
 // INITIALIZATION
