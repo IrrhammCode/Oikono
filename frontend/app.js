@@ -289,7 +289,7 @@ function switchView(view) {
         link.classList.toggle('sidebar__link--active', link.dataset.view === view);
     });
     document.querySelectorAll('.view').forEach(v => {
-        v.style.display = v.id === `view-${view}` ? '' : 'none';
+        v.classList.toggle('view--active', v.id === `view-${view}`);
     });
     const titles = { overview: 'Overview', metrics: 'Metrics', patterns: 'Patterns', suggestions: 'Suggestions', games: 'My Games' };
     document.getElementById('dashboardTitle').textContent = titles[view] || 'Overview';
@@ -935,6 +935,26 @@ function updateTemplatePreview() {
     `;
 }
 
+// ══════════════════════════════════════════════
+// FORM STEP NAVIGATION
+// ══════════════════════════════════════════════
+
+function nextStep(step) {
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    const target = document.querySelector(`.form-step[data-step="${step}"]`);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.form-progress__step').forEach(s => {
+        const sStep = parseInt(s.dataset.step);
+        s.classList.remove('active', 'done');
+        if (sStep === step) s.classList.add('active');
+        else if (sStep < step) s.classList.add('done');
+    });
+}
+
+function prevStep(step) {
+    nextStep(step);
+}
+
 async function registerGame() {
     if (!userAddress) {
         showNotification('Please connect wallet first', 'error');
@@ -1560,9 +1580,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Back to home button
-    const backBtn = document.querySelector('.dashboard__actions .btn');
+    // Back to home buttons
+    const backBtn = document.getElementById('backToHomeBtn');
     if (backBtn) backBtn.addEventListener('click', showLanding);
+    const backBtn2 = document.getElementById('backToHomeBtn2');
+    if (backBtn2) backBtn2.addEventListener('click', showLanding);
+
+    // CTA register button
+    const ctaRegisterBtn = document.getElementById('ctaRegisterBtn');
+    if (ctaRegisterBtn) ctaRegisterBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showRegisterPage();
+    });
+
+    // Register form submit
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        registerGame();
+    });
 
     // Sidebar navigation
     document.querySelectorAll('.sidebar__link').forEach(link => {
