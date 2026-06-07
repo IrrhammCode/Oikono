@@ -289,7 +289,9 @@ function switchView(view) {
         link.classList.toggle('sidebar__link--active', link.dataset.view === view);
     });
     document.querySelectorAll('.view').forEach(v => {
-        v.classList.toggle('view--active', v.id === `view-${view}`);
+        const isActive = v.id === `view-${view}`;
+        v.classList.toggle('view--active', isActive);
+        v.style.display = isActive ? 'block' : 'none';
     });
     const titles = { overview: 'Overview', metrics: 'Metrics', patterns: 'Patterns', suggestions: 'Suggestions', games: 'My Games' };
     document.getElementById('dashboardTitle').textContent = titles[view] || 'Overview';
