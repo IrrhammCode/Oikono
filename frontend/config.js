@@ -59,6 +59,7 @@ const CONFIG = {
             'function getGame(uint256 gameId) external view returns (address owner, string name, string gameType, string description, string metadata, bool isActive, bool isVerified, uint256 totalEvents, uint256 totalActions)',
             'function getGameContracts(uint256 gameId) external view returns (address[] addresses, string[] roles, bool[] active)',
             'function getGamesByOwner(address owner) external view returns (uint256[])',
+            'function getConfig(uint256 gameId) external view returns (tuple(bool canSpawn, bool canAdjustEconomy, bool canGenerateNarrative, bool canAdjustDifficulty, uint256 maxChangePerEpoch, uint256 epochLength))',
             'function deactivateGame(uint256 gameId) external',
             'function activateGame(uint256 gameId) external',
             'event GameRegistered(uint256 indexed gameId, address indexed owner, string name, string gameType)',

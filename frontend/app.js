@@ -1602,6 +1602,10 @@ document.addEventListener('DOMContentLoaded', () => {
         registerGame();
     });
 
+    // Template preview on game type change
+    const gameTypeSelect = document.getElementById('gameType');
+    if (gameTypeSelect) gameTypeSelect.addEventListener('change', updateTemplatePreview);
+
     // Sidebar navigation
     document.querySelectorAll('.sidebar__link').forEach(link => {
         link.addEventListener('click', (e) => {
