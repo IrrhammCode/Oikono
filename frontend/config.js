@@ -56,13 +56,13 @@ const CONFIG = {
         GameRegistry: [
             'function registerGame(string name, string gameType, string description, address gameAddress, string metadata, tuple(bool canSpawn, bool canAdjustEconomy, bool canGenerateNarrative, bool canAdjustDifficulty, uint256 maxChangePerEpoch, uint256 epochLength) config) external returns (uint256)',
             'function addContract(uint256 gameId, address contractAddress, string role, bytes32[] eventHashes) external',
-            'function getGame(uint256 gameId) external view returns (address owner, string name, string gameType, string description, string metadata, bool isActive, bool isVerified, uint256 totalEvents, uint256 totalActions)',
+            'function getGame(uint256 gameId) external view returns (address gameAddress, address owner, string name, string gameType, string description, string metadata, bool isActive, bool isVerified, uint256 totalEvents, uint256 totalActions)',
             'function getGameContracts(uint256 gameId) external view returns (address[] addresses, string[] roles, bool[] active)',
             'function getGamesByOwner(address owner) external view returns (uint256[])',
             'function getConfig(uint256 gameId) external view returns (tuple(bool canSpawn, bool canAdjustEconomy, bool canGenerateNarrative, bool canAdjustDifficulty, uint256 maxChangePerEpoch, uint256 epochLength))',
             'function deactivateGame(uint256 gameId) external',
             'function activateGame(uint256 gameId) external',
-            'event GameRegistered(uint256 indexed gameId, address indexed owner, string name, string gameType)',
+            'event GameRegistered(uint256 indexed gameId, address indexed gameAddress, address indexed owner, string name, string gameType)',
         ],
         MetricsRegistry: [
             'function defineMetric(uint256 gameId, string name, string dataType, string source, uint256 healthyMin, uint256 healthyMax, bool isHigherBetter) external',

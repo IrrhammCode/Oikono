@@ -370,15 +370,16 @@ async function loadDashboardData() {
                     const game = await contracts.GameRegistry.getGame(Number(id));
                     registeredGames.push({
                         id: Number(id),
-                        owner: game[0],
-                        name: game[1],
-                        gameType: game[2],
-                        description: game[3],
-                        metadata: game[4],
-                        isActive: game[5],
-                        isVerified: game[6],
-                        totalEvents: Number(game[7]),
-                        totalActions: Number(game[8])
+                        gameAddress: game.gameAddress || game[0],
+                        owner: game.owner || game[1],
+                        name: game.name || game[2],
+                        gameType: game.gameType || game[3],
+                        description: game.description || game[4],
+                        metadata: game.metadata || game[5],
+                        isActive: game.isActive ?? game[6],
+                        isVerified: game.isVerified ?? game[7],
+                        totalEvents: Number(game.totalEvents ?? game[8]),
+                        totalActions: Number(game.totalActions ?? game[9])
                     });
                 } catch (e) {
                     console.error('Failed to load game:', e);
