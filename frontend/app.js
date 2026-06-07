@@ -970,7 +970,7 @@ async function registerGame() {
     const name = document.getElementById('gameName').value;
     const gameType = document.getElementById('gameType').value;
     const description = document.getElementById('gameDesc').value;
-    const primaryGameAddress = document.getElementById('primaryGameAddress')?.value?.trim();
+    const primaryGameAddress = document.getElementById('primaryContract')?.value?.trim();
 
     if (!name || name.trim() === '') {
         showNotification('Please enter a game name', 'error');
