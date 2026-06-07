@@ -382,7 +382,7 @@ async function loadDashboardData() {
                         totalActions: Number(game.totalActions ?? game[9])
                     });
                 } catch (e) {
-                    console.error('Failed to load game:', e);
+                    showNotification('Failed to load game', 'error');
                 }
             }
         }
@@ -420,7 +420,7 @@ async function loadDashboardData() {
         updateGamesList();
 
     } catch (err) {
-        console.error('Failed to load dashboard:', err);
+        showNotification('Failed to load dashboard', 'error');
     }
 }
 
@@ -500,13 +500,13 @@ async function loadMetrics() {
                     </div>
                 `;
             } catch (e) {
-                console.error('Failed to load metric:', name, e);
+                showNotification('Failed to load metric', 'error');
             }
         }
 
         grid.innerHTML = html || '<div class="empty-state"><p>Failed to load metrics</p></div>';
     } catch (err) {
-        console.error('Error loading metrics:', err);
+        showNotification('Error loading metrics', 'error');
         grid.innerHTML = '<div class="empty-state"><p>Error loading metrics</p></div>';
     }
 }
@@ -545,7 +545,7 @@ async function recordMetric() {
                 const tx2 = await contracts.PatternDetector.detectPatterns(gameId);
                 await tx2.wait();
             } catch (e) {
-                console.error('Auto-detection after metric failed:', e);
+                /* auto-detection optional */
             }
         }
 
@@ -573,7 +573,7 @@ async function loadPatterns() {
             const patterns = await contracts.PatternDetector.getActivePatterns(game.id);
             patterns.forEach(p => allPatterns.push({ ...p, gameName: game.name, gameId: game.id }));
         } catch (e) {
-            console.error('Failed to load patterns for game', game.id, e);
+;
         }
     }
 
@@ -616,7 +616,7 @@ async function detectPatterns(e) {
                 await tx.wait();
                 scanned++;
             } catch (err) {
-                console.error('Detection failed for game', game.id, err);
+                showNotification('Pattern detection failed', 'error');
             }
         }
         showNotification(`Pattern detection complete for ${scanned} game(s)`, 'success');
@@ -646,7 +646,7 @@ async function loadSuggestions() {
             const suggestions = await contracts.SuggestionEngine.getActiveSuggestions(game.id);
             suggestions.forEach(s => allSuggestions.push({ ...s, gameName: game.name, gameId: game.id }));
         } catch (e) {
-            console.error('Failed to load suggestions for game', game.id, e);
+;
         }
     }
 
@@ -691,7 +691,7 @@ async function generateSuggestions(e) {
                 await tx.wait();
                 generated++;
             } catch (err) {
-                console.error('Generation failed for game', game.id, err);
+                showNotification('Suggestion generation failed', 'error');
             }
         }
         showNotification(`Suggestions generated for ${generated} game(s)`, 'success');
@@ -1091,7 +1091,7 @@ async function registerGame() {
                 await addPrimaryTx.wait();
                 showNotification('Primary contract linked', 'success');
             } catch (e) {
-                console.error('Failed to link primary contract:', e);
+                showNotification('Contract link failed', 'warning');
                 showNotification('Failed to link primary contract: ' + parseError(e), 'error');
             }
 
@@ -1101,7 +1101,7 @@ async function registerGame() {
                     await addTx.wait();
                     showNotification('Contract added: ' + c.role, 'success');
                 } catch (e) {
-                    console.error('Failed to add contract:', e);
+                    showNotification('Contract add failed', 'warning');
                     showNotification('Failed to add contract ' + c.role + ': ' + parseError(e), 'error');
                 }
             }
@@ -1116,7 +1116,7 @@ async function registerGame() {
                     showNotification('Template applied! Metrics and rules configured.', 'success');
                 }
             } catch (e) {
-                console.error('Template application failed:', e);
+                showNotification('Template failed: ' + parseError(e), 'warning');
                 showNotification('Template application failed: ' + parseError(e), 'warning');
             }
         } else {
@@ -1135,7 +1135,7 @@ async function registerGame() {
         showDashboard('games');
 
     } catch (err) {
-        console.error('Registration failed:', err);
+        showNotification('Registration failed: ' + parseError(err), 'error');
         showNotification('Registration failed: ' + parseError(err), 'error');
     } finally {
         setButtonLoading(btn, false, 'Register Game');
@@ -1148,8 +1148,7 @@ async function registerGame() {
 
 async function autoSubscribeReactivity(gameId, gameAddress) {
     if (!contracts.GameMaster || !contracts.AgentRuntime) {
-        console.log('GameMaster or AgentRuntime not available for reactivity subscription');
-        return;
+                return;
     }
 
     try {
@@ -1162,7 +1161,7 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
             await tx.wait();
             showNotification('GameMaster subscribed to PlayerMoved events', 'success');
         } catch (e) {
-            console.error('GameMaster subscription failed:', e);
+;
             showNotification('GameMaster subscription failed: ' + parseError(e), 'warning');
         }
 
@@ -1176,7 +1175,7 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
                 showNotification('Game registered with AgentRuntime', 'success');
             }
         } catch (e) {
-            console.error('AgentRuntime registration failed:', e);
+;
         }
 
         try {
@@ -1186,12 +1185,12 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
             await subTx.wait();
             showNotification('AgentRuntime subscribed to game events', 'success');
         } catch (e) {
-            console.error('AgentRuntime event subscription failed:', e);
+;
         }
 
         showNotification('On-chain reactivity configured!', 'success');
     } catch (err) {
-        console.error('Auto-subscribe reactivity failed:', err);
+;
         showNotification('Reactivity setup failed: ' + parseError(err), 'warning');
     }
 }
@@ -1214,18 +1213,16 @@ function startPatternAutoDetection() {
                 try {
                     const tx = await contracts.PatternDetector.detectPatterns(game.id);
                     await tx.wait();
-                    console.log('Auto-detected patterns for game:', game.name);
-                } catch (e) {
-                    console.error('Auto-detection failed for game', game.id, e);
+                                    } catch (e) {
+;
                 }
             }
         } catch (e) {
-            console.error('Pattern auto-detection error:', e);
+;
         }
     }, PATTERN_DETECTION_INTERVAL);
 
-    console.log('Pattern auto-detection started (every 5 minutes)');
-}
+    }
 
 function stopPatternAutoDetection() {
     if (patternDetectionInterval) {
