@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=17">
+    <link rel="stylesheet" href="style.css?v=100">
 </head>
 <body>
     <!-- Particle Background -->
@@ -623,22 +623,25 @@
 
             <!-- Patterns View -->
             <div class="view" id="view-patterns">
-                <div class="view__toolbar">
-                    <button class="btn btn--primary btn--sm" onclick="detectPatterns(event)">Scan Now</button>
+                <div class="action-wrapper-huge">
+                    <button class="btn btn--primary btn--huge" onclick="detectPatterns(event)">Scan Now</button>
                 </div>
                 <div id="patternsList" class="patterns-list"></div>
             </div>
 
             <!-- Suggestions View -->
             <div class="view" id="view-suggestions">
-                <div class="view__toolbar">
-                    <button class="btn btn--primary btn--sm" onclick="generateSuggestions(event)">Generate</button>
+                <div class="action-wrapper-huge">
+                    <button class="btn btn--primary btn--huge" onclick="generateSuggestions(event)">Generate</button>
                 </div>
                 <div id="suggestionsList" class="suggestions-list"></div>
             </div>
 
             <!-- Games View -->
             <div class="view" id="view-games">
+                <div class="action-wrapper-huge">
+                    <button class="btn btn--primary btn--huge" id="viewAddGameBtn">+ Register Game</button>
+                </div>
                 <div id="gamesList" class="games-list"></div>
             </div>
         </main>
@@ -649,7 +652,7 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
-    <script src="config.js"></script>
-    <script src="app.js?v=17"></script>
+    <script src="config.js?v=100"></script>
+    <script src="app.js?v=100"></script>
 </body>
 </html>

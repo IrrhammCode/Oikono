@@ -291,7 +291,7 @@ function switchView(view) {
     document.querySelectorAll('.view').forEach(v => {
         const isActive = v.id === `view-${view}`;
         v.classList.toggle('view--active', isActive);
-        v.style.display = isActive ? 'block' : 'none';
+        v.style.display = isActive ? 'flex' : 'none';
     });
     const titles = { overview: 'Overview', metrics: 'Metrics', patterns: 'Patterns', suggestions: 'Suggestions', games: 'My Games' };
     document.getElementById('dashboardTitle').textContent = titles[view] || 'Overview';
@@ -725,12 +725,6 @@ function updateGamesList() {
 
     let html = '';
 
-    html += `
-        <div class="game-card" style="border-style: dashed; text-align: center; padding: var(--space-4);">
-            <button class="btn btn--primary" id="addGameBtn">+ Register Game</button>
-        </div>
-    `;
-
     if (registeredGames.length > 0) {
         html += registeredGames.map(game => `
             <div class="game-card">
@@ -767,12 +761,10 @@ function updateGamesList() {
             </div>
         `).join('');
     } else {
-        html += `<div class="empty-state"><p>No games registered yet.</p></div>`;
+        html += `<div class="empty-state" style="grid-column: 1/-1;"><p>No games registered yet.</p></div>`;
     }
 
     list.innerHTML = html;
-
-    document.getElementById('addGameBtn')?.addEventListener('click', showRegisterPage);
 
     list.querySelectorAll('[data-action="view"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -1560,6 +1552,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Launch dashboard button
     const launchBtn = document.getElementById('launchBtn');
     if (launchBtn) launchBtn.addEventListener('click', () => showDashboard());
+
+    // Dashboard register button
+    const viewAddGameBtn = document.getElementById('viewAddGameBtn');
+    if (viewAddGameBtn) {
+        viewAddGameBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegisterPage();
+        });
+    }
 
     // Hero register button
     const heroRegisterBtn = document.getElementById('heroRegisterBtn');
