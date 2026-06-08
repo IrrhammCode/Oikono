@@ -232,8 +232,13 @@ async function connectWallet() {
             showDashboard();
         }
     } catch (err) {
-        const msg = err.message || err.reason || err.data?.message || (typeof err === 'string' ? err : JSON.stringify(err));
-        showNotification('Connection failed: ' + msg, 'error');
+        // Handle user rejection cleanly
+        if (err.code === 4001 || err.message?.includes('User rejected') || err.message?.includes('user rejected')) {
+            showNotification('Connection cancelled by user', 'warning');
+        } else {
+            const msg = err.message || err.reason || err.data?.message || (typeof err === 'string' ? err : 'Unknown error');
+            showNotification('Connection failed: ' + msg.slice(0, 100), 'error');
+        }
         console.error('[Oikono] connectWallet error:', err);
     } finally {
         setButtonLoading(btn, false, 'Connect Wallet');
@@ -267,8 +272,13 @@ async function ensureSomniaNetwork() {
             }
         }
     } catch (e) {
-        console.error('[Oikono] ensureSomniaNetwork error:', e);
-        throw e;
+        // Don't throw for user rejection - just log
+        if (e.code === 4001 || e.message?.includes('User rejected') || e.message?.includes('user rejected')) {
+            console.warn('[Oikono] User rejected network switch');
+        } else {
+            console.error('[Oikono] ensureSomniaNetwork error:', e);
+            throw e;
+        }
     }
 }
 
