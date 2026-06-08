@@ -925,7 +925,7 @@ window.fillExampleData = function() {
     if (descInput) descInput.value = "On-chain battle arena with NFT enemies, token rewards, and AI-powered game master";
     
     const primaryInput = document.getElementById('primaryContract');
-    if (primaryInput) primaryInput.value = "0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf";
+    if (primaryInput) primaryInput.value = "0xA247bFd1F0951071849EB47264185bb2047db39b";
 
     // Step 2
     gameContracts = [
