@@ -3,6 +3,35 @@
 // Premium Design + Full Functionality
 // ═══════════════════════════════════════════════
 
+// ── SVG Icon System ─────────────────────────────
+const ICONS = {
+    refresh: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>',
+    search: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+    chart: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+    shield: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+    zap: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    target: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    box: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0022 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>',
+    settings: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+    users: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>',
+    activity: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    alert: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    link: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>',
+    cpu: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+    play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+    pause: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
+    arrowRight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+    arrowLeft: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+    externalLink: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+};
+
+function icon(name, size) {
+    return ICONS[name] || '';
+}
+
 const SOMNIA_CHAIN_ID = '0xC488';
 const SOMNIA_RPC = 'https://dream-rpc.somnia.network';
 
@@ -569,7 +598,7 @@ async function loadMetrics() {
                         <div class="metric-card__header">
                             <span class="metric-card__name">${name}</span>
                             <span class="metric-card__status ${isHealthy ? 'status--good' : 'status--warning'}">
-                                ${isHealthy ? 'Healthy' : 'Warning'}
+                                ${isHealthy ? icon('check') + ' Healthy' : icon('alert') + ' Warning'}
                             </span>
                         </div>
                         <div class="metric-card__value">${latest}${changeText ? ` <small style="color:${Number(changeText)>=0?'var(--accent-success)':'var(--accent-danger)'}">${changeText}</small>` : ''}</div>
@@ -834,7 +863,7 @@ async function loadSuggestions() {
                 <span>Confidence: ${(s.confidence / 100).toFixed(0)}%</span>
                 <span>Impact: ${(s.expectedImpact / 100).toFixed(0)}%</span>
             </div>
-            ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">✓ Mark Implemented</button>` : '<span class="badge badge--active">Implemented</span>'}
+            ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">${icon('check')} Mark Implemented</button>` : '<span class="badge badge--active">${icon('check')} Implemented</span>'}}
         </div>
     `).join('') + '</div>';
 }
@@ -1375,7 +1404,7 @@ async function registerGame() {
     progressOverlay.className = 'reg-progress-overlay';
     progressOverlay.innerHTML = `
         <div class="reg-progress-modal">
-            <h3>Registering Game...</h3>
+            <h3>${icon('settings')} Registering Game...</h3>
             <div class="reg-progress-steps">
                 <div class="reg-step active" data-reg-step="1"><span class="reg-step-icon"></span> Registering game on-chain...</div>
                 <div class="reg-step" data-reg-step="2"><span class="reg-step-icon"></span> Adding contracts...</div>
@@ -1389,10 +1418,10 @@ async function registerGame() {
     function updateRegStep(step, status) {
         const el = progressOverlay.querySelector(`[data-reg-step="${step}"]`);
         if (!el) return;
-        const icon = el.querySelector('.reg-step-icon');
-        if (status === 'done') { icon.textContent = ''; el.classList.add('done'); el.classList.remove('active'); }
-        else if (status === 'active') { icon.textContent = ''; el.classList.add('active'); }
-        else if (status === 'error') { icon.textContent = ''; el.classList.add('error'); }
+        const stepIcon = el.querySelector('.reg-step-icon');
+        if (status === 'done') { stepIcon.innerHTML = icon('check'); el.classList.add('done'); el.classList.remove('active'); }
+        else if (status === 'active') { stepIcon.innerHTML = '<span class="loading-spinner"></span>'; el.classList.add('active'); }
+        else if (status === 'error') { stepIcon.innerHTML = icon('alert'); el.classList.add('error'); }
         // Activate next step
         const next = progressOverlay.querySelector(`[data-reg-step="${step + 1}"]`);
         if (next && status === 'done') { next.classList.add('active'); }
@@ -1670,39 +1699,39 @@ async function viewGameDetails(gameId) {
                 <div class="game-detail-header">
                     <h3>${game.name}</h3>
                     <span class="badge badge--${game.isActive ? 'active' : 'inactive'}">${game.isActive ? 'Active' : 'Inactive'}</span>
-                    <button class="btn btn--ghost btn--sm" onclick="closeGameDetails()">✕ Close</button>
+                    <button class="btn btn--ghost btn--sm" onclick="closeGameDetails()">${icon('x')} Close</button>
                 </div>
                 <div class="game-detail-body">
                     <div class="detail-section">
-                        <h4>Game Info</h4>
+                        <h4>${icon('box')} Game Info</h4>
                         <div class="detail-grid">
                             <div class="detail-item"><span class="detail-label">Game ID</span><span class="detail-value">${game.id}</span></div>
                             <div class="detail-item"><span class="detail-label">Type</span><span class="detail-value">${game.gameType}</span></div>
                             <div class="detail-item"><span class="detail-label">Description</span><span class="detail-value">${game.description}</span></div>
-                            <div class="detail-item"><span class="detail-label">Verified</span><span class="detail-value">${game.isVerified ? 'Yes' : 'No'}</span></div>
+                            <div class="detail-item"><span class="detail-label">Verified</span><span class="detail-value">${game.isVerified ? icon('check') + ' Yes' : icon('x') + ' No'}</span></div>
                         </div>
                     </div>
                     <div class="detail-section">
-                        <h4>Activity Stats</h4>
+                        <h4>${icon('activity')} Activity Stats</h4>
                         <div class="detail-grid">
                             <div class="detail-item"><span class="detail-label">Total Events</span><span class="detail-value detail-value--lg">${game.totalEvents}</span></div>
                             <div class="detail-item"><span class="detail-label">Total Actions</span><span class="detail-value detail-value--lg">${game.totalActions}</span></div>
                         </div>
                     </div>
                     <div class="detail-section" id="detailMetrics-${gameId}">
-                        <h4>Metrics Overview</h4>
+                        <h4>${icon('chart')} Metrics Overview</h4>
                         <div class="detail-loading"><span class="loading-spinner"></span> Loading metrics...</div>
                     </div>
                     <div class="detail-section" id="detailPatterns-${gameId}">
-                        <h4>Recent Patterns</h4>
+                        <h4>${icon('search')} Recent Patterns</h4>
                         <div class="detail-loading"><span class="loading-spinner"></span> Loading patterns...</div>
                     </div>
                     <div class="detail-section" id="detailSuggestions-${gameId}">
-                        <h4>Active Suggestions</h4>
+                        <h4>${icon('zap')} Active Suggestions</h4>
                         <div class="detail-loading"><span class="loading-spinner"></span> Loading suggestions...</div>
                     </div>
                     <div class="detail-section">
-                        <h4>Contract Addresses</h4>
+                        <h4>${icon('link')} Contract Addresses</h4>
                         <div class="detail-grid">
                             ${game.metadata ? (() => {
                                 try {
@@ -1721,16 +1750,16 @@ async function viewGameDetails(gameId) {
                         </div>
                     </div>
                     <div class="detail-section">
-                        <h4>Agent Config</h4>
+                        <h4>${icon('cpu')} Agent Config</h4>
                         <div class="detail-grid" id="detailAgentConfig-${gameId}">
                             <div class="detail-loading"><span class="loading-spinner"></span> Loading config...</div>
                         </div>
                     </div>
                     <div class="detail-section">
-                        <h4>Actions</h4>
+                        <h4>${icon('settings')} Actions</h4>
                         <div class="detail-actions">
                             <button class="btn btn--ghost btn--sm" onclick="toggleGameStatus(${gameId}, ${game.isActive}); closeGameDetails();">
-                                ${game.isActive ? 'Deactivate' : 'Activate'}
+                                ${game.isActive ? icon('pause') + ' Deactivate' : icon('play') + ' Activate'}
                             </button>
                             <button class="btn btn--ghost btn--sm" onclick="switchView('patterns'); closeGameDetails();">Scan Patterns</button>
                             <button class="btn btn--ghost btn--sm" onclick="switchView('suggestions'); closeGameDetails();">Generate Suggestions</button>
@@ -1848,10 +1877,10 @@ async function loadGameDetailAgentConfig(gameId) {
         const maxChangePerEpoch = Number(config.maxChangePerEpoch ?? config[4] ?? 0);
         const epochLength = Number(config.epochLength ?? config[5] ?? 0);
         container.innerHTML = `
-            <div class="detail-item"><span class="detail-label">Spawn Entities</span><span class="detail-value">${canSpawn ? 'Yes' : 'No'}</span></div>
-            <div class="detail-item"><span class="detail-label">Adjust Economy</span><span class="detail-value">${canAdjustEconomy ? 'Yes' : 'No'}</span></div>
-            <div class="detail-item"><span class="detail-label">Generate Narrative</span><span class="detail-value">${canGenerateNarrative ? 'Yes' : 'No'}</span></div>
-            <div class="detail-item"><span class="detail-label">Adjust Difficulty</span><span class="detail-value">${canAdjustDifficulty ? 'Yes' : 'No'}</span></div>
+            <div class="detail-item"><span class="detail-label">Spawn Entities</span><span class="detail-value">${canSpawn ? icon('check') + ' Yes' : icon('x') + ' No'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Economy</span><span class="detail-value">${canAdjustEconomy ? icon('check') + ' Yes' : icon('x') + ' No'}</span></div>
+            <div class="detail-item"><span class="detail-label">Generate Narrative</span><span class="detail-value">${canGenerateNarrative ? icon('check') + ' Yes' : icon('x') + ' No'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Difficulty</span><span class="detail-value">${canAdjustDifficulty ? icon('check') + ' Yes' : icon('x') + ' No'}</span></div>
             <div class="detail-item"><span class="detail-label">Max Change/Epoch</span><span class="detail-value">${maxChangePerEpoch / 100}%</span></div>
             <div class="detail-item"><span class="detail-label">Epoch Length</span><span class="detail-value">${epochLength} blocks</span></div>
         `;
@@ -1886,7 +1915,7 @@ function updateActivityFeed() {
                         ${game.isActive ? 'Active' : 'Inactive'} ·
                         ${game.totalEvents} events ·
                         ${game.totalActions} actions
-                        ${game.isVerified ? ' · Verified' : ''}
+                        ${game.isVerified ? ' · ' + icon('shield') + ' Verified' : ''}
                     </div>
                 </div>
             </div>
