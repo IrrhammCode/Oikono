@@ -724,7 +724,28 @@ async function recordMetric() {
 
         loadMetrics();
     } catch (err) {
-        showNotification('Failed to record metric: ' + parseError(err), 'error');
+        const code = err.code || err.data?.code;
+        const reason = err.reason || err.data?.message || err.message || '';
+
+        if (code === 4001 || reason.includes('User rejected') || reason.includes('user rejected') || reason.includes('denied')) {
+            showNotification('Transaction cancelled', 'warning');
+        } else if (reason.includes('Not game owner')) {
+            showNotification('Error: You are not the owner of this game. Only the game owner can record metrics.', 'error');
+        } else if (reason.includes('Game not found') || reason.includes('game does not exist')) {
+            showNotification('Error: Game not found. It may have been removed or never registered.', 'error');
+        } else if (reason.includes('Metric already defined') || reason.includes('already exists')) {
+            showNotification('Error: This metric is already defined for this game.', 'error');
+        } else if (reason.includes('insufficient funds') || reason.includes('InsufficientFunds')) {
+            showNotification('Error: Insufficient funds for gas. Get more STT from the faucet.', 'error');
+        } else if (reason.includes('nonce') || reason.includes('Nonce')) {
+            showNotification('Error: Transaction nonce issue. Please try again.', 'error');
+        } else if (reason.includes('rate limit') || reason.includes('Rate limit')) {
+            showNotification('Error: RPC rate limit hit. Please wait a moment and try again.', 'error');
+        } else {
+            const msg = reason.slice(0, 120) || 'Unknown error';
+            showNotification('Failed to record metric: ' + msg, 'error');
+        }
+        console.error('[Oikono] recordMetric error:', err);
     }
 }
 
@@ -825,7 +846,23 @@ async function detectPatterns(e) {
         showNotification(`Pattern detection complete for ${game.name}`, 'success');
         loadPatterns();
     } catch (err) {
-        showNotification('Detection failed: ' + parseError(err), 'error');
+        const code = err.code || err.data?.code;
+        const reason = err.reason || err.data?.message || err.message || '';
+
+        if (code === 4001 || reason.includes('User rejected') || reason.includes('user rejected') || reason.includes('denied')) {
+            showNotification('Scan cancelled', 'warning');
+        } else if (reason.includes('Not game owner')) {
+            showNotification('Error: You are not the owner of this game. Only the owner can run pattern detection.', 'error');
+        } else if (reason.includes('Game not found') || reason.includes('game does not exist')) {
+            showNotification('Error: Game not found on-chain. It may not have been registered yet.', 'error');
+        } else if (reason.includes('No metrics') || reason.includes('no data')) {
+            showNotification('Error: No metrics recorded yet. Record some metrics before scanning.', 'error');
+        } else if (reason.includes('insufficient funds') || reason.includes('InsufficientFunds')) {
+            showNotification('Error: Insufficient funds for gas. Get more STT from the faucet.', 'error');
+        } else {
+            showNotification('Detection failed: ' + (reason.slice(0, 120) || 'Unknown error'), 'error');
+        }
+        console.error('[Oikono] detectPatterns error:', err);
     } finally {
         setButtonLoading(btn, false, 'Scan Game');
     }
@@ -932,7 +969,23 @@ async function generateSuggestions(e) {
         showNotification(`Suggestions generated for ${game.name}`, 'success');
         loadSuggestions();
     } catch (err) {
-        showNotification('Generation failed: ' + parseError(err), 'error');
+        const code = err.code || err.data?.code;
+        const reason = err.reason || err.data?.message || err.message || '';
+
+        if (code === 4001 || reason.includes('User rejected') || reason.includes('user rejected') || reason.includes('denied')) {
+            showNotification('Generation cancelled', 'warning');
+        } else if (reason.includes('Not game owner')) {
+            showNotification('Error: You are not the owner of this game. Only the owner can generate suggestions.', 'error');
+        } else if (reason.includes('No patterns') || reason.includes('no patterns')) {
+            showNotification('Error: No patterns detected yet. Run pattern detection first.', 'error');
+        } else if (reason.includes('Game not found') || reason.includes('game does not exist')) {
+            showNotification('Error: Game not found on-chain.', 'error');
+        } else if (reason.includes('insufficient funds') || reason.includes('InsufficientFunds')) {
+            showNotification('Error: Insufficient funds for gas. Get more STT from the faucet.', 'error');
+        } else {
+            showNotification('Generation failed: ' + (reason.slice(0, 120) || 'Unknown error'), 'error');
+        }
+        console.error('[Oikono] generateSuggestions error:', err);
     } finally {
         setButtonLoading(btn, false, 'Generate');
     }
@@ -946,7 +999,16 @@ async function markImplemented(gameId, suggestionId) {
         showNotification('Marked as implemented', 'success');
         loadSuggestions();
     } catch (err) {
-        showNotification('Failed: ' + parseError(err), 'error');
+        const code = err.code || err.data?.code;
+        const reason = err.reason || err.data?.message || err.message || '';
+
+        if (code === 4001 || reason.includes('User rejected') || reason.includes('user rejected')) {
+            showNotification('Action cancelled', 'warning');
+        } else if (reason.includes('Not game owner')) {
+            showNotification('Error: Only the game owner can mark suggestions as implemented.', 'error');
+        } else {
+            showNotification('Failed to mark: ' + (reason.slice(0, 100) || 'Unknown error'), 'error');
+        }
     }
 }
 
@@ -1042,7 +1104,21 @@ async function toggleGameStatus(gameId, currentlyActive) {
         await loadDashboardData();
         updateGamesList();
     } catch (err) {
-        showNotification('Failed: ' + parseError(err), 'error');
+        const code = err.code || err.data?.code;
+        const reason = err.reason || err.data?.message || err.message || '';
+
+        if (code === 4001 || reason.includes('User rejected') || reason.includes('user rejected') || reason.includes('denied')) {
+            showNotification('Action cancelled', 'warning');
+        } else if (reason.includes('Not game owner')) {
+            showNotification('Error: Only the game owner can change game status.', 'error');
+        } else if (reason.includes('Game not found') || reason.includes('game does not exist')) {
+            showNotification('Error: Game not found on-chain.', 'error');
+        } else if (reason.includes('insufficient funds') || reason.includes('InsufficientFunds')) {
+            showNotification('Error: Insufficient funds for gas. Get more STT from the faucet.', 'error');
+        } else {
+            showNotification('Failed: ' + (reason.slice(0, 120) || 'Unknown error'), 'error');
+        }
+        console.error('[Oikono] toggleGameStatus error:', err);
     }
 }
 
@@ -1561,7 +1637,23 @@ async function registerGame() {
         showDashboard('games');
 
     } catch (err) {
-        showNotification('Registration failed: ' + parseError(err), 'error');
+        const code = err.code || err.data?.code;
+        const reason = err.reason || err.data?.message || err.message || '';
+
+        if (code === 4001 || reason.includes('User rejected') || reason.includes('user rejected') || reason.includes('denied')) {
+            showNotification('Registration cancelled', 'warning');
+        } else if (reason.includes('already registered') || reason.includes('Game already exists')) {
+            showNotification('Error: This contract address is already registered as a game. Use a different address.', 'error');
+        } else if (reason.includes('invalid address') || reason.includes('Invalid address')) {
+            showNotification('Error: Invalid contract address. Please check the address format (0x...42 chars).', 'error');
+        } else if (reason.includes('insufficient funds') || reason.includes('InsufficientFunds')) {
+            showNotification('Error: Insufficient funds for gas. Get more STT from the faucet.', 'error');
+        } else if (reason.includes('execution reverted')) {
+            showNotification('Error: Transaction reverted. The contract may not be deployed or has an issue.', 'error');
+        } else {
+            showNotification('Registration failed: ' + (reason.slice(0, 120) || 'Unknown error'), 'error');
+        }
+        console.error('[Oikono] registerGame error:', err);
         // Remove progress overlay on error
         const overlay = document.getElementById('regProgress');
         if (overlay) overlay.remove();
@@ -1634,31 +1726,115 @@ let patternDetectionInterval = null;
 const PATTERN_DETECTION_INTERVAL = 5 * 60 * 1000;
 
 function startPatternAutoDetection() {
-    if (patternDetectionInterval) return;
+    // Event-driven: listen for on-chain events instead of polling
+    if (!contracts.MetricsRegistry || !contracts.PatternDetector) return;
 
-    patternDetectionInterval = setInterval(async () => {
-        if (!contracts.PatternDetector || registeredGames.length === 0) return;
+    // Listen for MetricRecorded → auto detect patterns
+    contracts.MetricsRegistry.on('MetricRecorded', async (gameId, metricName, value, timestamp) => {
+        const gid = Number(gameId);
+        const game = registeredGames.find(g => g.id === gid);
+        if (!game) return;
+
+        console.log('[Oikono] Event: MetricRecorded for game', gid, metricName, Number(value));
+        showNotification(`Metric recorded: ${metricName} = ${value}`, 'success');
+
+        // Optimistic update: show metric immediately in UI
+        updateMetricInUI(gid, metricName, Number(value));
+
+        // Auto-detect patterns for this game
         try {
-            for (const game of registeredGames) {
-                if (!game.isActive) continue;
-                try {
-                    const tx = await contracts.PatternDetector.detectPatterns(game.id);
-                    await tx.wait();
-                                    } catch (e) {
-;
-                }
-            }
-        } catch (e) {
-;
-        }
-    }, PATTERN_DETECTION_INTERVAL);
+            showNotification('Analyzing patterns...', 'info');
+            const tx = await contracts.PatternDetector.detectPatterns(gid);
+            await tx.wait();
+            console.log('[Oikono] Auto-detected patterns for game', gid);
 
+            // Refresh patterns view
+            loadPatterns();
+            loadGameDetailPatterns(gid);
+        } catch (e) {
+            console.warn('[Oikono] Auto pattern detection failed:', e.reason || e.message);
+        }
+    });
+
+    // Listen for PatternDetected → auto generate suggestions
+    if (contracts.SuggestionEngine) {
+        contracts.PatternDetector.on('PatternDetected', async (gameId, patternId, patternType, description, severity) => {
+            const gid = Number(gameId);
+            console.log('[Oikono] Event: PatternDetected for game', gid, patternType);
+            showNotification(`Pattern detected: ${patternType} (severity: ${severity})`, 'warning');
+
+            // Auto-generate suggestions
+            try {
+                showNotification('Generating suggestions...', 'info');
+                const tx = await contracts.SuggestionEngine.generateSuggestions(gid);
+                await tx.wait();
+                console.log('[Oikono] Auto-generated suggestions for game', gid);
+
+                // Refresh suggestions view
+                loadSuggestions();
+                loadGameDetailSuggestions(gid);
+            } catch (e) {
+                console.warn('[Oikono] Auto suggestion generation failed:', e.reason || e.message);
+            }
+        });
     }
 
+    // Listen for SuggestionCreated → refresh UI
+    if (contracts.SuggestionEngine) {
+        contracts.SuggestionEngine.on('SuggestionCreated', (gameId, suggestionId, category, priority, description) => {
+            const gid = Number(gameId);
+            console.log('[Oikono] Event: SuggestionCreated for game', gid, category);
+            showNotification(`New suggestion: ${category} (${priority})`, 'success');
+            loadSuggestions();
+            loadGameDetailSuggestions(gid);
+        });
+    }
+}
+
+function updateMetricInUI(gameId, metricName, value) {
+    // Optimistic update: add/update metric card without full reload
+    const grid = document.getElementById('metricsGrid');
+    if (!grid) return;
+
+    const select = document.getElementById('metricsGameSelect');
+    if (select && select.value !== String(gameId)) return; // Not viewing this game
+
+    // Check if metric card already exists
+    const existingCard = grid.querySelector(`[data-metric="${metricName}"]`);
+    if (existingCard) {
+        const valueEl = existingCard.querySelector('.metric-card__value');
+        if (valueEl) valueEl.textContent = value;
+    } else {
+        // Add new metric card with fade-in animation
+        const card = document.createElement('div');
+        card.className = 'metric-card fade-in';
+        card.dataset.metric = metricName;
+        card.innerHTML = `
+            <div class="metric-card__header">
+                <span class="metric-card__name">${metricName}</span>
+                <span class="metric-card__status status--good">${icon('check')} Healthy</span>
+            </div>
+            <div class="metric-card__value">${value}</div>
+            <div class="metric-card__stats">
+                <span>Min: ${value}</span>
+                <span>Max: ${value}</span>
+                <span>Avg: ${value}</span>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
+}
+
 function stopPatternAutoDetection() {
-    if (patternDetectionInterval) {
-        clearInterval(patternDetectionInterval);
-        patternDetectionInterval = null;
+    // Remove all event listeners
+    if (contracts.MetricsRegistry) {
+        contracts.MetricsRegistry.removeAllListeners('MetricRecorded');
+    }
+    if (contracts.PatternDetector) {
+        contracts.PatternDetector.removeAllListeners('PatternDetected');
+    }
+    if (contracts.SuggestionEngine) {
+        contracts.SuggestionEngine.removeAllListeners('SuggestionCreated');
     }
 }
 
