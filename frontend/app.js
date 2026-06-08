@@ -392,6 +392,20 @@ async function loadDashboardData() {
             }
         }
 
+        const patternSelect = document.getElementById('patternGameSelect');
+        const suggestSelect = document.getElementById('suggestionGameSelect');
+        if (patternSelect && suggestSelect) {
+            let optionsHTML = '';
+            for (const g of registeredGames) {
+                optionsHTML += `<option value="${g.id}">${g.name}</option>`;
+            }
+            if (optionsHTML === '') {
+                optionsHTML = '<option value="">No Games Available</option>';
+            }
+            patternSelect.innerHTML = optionsHTML;
+            suggestSelect.innerHTML = optionsHTML;
+        }
+
         document.getElementById('statGames').textContent = registeredGames.length;
 
         if (contracts.PatternDetector && registeredGames.length > 0) {
@@ -623,27 +637,28 @@ async function detectPatterns(e) {
         return;
     }
 
+    const selectEl = document.getElementById('patternGameSelect');
+    const selectedGameId = selectEl ? selectEl.value : null;
+    if (!selectedGameId) {
+        showNotification('Please select a game first', 'error');
+        return;
+    }
+    const game = registeredGames.find(g => g.id.toString() === selectedGameId);
+    if (!game) return;
+
     const btn = e?.target || document.querySelector('[onclick*="detectPatterns"]');
     setButtonLoading(btn, true, 'Scanning...');
 
     try {
-        let scanned = 0;
-        for (const game of registeredGames) {
-            try {
-                const tx = await contracts.PatternDetector.detectPatterns(game.id);
-                showNotification(`Scanning ${game.name}... TX: ${tx.hash}`, 'info');
-                await tx.wait();
-                scanned++;
-            } catch (err) {
-                showNotification('Pattern detection failed', 'error');
-            }
-        }
-        showNotification(`Pattern detection complete for ${scanned} game(s)`, 'success');
+        const tx = await contracts.PatternDetector.detectPatterns(game.id);
+        showNotification(`Scanning ${game.name}... TX: ${tx.hash}`, 'info');
+        await tx.wait();
+        showNotification(`Pattern detection complete for ${game.name}`, 'success');
         loadPatterns();
     } catch (err) {
         showNotification('Detection failed: ' + parseError(err), 'error');
     } finally {
-        setButtonLoading(btn, false, 'Scan Now');
+        setButtonLoading(btn, false, 'Scan Game');
     }
 }
 
@@ -714,22 +729,23 @@ async function generateSuggestions(e) {
         return;
     }
 
+    const selectEl = document.getElementById('suggestionGameSelect');
+    const selectedGameId = selectEl ? selectEl.value : null;
+    if (!selectedGameId) {
+        showNotification('Please select a game first', 'error');
+        return;
+    }
+    const game = registeredGames.find(g => g.id.toString() === selectedGameId);
+    if (!game) return;
+
     const btn = e?.target || document.querySelector('[onclick*="generateSuggestions"]');
     setButtonLoading(btn, true, 'Generating...');
 
     try {
-        let generated = 0;
-        for (const game of registeredGames) {
-            try {
-                const tx = await contracts.SuggestionEngine.generateSuggestions(game.id);
-                showNotification(`Generating for ${game.name}... TX: ${tx.hash}`, 'info');
-                await tx.wait();
-                generated++;
-            } catch (err) {
-                showNotification('Suggestion generation failed', 'error');
-            }
-        }
-        showNotification(`Suggestions generated for ${generated} game(s)`, 'success');
+        const tx = await contracts.SuggestionEngine.generateSuggestions(game.id);
+        showNotification(`Generating for ${game.name}... TX: ${tx.hash}`, 'info');
+        await tx.wait();
+        showNotification(`Suggestions generated for ${game.name}`, 'success');
         loadSuggestions();
     } catch (err) {
         showNotification('Generation failed: ' + parseError(err), 'error');

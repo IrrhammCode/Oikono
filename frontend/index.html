@@ -626,15 +626,17 @@
 
             <!-- Patterns View -->
             <div class="view" id="view-patterns">
-                <div class="action-wrapper-huge">
-                    <button class="btn btn--primary btn--huge" onclick="detectPatterns(event)">Scan Now</button>
+                <div class="action-wrapper-huge" style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
+                    <select id="patternGameSelect" class="form-input form-input--sm" style="max-width: 250px; margin-right: 15px; font-size: 16px;"></select>
+                    <button class="btn btn--primary btn--huge" onclick="detectPatterns(event)">Scan Game</button>
                 </div>
                 <div id="patternsList" class="patterns-list"></div>
             </div>
 
             <!-- Suggestions View -->
             <div class="view" id="view-suggestions">
-                <div class="action-wrapper-huge">
+                <div class="action-wrapper-huge" style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
+                    <select id="suggestionGameSelect" class="form-input form-input--sm" style="max-width: 250px; margin-right: 15px; font-size: 16px;"></select>
                     <button class="btn btn--primary btn--huge" onclick="generateSuggestions(event)">Generate</button>
                 </div>
                 <div id="suggestionsList" class="suggestions-list"></div>
@@ -655,7 +657,7 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
-    <script src="config.js?v=105"></script>
-    <script src="app.js?v=105"></script>
+    <script src="config.js?v=106"></script>
+    <script src="app.js?v=106"></script>
 </body>
 </html>
