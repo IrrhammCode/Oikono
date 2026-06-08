@@ -232,7 +232,9 @@ async function connectWallet() {
             showDashboard();
         }
     } catch (err) {
-        showNotification('Connection failed: ' + err.message, 'error');
+        const msg = err.message || err.reason || err.data?.message || (typeof err === 'string' ? err : JSON.stringify(err));
+        showNotification('Connection failed: ' + msg, 'error');
+        console.error('[Oikono] connectWallet error:', err);
     } finally {
         setButtonLoading(btn, false, 'Connect Wallet');
         updateUI(!!userAddress);
@@ -240,26 +242,33 @@ async function connectWallet() {
 }
 
 async function ensureSomniaNetwork() {
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    if (chainId !== SOMNIA_CHAIN_ID) {
-        try {
-            await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: SOMNIA_CHAIN_ID }],
-            });
-        } catch (e) {
-            if (e.code === 4902) {
+    try {
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (chainId !== SOMNIA_CHAIN_ID) {
+            try {
                 await window.ethereum.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [{
-                        chainId: SOMNIA_CHAIN_ID,
-                        chainName: 'Somnia Testnet',
-                        nativeCurrency: { name: 'STT', symbol: 'STT', decimals: 18 },
-                        rpcUrls: [SOMNIA_RPC],
-                    }],
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: SOMNIA_CHAIN_ID }],
                 });
+            } catch (e) {
+                if (e.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: SOMNIA_CHAIN_ID,
+                            chainName: 'Somnia Testnet',
+                            nativeCurrency: { name: 'STT', symbol: 'STT', decimals: 18 },
+                            rpcUrls: [SOMNIA_RPC],
+                        }],
+                    });
+                } else {
+                    throw e;
+                }
             }
         }
+    } catch (e) {
+        console.error('[Oikono] ensureSomniaNetwork error:', e);
+        throw e;
     }
 }
 
