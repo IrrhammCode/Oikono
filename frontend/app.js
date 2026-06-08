@@ -650,20 +650,27 @@ async function recordMetric() {
                 isDefined = true;
             }
         } catch (e) {
-            // Reverts if completely undefined in some contract versions, or just returns false
+            console.warn('getMetricDef failed (may be new metric):', e.message);
         }
 
         if (!isDefined) {
             showNotification(`Defining new metric '${metricName}'...`, 'info');
-            // Provide default healthy bounds based on metric name for demonstration
             let min = 0;
             let max = 10000;
             if (metricName.includes('rate') || metricName.includes('percentage')) {
-                min = 40; // 40%
-                max = 60; // 60%
+                min = 40;
+                max = 60;
             }
-            const defTx = await contracts.MetricsRegistry.defineMetric(gameId, metricName, "uint256", "manual", min, max, true);
-            await defTx.wait();
+            try {
+                const defTx = await contracts.MetricsRegistry.defineMetric(gameId, metricName, "uint256", "manual", min, max, true);
+                showNotification('TX sent: ' + defTx.hash, 'info');
+                await defTx.wait();
+                showNotification('Metric defined!', 'success');
+            } catch (e) {
+                console.error('defineMetric failed:', e);
+                showNotification('Define failed: ' + parseError(e), 'error');
+                return;
+            }
         }
 
         showNotification('Recording metric...', 'info');
