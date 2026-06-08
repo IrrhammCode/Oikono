@@ -358,13 +358,16 @@ function showLandingDirect() {
 // DASHBOARD DATA
 // ══════════════════════════════════════════════
 
+let isDashboardLoading = false;
 async function loadDashboardData() {
     if (!userAddress) return;
+    if (isDashboardLoading) return;
+    isDashboardLoading = true;
 
     try {
         if (contracts.GameRegistry) {
             const gameIds = await contracts.GameRegistry.getGamesByOwner(userAddress);
-            registeredGames = [];
+            let tempGames = [];
             for (const id of gameIds) {
                 try {
                     const game = await contracts.GameRegistry.getGame(Number(id));
@@ -384,12 +387,22 @@ async function loadDashboardData() {
                     // Skip invalid/empty game entries
                     if (!gameObj.name || gameObj.name.trim() === '' || gameObj.name === '0x0000000000000000000000000000000000000000') continue;
                     if (gameObj.gameAddress === '0x0000000000000000000000000000000000000000' && !gameObj.isActive) continue;
-                    registeredGames.push(gameObj);
+                    tempGames.push(gameObj);
                 } catch (e) {
-                    // Skip games that fail to load (possibly from failed registration)
+                    // Skip games that fail to load
                     console.warn('Skipping game ' + id + ': failed to load', e);
                 }
             }
+            // Deduplicate games by ID just in case
+            const uniqueGames = [];
+            const seenGameIds = new Set();
+            for (const g of tempGames) {
+                if (!seenGameIds.has(g.id)) {
+                    seenGameIds.add(g.id);
+                    uniqueGames.push(g);
+                }
+            }
+            registeredGames = uniqueGames;
         }
 
         const patternSelect = document.getElementById('patternGameSelect');
@@ -440,6 +453,8 @@ async function loadDashboardData() {
 
     } catch (err) {
         showNotification('Failed to load dashboard', 'error');
+    } finally {
+        isDashboardLoading = false;
     }
 }
 
@@ -651,6 +666,18 @@ async function loadPatterns() {
         }
     }
 
+    // Deduplicate patterns by game + description
+    const uniquePatterns = [];
+    const seenPatterns = new Set();
+    for (const p of allPatterns) {
+        const key = p.gameId + '-' + p.description;
+        if (!seenPatterns.has(key)) {
+            seenPatterns.add(key);
+            uniquePatterns.push(p);
+        }
+    }
+    allPatterns = uniquePatterns;
+
     if (allPatterns.length === 0) {
         list.innerHTML = '<div class="empty-state"><p>No patterns detected yet. Click "Scan Now" to detect patterns.</p></div>';
         return;
@@ -743,6 +770,18 @@ async function loadSuggestions() {
             // Skip games that fail suggestion loading
         }
     }
+
+    // Deduplicate suggestions by game + description
+    const uniqueSuggestions = [];
+    const seenSuggestions = new Set();
+    for (const s of allSuggestions) {
+        const key = s.gameId + '-' + s.description;
+        if (!seenSuggestions.has(key)) {
+            seenSuggestions.add(key);
+            uniqueSuggestions.push(s);
+        }
+    }
+    allSuggestions = uniqueSuggestions;
 
     if (allSuggestions.length === 0) {
         list.innerHTML = '<div class="empty-state"><p>No suggestions yet. Detect patterns first, then generate suggestions.</p></div>';
