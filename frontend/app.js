@@ -206,18 +206,26 @@ function initGameTypeTabs() {
 // ══════════════════════════════════════════════
 
 async function connectWallet() {
-    if (typeof window.ethereum === 'undefined') {
-        showNotification('MetaMask not detected', 'error');
+    // Support any EIP-1193 provider (MetaMask, Coinbase, Rabby, etc.)
+    let eth = window.ethereum;
+    if (!eth && window.coinbaseWalletExtension) {
+        eth = window.coinbaseWalletExtension;
+    }
+    if (!eth) {
+        showNotification('No wallet detected. Please install MetaMask or Coinbase Wallet.', 'error');
         return;
+    }
+    if (Array.isArray(eth.providers) && eth.providers.length > 0) {
+        eth = eth.providers.find(p => p.isCoinbaseWallet) || eth.providers.find(p => p.isMetaMask) || eth.providers[0];
     }
 
     const btn = document.getElementById('connectBtn');
     setButtonLoading(btn, true, 'Connecting...');
 
     try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await eth.request({ method: 'eth_requestAccounts' });
         userAddress = accounts[0];
-        provider = new ethers.BrowserProvider(window.ethereum);
+        provider = new ethers.BrowserProvider(eth);
         signer = await provider.getSigner();
 
         await ensureSomniaNetwork();
@@ -232,11 +240,10 @@ async function connectWallet() {
             showDashboard();
         }
     } catch (err) {
-        // Handle user rejection cleanly
-        if (err.code === 4001 || err.message?.includes('User rejected') || err.message?.includes('user rejected')) {
-            showNotification('Connection cancelled by user', 'warning');
+        if (err.code === 4001 || err.code === 'USER_REJECTED' || err.message?.includes('User rejected') || err.message?.includes('user rejected') || err.message?.includes('denied') || err.message?.includes('rejected')) {
+            showNotification('Connection cancelled', 'warning');
         } else {
-            const msg = err.message || err.reason || err.data?.message || (typeof err === 'string' ? err : 'Unknown error');
+            const msg = err.message || err.reason || err.data?.message || 'Unknown error';
             showNotification('Connection failed: ' + msg.slice(0, 100), 'error');
         }
         console.error('[Oikono] connectWallet error:', err);
@@ -247,17 +254,19 @@ async function connectWallet() {
 }
 
 async function ensureSomniaNetwork() {
+    const ep = window.ethereum || window.coinbaseWalletExtension;
+    if (!ep) return;
     try {
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        const chainId = await ep.request({ method: 'eth_chainId' });
         if (chainId !== SOMNIA_CHAIN_ID) {
             try {
-                await window.ethereum.request({
+                await ep.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: SOMNIA_CHAIN_ID }],
                 });
             } catch (e) {
                 if (e.code === 4902) {
-                    await window.ethereum.request({
+                    await ep.request({
                         method: 'wallet_addEthereumChain',
                         params: [{
                             chainId: SOMNIA_CHAIN_ID,
@@ -2087,15 +2096,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listen for hash changes
     window.addEventListener('hashchange', handleRoute);
 
-    // Check if already connected
-    if (window.ethereum) {
-        window.ethereum.request({ method: 'eth_accounts' })
+    // Check if already connected (any wallet)
+    const detectProvider = window.ethereum || window.coinbaseWalletExtension;
+    if (detectProvider) {
+        detectProvider.request({ method: 'eth_accounts' })
             .then(accounts => {
                 if (accounts.length > 0) connectWallet();
             });
 
         // Listen for account changes
-        window.ethereum.on('accountsChanged', (accounts) => {
+        detectProvider.on('accountsChanged', (accounts) => {
             if (accounts.length === 0) {
                 // User disconnected all accounts
                 userAddress = null;
@@ -2114,7 +2124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Listen for chain changes
-        window.ethereum.on('chainChanged', (chainId) => {
+        detectProvider.on('chainChanged', (chainId) => {
             if (chainId !== SOMNIA_CHAIN_ID) {
                 showNotification('Please switch to Somnia Testnet', 'warning');
                 userAddress = null;
@@ -2130,9 +2140,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Keep-alive: check connection every 30 seconds
         setInterval(async () => {
-            if (!userAddress || !window.ethereum) return;
+            if (!userAddress) return;
+            const ep = window.ethereum || window.coinbaseWalletExtension;
+            if (!ep) return;
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                const accounts = await ep.request({ method: 'eth_accounts' });
                 if (accounts.length === 0 || accounts[0] !== userAddress) {
                     // Connection lost, try to reconnect
                     if (accounts.length > 0) {
