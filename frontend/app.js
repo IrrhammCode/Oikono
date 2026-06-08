@@ -2074,5 +2074,63 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(accounts => {
                 if (accounts.length > 0) connectWallet();
             });
+
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', (accounts) => {
+            if (accounts.length === 0) {
+                // User disconnected all accounts
+                userAddress = null;
+                signer = null;
+                provider = null;
+                contracts = {};
+                registeredGames = [];
+                updateUI(false);
+                showNotification('Wallet disconnected', 'warning');
+            } else if (accounts[0] !== userAddress) {
+                // User switched account
+                userAddress = accounts[0];
+                showNotification('Account changed: ' + shortAddr(userAddress), 'info');
+                connectWallet();
+            }
+        });
+
+        // Listen for chain changes
+        window.ethereum.on('chainChanged', (chainId) => {
+            if (chainId !== SOMNIA_CHAIN_ID) {
+                showNotification('Please switch to Somnia Testnet', 'warning');
+                userAddress = null;
+                signer = null;
+                provider = null;
+                contracts = {};
+                updateUI(false);
+            } else {
+                // Reconnect on correct chain
+                connectWallet();
+            }
+        });
+
+        // Keep-alive: check connection every 30 seconds
+        setInterval(async () => {
+            if (!userAddress || !window.ethereum) return;
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length === 0 || accounts[0] !== userAddress) {
+                    // Connection lost, try to reconnect
+                    if (accounts.length > 0) {
+                        userAddress = accounts[0];
+                        connectWallet();
+                    } else {
+                        userAddress = null;
+                        signer = null;
+                        provider = null;
+                        contracts = {};
+                        registeredGames = [];
+                        updateUI(false);
+                    }
+                }
+            } catch (e) {
+                // Silent fail - RPC might be temporarily unavailable
+            }
+        }, 30000);
     }
 });
