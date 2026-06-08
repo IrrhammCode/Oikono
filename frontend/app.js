@@ -569,7 +569,7 @@ async function loadMetrics() {
                         <div class="metric-card__header">
                             <span class="metric-card__name">${name}</span>
                             <span class="metric-card__status ${isHealthy ? 'status--good' : 'status--warning'}">
-                                ${isHealthy ? '● Healthy' : '⚠ Warning'}
+                                ${isHealthy ? 'Healthy' : 'Warning'}
                             </span>
                         </div>
                         <div class="metric-card__value">${latest}${changeText ? ` <small style="color:${Number(changeText)>=0?'var(--accent-success)':'var(--accent-danger)'}">${changeText}</small>` : ''}</div>
@@ -828,7 +828,7 @@ async function loadSuggestions() {
                 <span class="suggestion-item__priority priority--${s.priority}">${s.priority}</span>
             </div>
             <p class="suggestion-item__desc">${s.description}</p>
-            <p class="suggestion-item__action">💡 ${s.action}</p>
+            <p class="suggestion-item__action">${s.action}</p>
             <div class="suggestion-item__meta">
                 <span>Game: ${s.gameName}</span>
                 <span>Confidence: ${(s.confidence / 100).toFixed(0)}%</span>
@@ -1037,8 +1037,8 @@ function updateContractList() {
     }
 
     list.innerHTML = gameContracts.map((c, i) => {
-        const roleInfo = CONFIG.CONTRACT_ROLES[c.role] || { label: c.role, icon: '📄' };
-        const icon = roleInfo.icon || '📄';
+        const roleInfo = CONFIG.CONTRACT_ROLES[c.role] || { label: c.role, icon: '' };
+        const icon = roleInfo.icon || '';
         return `
             <div class="contract-item">
                 <span class="contract-item__icon">${icon}</span>
@@ -1375,12 +1375,12 @@ async function registerGame() {
     progressOverlay.className = 'reg-progress-overlay';
     progressOverlay.innerHTML = `
         <div class="reg-progress-modal">
-            <h3>🚀 Registering Game...</h3>
+            <h3>Registering Game...</h3>
             <div class="reg-progress-steps">
-                <div class="reg-step active" data-reg-step="1"><span class="reg-step-icon">⏳</span> Registering game on-chain...</div>
-                <div class="reg-step" data-reg-step="2"><span class="reg-step-icon">⏳</span> Adding contracts...</div>
-                <div class="reg-step" data-reg-step="3"><span class="reg-step-icon">⏳</span> Applying template...</div>
-                <div class="reg-step" data-reg-step="4"><span class="reg-step-icon">⏳</span> Loading dashboard...</div>
+                <div class="reg-step active" data-reg-step="1"><span class="reg-step-icon"></span> Registering game on-chain...</div>
+                <div class="reg-step" data-reg-step="2"><span class="reg-step-icon"></span> Adding contracts...</div>
+                <div class="reg-step" data-reg-step="3"><span class="reg-step-icon"></span> Applying template...</div>
+                <div class="reg-step" data-reg-step="4"><span class="reg-step-icon"></span> Loading dashboard...</div>
             </div>
         </div>
     `;
@@ -1390,9 +1390,9 @@ async function registerGame() {
         const el = progressOverlay.querySelector(`[data-reg-step="${step}"]`);
         if (!el) return;
         const icon = el.querySelector('.reg-step-icon');
-        if (status === 'done') { icon.textContent = '✅'; el.classList.add('done'); el.classList.remove('active'); }
-        else if (status === 'active') { icon.textContent = '⏳'; el.classList.add('active'); }
-        else if (status === 'error') { icon.textContent = '❌'; el.classList.add('error'); }
+        if (status === 'done') { icon.textContent = ''; el.classList.add('done'); el.classList.remove('active'); }
+        else if (status === 'active') { icon.textContent = ''; el.classList.add('active'); }
+        else if (status === 'error') { icon.textContent = ''; el.classList.add('error'); }
         // Activate next step
         const next = progressOverlay.querySelector(`[data-reg-step="${step + 1}"]`);
         if (next && status === 'done') { next.classList.add('active'); }
@@ -1674,35 +1674,35 @@ async function viewGameDetails(gameId) {
                 </div>
                 <div class="game-detail-body">
                     <div class="detail-section">
-                        <h4>📋 Game Info</h4>
+                        <h4>Game Info</h4>
                         <div class="detail-grid">
                             <div class="detail-item"><span class="detail-label">Game ID</span><span class="detail-value">${game.id}</span></div>
                             <div class="detail-item"><span class="detail-label">Type</span><span class="detail-value">${game.gameType}</span></div>
                             <div class="detail-item"><span class="detail-label">Description</span><span class="detail-value">${game.description}</span></div>
-                            <div class="detail-item"><span class="detail-label">Verified</span><span class="detail-value">${game.isVerified ? '✅ Yes' : '❌ No'}</span></div>
+                            <div class="detail-item"><span class="detail-label">Verified</span><span class="detail-value">${game.isVerified ? 'Yes' : 'No'}</span></div>
                         </div>
                     </div>
                     <div class="detail-section">
-                        <h4>📊 Activity Stats</h4>
+                        <h4>Activity Stats</h4>
                         <div class="detail-grid">
                             <div class="detail-item"><span class="detail-label">Total Events</span><span class="detail-value detail-value--lg">${game.totalEvents}</span></div>
                             <div class="detail-item"><span class="detail-label">Total Actions</span><span class="detail-value detail-value--lg">${game.totalActions}</span></div>
                         </div>
                     </div>
                     <div class="detail-section" id="detailMetrics-${gameId}">
-                        <h4>📈 Metrics Overview</h4>
+                        <h4>Metrics Overview</h4>
                         <div class="detail-loading"><span class="loading-spinner"></span> Loading metrics...</div>
                     </div>
                     <div class="detail-section" id="detailPatterns-${gameId}">
-                        <h4>🔍 Recent Patterns</h4>
+                        <h4>Recent Patterns</h4>
                         <div class="detail-loading"><span class="loading-spinner"></span> Loading patterns...</div>
                     </div>
                     <div class="detail-section" id="detailSuggestions-${gameId}">
-                        <h4>💡 Active Suggestions</h4>
+                        <h4>Active Suggestions</h4>
                         <div class="detail-loading"><span class="loading-spinner"></span> Loading suggestions...</div>
                     </div>
                     <div class="detail-section">
-                        <h4>🔗 Contract Addresses</h4>
+                        <h4>Contract Addresses</h4>
                         <div class="detail-grid">
                             ${game.metadata ? (() => {
                                 try {
@@ -1721,19 +1721,19 @@ async function viewGameDetails(gameId) {
                         </div>
                     </div>
                     <div class="detail-section">
-                        <h4>🤖 Agent Config</h4>
+                        <h4>Agent Config</h4>
                         <div class="detail-grid" id="detailAgentConfig-${gameId}">
                             <div class="detail-loading"><span class="loading-spinner"></span> Loading config...</div>
                         </div>
                     </div>
                     <div class="detail-section">
-                        <h4>⚙️ Actions</h4>
+                        <h4>Actions</h4>
                         <div class="detail-actions">
                             <button class="btn btn--ghost btn--sm" onclick="toggleGameStatus(${gameId}, ${game.isActive}); closeGameDetails();">
-                                ${game.isActive ? '⏸ Deactivate' : '▶ Activate'}
+                                ${game.isActive ? 'Deactivate' : 'Activate'}
                             </button>
-                            <button class="btn btn--ghost btn--sm" onclick="switchView('patterns'); closeGameDetails();">🔍 Scan Patterns</button>
-                            <button class="btn btn--ghost btn--sm" onclick="switchView('suggestions'); closeGameDetails();">💡 Generate Suggestions</button>
+                            <button class="btn btn--ghost btn--sm" onclick="switchView('patterns'); closeGameDetails();">Scan Patterns</button>
+                            <button class="btn btn--ghost btn--sm" onclick="switchView('suggestions'); closeGameDetails();">Generate Suggestions</button>
                         </div>
                     </div>
                 </div>
@@ -1770,7 +1770,7 @@ async function loadGameDetailMetrics(gameId) {
             try {
                 const stats = await contracts.MetricsRegistry.getStats(gameId, name);
                 const isHealthy = await contracts.MetricsRegistry.isHealthy(gameId, name);
-                html += `<div class="detail-item"><span class="detail-label">${name} ${isHealthy ? '🟢' : '🟡'}</span><span class="detail-value">${stats[0]} <small>(avg: ${stats[3]})</small></span></div>`;
+                html += `<div class="detail-item"><span class="detail-label">${name} <span class="status-dot ${isHealthy ? 'status-dot--active' : 'status-dot--warning'}"></span></span><span class="detail-value">${stats[0]} <small>(avg: ${stats[3]})</small></span></div>`;
             } catch (e) {}
         }
         html += '</div>';
@@ -1825,7 +1825,7 @@ async function loadGameDetailSuggestions(gameId) {
             const priority = s.priority ?? s[4] ?? 'medium';
             const description = s.description ?? s[5] ?? 'No description';
             const action = s.action ?? s[6] ?? 'No action specified';
-            html += `<div class="detail-suggestion-item"><strong>${category}</strong> <span class="badge badge--sm">${priority}</span> — ${description}<br><small>💡 ${action}</small></div>`;
+            html += `<div class="detail-suggestion-item"><strong>${category}</strong> <span class="badge badge--sm">${priority}</span> — ${description}<br><small>${action}</small></div>`;
         }
         container.innerHTML = html;
     } catch (e) {
@@ -1848,10 +1848,10 @@ async function loadGameDetailAgentConfig(gameId) {
         const maxChangePerEpoch = Number(config.maxChangePerEpoch ?? config[4] ?? 0);
         const epochLength = Number(config.epochLength ?? config[5] ?? 0);
         container.innerHTML = `
-            <div class="detail-item"><span class="detail-label">Spawn Entities</span><span class="detail-value">${canSpawn ? '✅' : '❌'}</span></div>
-            <div class="detail-item"><span class="detail-label">Adjust Economy</span><span class="detail-value">${canAdjustEconomy ? '✅' : '❌'}</span></div>
-            <div class="detail-item"><span class="detail-label">Generate Narrative</span><span class="detail-value">${canGenerateNarrative ? '✅' : '❌'}</span></div>
-            <div class="detail-item"><span class="detail-label">Adjust Difficulty</span><span class="detail-value">${canAdjustDifficulty ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Spawn Entities</span><span class="detail-value">${canSpawn ? 'Yes' : 'No'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Economy</span><span class="detail-value">${canAdjustEconomy ? 'Yes' : 'No'}</span></div>
+            <div class="detail-item"><span class="detail-label">Generate Narrative</span><span class="detail-value">${canGenerateNarrative ? 'Yes' : 'No'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Difficulty</span><span class="detail-value">${canAdjustDifficulty ? 'Yes' : 'No'}</span></div>
             <div class="detail-item"><span class="detail-label">Max Change/Epoch</span><span class="detail-value">${maxChangePerEpoch / 100}%</span></div>
             <div class="detail-item"><span class="detail-label">Epoch Length</span><span class="detail-value">${epochLength} blocks</span></div>
         `;
@@ -1877,14 +1877,16 @@ function updateActivityFeed() {
     for (const game of registeredGames) {
         html += `
             <div class="activity-item">
-                <div class="activity-item__icon">${game.isActive ? '🟢' : '🔴'}</div>
+                <div class="activity-item__icon">
+                    <span class="status-dot ${game.isActive ? 'status-dot--active' : 'status-dot--inactive'}"></span>
+                </div>
                 <div class="activity-item__content">
                     <div class="activity-item__title">${game.name} <span class="badge badge--sm">${game.gameType}</span></div>
                     <div class="activity-item__desc">
                         ${game.isActive ? 'Active' : 'Inactive'} ·
                         ${game.totalEvents} events ·
                         ${game.totalActions} actions
-                        ${game.isVerified ? ' · ✓ Verified' : ''}
+                        ${game.isVerified ? ' · Verified' : ''}
                     </div>
                 </div>
             </div>
