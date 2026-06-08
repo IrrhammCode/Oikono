@@ -982,7 +982,66 @@ window.fillExampleData = function() {
     if(document.getElementById('srcQuest')) document.getElementById('srcQuest').checked = true;
     if(document.getElementById('srcStaking')) document.getElementById('srcStaking').checked = true;
 
-    showNotification('Example data filled successfully! Proceed to verify all steps.', 'success');
+    showNotification('Example 1 data filled successfully! Proceed to verify all steps.', 'success');
+}
+
+window.fillExampleData2 = function() {
+    // Step 1
+    const nameInput = document.getElementById('gameName');
+    if (nameInput) nameInput.value = "Cosmic Racers";
+    
+    const typeInput = document.getElementById('gameType');
+    if (typeInput) {
+        typeInput.value = "racing";
+        // Trigger change to update template preview
+        typeInput.dispatchEvent(new Event('change'));
+    }
+    
+    const descInput = document.getElementById('gameDesc');
+    if (descInput) descInput.value = "A fast-paced intergalactic racing game with dynamic weather conditions and NFT upgrades.";
+    
+    const primaryInput = document.getElementById('primaryContract');
+    if (primaryInput) primaryInput.value = "0x3bDE5012889FAa8eaDCE1B2F4939798359513273";
+
+    // Step 2
+    gameContracts = [
+        { address: "0x0000000000000000000000000000000000000002", role: "marketplace" },
+        { address: "0x0000000000000000000000000000000000000003", role: "nft" }
+    ];
+    updateContractList();
+
+    // Step 3
+    if(document.getElementById('targetWinRate')) document.getElementById('targetWinRate').value = "50";
+    if(document.getElementById('targetRetention')) document.getElementById('targetRetention').value = "40";
+    if(document.getElementById('inflationTolerance')) document.getElementById('inflationTolerance').value = "low";
+    if(document.getElementById('economyStyle')) document.getElementById('economyStyle').value = "deflationary";
+    if(document.getElementById('maxChange')) document.getElementById('maxChange').value = "10";
+    if(document.getElementById('epochLength')) document.getElementById('epochLength').value = "5000";
+
+    // Step 4
+    if(document.getElementById('permSpawn')) document.getElementById('permSpawn').checked = false;
+    if(document.getElementById('permEconomy')) document.getElementById('permEconomy').checked = true;
+    if(document.getElementById('permNarrative')) document.getElementById('permNarrative').checked = false;
+    if(document.getElementById('permDifficulty')) document.getElementById('permDifficulty').checked = true;
+    if(document.getElementById('autonomyLevel')) document.getElementById('autonomyLevel').value = "manual";
+
+    // Step 5
+    if(document.getElementById('tokenName')) document.getElementById('tokenName').value = "Cosmic Fuel";
+    if(document.getElementById('tokenSymbol')) document.getElementById('tokenSymbol').value = "FUEL";
+    if(document.getElementById('totalSupply')) document.getElementById('totalSupply').value = "50000000";
+    if(document.getElementById('circSupply')) document.getElementById('circSupply').value = "10000000";
+    if(document.getElementById('tokenUtility')) document.getElementById('tokenUtility').value = "utility";
+    
+    if(document.getElementById('sinkEntry')) document.getElementById('sinkEntry').checked = true;
+    if(document.getElementById('sinkCraft')) document.getElementById('sinkCraft').checked = false;
+    if(document.getElementById('sinkMarket')) document.getElementById('sinkMarket').checked = true;
+    if(document.getElementById('sinkStaking')) document.getElementById('sinkStaking').checked = false;
+    
+    if(document.getElementById('srcBattle')) document.getElementById('srcBattle').checked = false;
+    if(document.getElementById('srcQuest')) document.getElementById('srcQuest').checked = true;
+    if(document.getElementById('srcStaking')) document.getElementById('srcStaking').checked = false;
+
+    showNotification('Example 2 data filled successfully! Proceed to verify all steps.', 'success');
 }
 
 function updateRangeDisplay(input, displayId) {
