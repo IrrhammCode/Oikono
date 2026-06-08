@@ -368,7 +368,7 @@ async function loadDashboardData() {
             for (const id of gameIds) {
                 try {
                     const game = await contracts.GameRegistry.getGame(Number(id));
-                    registeredGames.push({
+                    const gameObj = {
                         id: Number(id),
                         gameAddress: game.gameAddress || game[0],
                         owner: game.owner || game[1],
@@ -380,9 +380,14 @@ async function loadDashboardData() {
                         isVerified: game.isVerified ?? game[7],
                         totalEvents: Number(game.totalEvents ?? game[8]),
                         totalActions: Number(game.totalActions ?? game[9])
-                    });
+                    };
+                    // Skip invalid/empty game entries
+                    if (!gameObj.name || gameObj.name.trim() === '' || gameObj.name === '0x0000000000000000000000000000000000000000') continue;
+                    if (gameObj.gameAddress === '0x0000000000000000000000000000000000000000' && !gameObj.isActive) continue;
+                    registeredGames.push(gameObj);
                 } catch (e) {
-                    showNotification('Failed to load game', 'error');
+                    // Skip games that fail to load (possibly from failed registration)
+                    console.warn('Skipping game ' + id + ': failed to load', e);
                 }
             }
         }
@@ -571,9 +576,23 @@ async function loadPatterns() {
     for (const game of registeredGames) {
         try {
             const patterns = await contracts.PatternDetector.getActivePatterns(game.id);
-            patterns.forEach(p => allPatterns.push({ ...p, gameName: game.name, gameId: game.id }));
+            patterns.forEach(p => {
+                // Map tuple fields to named properties
+                allPatterns.push({
+                    patternId: p.patternId ?? p[0],
+                    gameId: game.id,
+                    patternType: p.patternType ?? p[2] ?? 'Unknown',
+                    metricName: p.metricName ?? p[4] ?? '-',
+                    description: p.description ?? p[5] ?? 'No description',
+                    severity: Number(p.severity ?? p[6] ?? 0),
+                    confidence: Number(p.confidence ?? p[7] ?? 0),
+                    detectedAt: p.detectedAt ?? p[8],
+                    isActive: p.isActive ?? p[9],
+                    gameName: game.name
+                });
+            });
         } catch (e) {
-;
+            // Skip games that fail pattern loading
         }
     }
 
@@ -586,12 +605,12 @@ async function loadPatterns() {
         <div class="pattern-item">
             <div class="pattern-item__header">
                 <span class="pattern-item__type">${p.patternType}</span>
-                <span class="pattern-item__severity severity--${Number(p.severity) >= 7 ? 'high' : Number(p.severity) >= 4 ? 'medium' : 'low'}">Severity: ${p.severity}/10</span>
+                <span class="pattern-item__severity severity--${p.severity >= 7 ? 'high' : p.severity >= 4 ? 'medium' : 'low'}">Severity: ${p.severity}/10</span>
             </div>
             <p class="pattern-item__desc">${p.description}</p>
             <div class="pattern-item__meta">
                 <span>Game: ${p.gameName}</span>
-                <span>Confidence: ${(Number(p.confidence) / 100).toFixed(0)}%</span>
+                <span>Confidence: ${(p.confidence / 100).toFixed(0)}%</span>
                 <span>Metric: ${p.metricName}</span>
             </div>
         </div>
@@ -644,9 +663,25 @@ async function loadSuggestions() {
     for (const game of registeredGames) {
         try {
             const suggestions = await contracts.SuggestionEngine.getActiveSuggestions(game.id);
-            suggestions.forEach(s => allSuggestions.push({ ...s, gameName: game.name, gameId: game.id }));
+            suggestions.forEach(s => {
+                // Map tuple fields to named properties
+                allSuggestions.push({
+                    suggestionId: s.suggestionId ?? s[0],
+                    gameId: game.id,
+                    patternId: s.patternId ?? s[2],
+                    category: s.category ?? s[3] ?? 'General',
+                    priority: s.priority ?? s[4] ?? 'medium',
+                    description: s.description ?? s[5] ?? 'No description',
+                    action: s.action ?? s[6] ?? 'No action specified',
+                    confidence: Number(s.confidence ?? s[7] ?? 0),
+                    expectedImpact: Number(s.expectedImpact ?? s[8] ?? 0),
+                    implemented: s.implemented ?? s[9] ?? false,
+                    implementedAt: s.implementedAt ?? s[10],
+                    gameName: game.name
+                });
+            });
         } catch (e) {
-;
+            // Skip games that fail suggestion loading
         }
     }
 
@@ -665,8 +700,8 @@ async function loadSuggestions() {
             <p class="suggestion-item__action">💡 ${s.action}</p>
             <div class="suggestion-item__meta">
                 <span>Game: ${s.gameName}</span>
-                <span>Confidence: ${(Number(s.confidence) / 100).toFixed(0)}%</span>
-                <span>Impact: ${(Number(s.expectedImpact) / 100).toFixed(0)}%</span>
+                <span>Confidence: ${(s.confidence / 100).toFixed(0)}%</span>
+                <span>Impact: ${(s.expectedImpact / 100).toFixed(0)}%</span>
             </div>
             ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">✓ Mark Implemented</button>` : '<span class="badge badge--active">Implemented</span>'}
         </div>
@@ -1375,8 +1410,12 @@ async function loadGameDetailPatterns(gameId) {
         }
         let html = '';
         for (const p of patterns.slice(0, 5)) {
-            const sev = Number(p.severity) >= 7 ? 'high' : Number(p.severity) >= 4 ? 'medium' : 'low';
-            html += `<div class="detail-pattern-item"><span class="severity severity--${sev}">${p.patternType}</span> — ${p.description} <small>(severity: ${p.severity}/10, confidence: ${(Number(p.confidence)/100).toFixed(0)}%)</small></div>`;
+            const severity = Number(p.severity ?? p[6] ?? 0);
+            const patternType = p.patternType ?? p[2] ?? 'Unknown';
+            const description = p.description ?? p[5] ?? 'No description';
+            const confidence = Number(p.confidence ?? p[7] ?? 0);
+            const sev = severity >= 7 ? 'high' : severity >= 4 ? 'medium' : 'low';
+            html += `<div class="detail-pattern-item"><span class="severity severity--${sev}">${patternType}</span> — ${description} <small>(severity: ${severity}/10, confidence: ${(confidence/100).toFixed(0)}%)</small></div>`;
         }
         container.innerHTML = html;
     } catch (e) {
@@ -1398,7 +1437,11 @@ async function loadGameDetailSuggestions(gameId) {
         }
         let html = '';
         for (const s of suggestions.slice(0, 5)) {
-            html += `<div class="detail-suggestion-item"><strong>${s.category}</strong> <span class="badge badge--sm">${s.priority}</span> — ${s.description}<br><small>💡 ${s.action}</small></div>`;
+            const category = s.category ?? s[3] ?? 'General';
+            const priority = s.priority ?? s[4] ?? 'medium';
+            const description = s.description ?? s[5] ?? 'No description';
+            const action = s.action ?? s[6] ?? 'No action specified';
+            html += `<div class="detail-suggestion-item"><strong>${category}</strong> <span class="badge badge--sm">${priority}</span> — ${description}<br><small>💡 ${action}</small></div>`;
         }
         container.innerHTML = html;
     } catch (e) {
