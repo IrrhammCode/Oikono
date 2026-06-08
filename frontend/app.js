@@ -2,6 +2,7 @@
 // OIKONO - Data-Driven Game Economy Agent
 // Premium Design + Full Functionality
 // ═══════════════════════════════════════════════
+console.log('[Oikono] app.js loaded successfully');
 
 // ── SVG Icon System ─────────────────────────────
 const ICONS = {
@@ -623,10 +624,12 @@ async function loadMetrics() {
 }
 
 async function recordMetric() {
+    console.log('[Oikono] recordMetric called');
     const select = document.getElementById('metricsGameSelect');
     const gameId = select?.value;
     const metricName = document.getElementById('recordMetricName')?.value;
     const metricValue = document.getElementById('recordMetricValue')?.value;
+    console.log('[Oikono] gameId:', gameId, 'metricName:', metricName, 'metricValue:', metricValue);
 
     if (!gameId) {
         showNotification('Please select a game first', 'error');
