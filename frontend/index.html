@@ -613,11 +613,15 @@
             <!-- Metrics View -->
             <div class="view" id="view-metrics">
                 <div class="view__toolbar">
-                    <select class="form-input form-input--sm" id="metricsGameSelect">
-                        <option value="">Select game...</option>
-                    </select>
-                    <div class="view__toolbar-actions">
-                        <button class="btn btn--ghost btn--sm" onclick="loadMetrics()">🔄 Refresh</button>
+                    <div class="view__toolbar-left">
+                        <select class="form-input form-input--sm" id="metricsGameSelect">
+                            <option value="">Select game...</option>
+                        </select>
+                        <button class="btn btn--ghost btn--sm btn--icon" onclick="loadMetrics()" title="Refresh metrics">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                        </button>
+                    </div>
+                    <div class="view__toolbar-right">
                         <input type="text" class="form-input form-input--sm" id="recordMetricName" placeholder="Metric name">
                         <input type="number" class="form-input form-input--sm" id="recordMetricValue" placeholder="Value">
                         <button class="btn btn--primary btn--sm" onclick="recordMetric()">Record</button>
@@ -628,28 +632,47 @@
 
             <!-- Patterns View -->
             <div class="view" id="view-patterns">
-                <div class="action-wrapper-huge" style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
-                    <select id="patternGameSelect" class="form-input form-input--sm" style="max-width: 250px; margin-right: 15px; font-size: 16px;"></select>
-                    <button class="btn btn--primary btn--huge" onclick="detectPatterns(event)">Scan Game</button>
-                    <button class="btn btn--ghost btn--sm" onclick="loadPatterns()" style="margin-left: 10px;">🔄 Refresh</button>
+                <div class="view__toolbar">
+                    <div class="view__toolbar-left">
+                        <select id="patternGameSelect" class="form-input form-input--sm"></select>
+                        <button class="btn btn--primary btn--sm" onclick="detectPatterns(event)">Scan Game</button>
+                    </div>
+                    <div class="view__toolbar-right">
+                        <button class="btn btn--ghost btn--sm btn--icon" onclick="loadPatterns()" title="Refresh patterns">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div id="patternsList" class="patterns-list"></div>
             </div>
 
             <!-- Suggestions View -->
             <div class="view" id="view-suggestions">
-                <div class="action-wrapper-huge" style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
-                    <select id="suggestionGameSelect" class="form-input form-input--sm" style="max-width: 250px; margin-right: 15px; font-size: 16px;"></select>
-                    <button class="btn btn--primary btn--huge" onclick="generateSuggestions(event)">Generate</button>
-                    <button class="btn btn--ghost btn--sm" onclick="loadSuggestions()" style="margin-left: 10px;">🔄 Refresh</button>
+                <div class="view__toolbar">
+                    <div class="view__toolbar-left">
+                        <select id="suggestionGameSelect" class="form-input form-input--sm"></select>
+                        <button class="btn btn--primary btn--sm" onclick="generateSuggestions(event)">Generate</button>
+                    </div>
+                    <div class="view__toolbar-right">
+                        <button class="btn btn--ghost btn--sm btn--icon" onclick="loadSuggestions()" title="Refresh suggestions">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div id="suggestionsList" class="suggestions-list"></div>
             </div>
 
             <!-- Games View -->
             <div class="view" id="view-games">
-                <div class="action-wrapper-huge">
-                    <button class="btn btn--primary btn--huge" id="viewAddGameBtn">+ Register Game</button>
+                <div class="view__toolbar">
+                    <div class="view__toolbar-left">
+                        <button class="btn btn--primary btn--sm" id="viewAddGameBtn">+ Register Game</button>
+                    </div>
+                    <div class="view__toolbar-right">
+                        <button class="btn btn--ghost btn--sm btn--icon" onclick="loadDashboardData()" title="Refresh games">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div id="gamesList" class="games-list"></div>
             </div>

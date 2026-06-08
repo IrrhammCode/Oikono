@@ -929,14 +929,31 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 .view__toolbar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-4);
     margin-bottom: var(--space-6);
     flex-wrap: wrap;
 }
-.view__toolbar-actions {
+.view__toolbar-left,
+.view__toolbar-right {
     display: flex;
     gap: var(--space-2);
     align-items: center;
+}
+.btn--icon {
+    padding: 6px 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+.btn--icon:hover {
+    background: var(--bg-hover);
+    transform: rotate(90deg);
+}
+.btn--icon svg {
+    transition: transform 0.3s ease;
 }
 
 /* ── Overview Stats ───────────────────────────── */
