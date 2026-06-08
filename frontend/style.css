@@ -1100,6 +1100,23 @@ textarea.form-input { resize: vertical; min-height: 80px; }
     color: var(--text-secondary);
     margin-bottom: var(--space-3);
 }
+.pattern-item__action {
+    font-size: 13px;
+    color: var(--accent-primary);
+    background: rgba(0,240,255,0.05);
+    border-left: 3px solid var(--accent-primary);
+    padding: 8px 12px;
+    margin-bottom: var(--space-3);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.pattern-item__action strong {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
 .pattern-item__meta {
     display: flex;
     gap: var(--space-4);

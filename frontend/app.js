@@ -526,18 +526,18 @@ async function loadDashboardData() {
         }
         if (!suggestionLoaded) document.getElementById('statSuggestions').textContent = 'N/A';
 
+        // Agent activity: total patterns + suggestions across all games
+        const successEl = document.getElementById('statSuccess');
+        let totalActivity = totalPatterns + totalSuggestions;
         if (contracts.OikonoAgent) {
             try {
                 const agentStats = await contracts.OikonoAgent.getStats();
                 const decisions = Number(agentStats[0]);
-                const successEl = document.getElementById('statSuccess');
-                successEl.textContent = decisions > 0 ? decisions + ' decisions' : 'N/A';
-            } catch (e) {
-                document.getElementById('statSuccess').textContent = 'N/A';
-            }
-        } else {
-            document.getElementById('statSuccess').textContent = 'N/A';
+                const llmCalls = Number(agentStats[1]);
+                totalActivity += decisions + llmCalls;
+            } catch (e) {}
         }
+        successEl.textContent = totalActivity > 0 ? totalActivity + ' actions' : '0 actions';
 
         updateActivityFeed();
         updateGamesList();
@@ -753,6 +753,40 @@ async function recordMetric() {
 // PATTERNS
 // ══════════════════════════════════════════════
 
+function getPatternAction(patternType, metricName, severity) {
+    const actions = {
+        'anomaly': {
+            'win_rate': 'Review game difficulty settings. Consider adjusting enemy power or reward multipliers.',
+            'retention_d7': 'Improve onboarding experience. Add tutorial or early-game incentives.',
+            'token_velocity': 'Add more token sinks (crafting, staking, marketplace fees).',
+            'comeback_rate': 'Balance catch-up mechanics. Add bonus rewards for trailing players.',
+            'avg_game_length': 'Optimize session length. Consider shorter game modes or save states.',
+            'default': `Investigate ${metricName} and consider adjusting related game parameters.`
+        },
+        'spike': {
+            'win_rate': 'Sudden win rate increase detected. Check for exploits or bot activity.',
+            'trade_volume': 'Unusual trade volume. Monitor for wash trading or market manipulation.',
+            'default': `Monitor ${metricName} closely. Spike may indicate exploit or viral growth.`
+        },
+        'drop': {
+            'retention_d7': 'Player retention dropping. Urgent: review recent changes and player feedback.',
+            'daily_active_users': 'User engagement declining. Consider events, updates, or marketing push.',
+            'tvl': 'TVL dropping. Review yield rates and competitor offerings.',
+            'default': `${metricName} declining. Investigate root cause and consider corrective action.`
+        },
+        'trend_up': {
+            'queue_time': 'Matchmaking queue increasing. Consider expanding skill range or adding bots.',
+            'default': `${metricName} trending up. Monitor if this is sustainable growth or a problem.`
+        },
+        'manipulation': {
+            'default': 'Potential manipulation detected. Review recent transactions and player behavior.'
+        }
+    };
+
+    const typeActions = actions[patternType] || actions['anomaly'];
+    return typeActions[metricName] || typeActions['default'] || `Analyze ${metricName} and adjust game parameters accordingly.`;
+}
+
 async function loadPatterns() {
     const list = document.getElementById('patternsList');
 
@@ -811,10 +845,14 @@ async function loadPatterns() {
                 <span class="pattern-item__severity severity--${p.severity >= 7 ? 'high' : p.severity >= 4 ? 'medium' : 'low'}">Severity: ${p.severity}/10</span>
             </div>
             <p class="pattern-item__desc">${p.description}</p>
+            <div class="pattern-item__action">
+                <strong>Action Required:</strong> ${getPatternAction(p.patternType, p.metricName, p.severity)}
+            </div>
             <div class="pattern-item__meta">
                 <span>Game: ${p.gameName}</span>
                 <span>Confidence: ${(p.confidence / 100).toFixed(0)}%</span>
                 <span>Metric: ${p.metricName}</span>
+                ${p.detectedAt ? `<span>Detected: ${new Date(Number(p.detectedAt) * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>` : ''}
             </div>
         </div>
     `).join('') + '</div>';
@@ -937,6 +975,7 @@ async function loadSuggestions() {
                 <span>Game: ${s.gameName}</span>
                 <span>Confidence: ${(s.confidence / 100).toFixed(0)}%</span>
                 <span>Impact: ${(s.expectedImpact / 100).toFixed(0)}%</span>
+                ${s.implementedAt && Number(s.implementedAt) > 0 ? `<span>Implemented: ${new Date(Number(s.implementedAt) * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>` : ''}
             </div>
             ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">${icon('check')} Mark Implemented</button>` : `<span class="badge badge--active">${icon('check')} Implemented</span>`}
         </div>
