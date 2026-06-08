@@ -617,6 +617,7 @@
                         <option value="">Select game...</option>
                     </select>
                     <div class="view__toolbar-actions">
+                        <button class="btn btn--ghost btn--sm" onclick="loadMetrics()">🔄 Refresh</button>
                         <input type="text" class="form-input form-input--sm" id="recordMetricName" placeholder="Metric name">
                         <input type="number" class="form-input form-input--sm" id="recordMetricValue" placeholder="Value">
                         <button class="btn btn--primary btn--sm" onclick="recordMetric()">Record</button>
@@ -630,6 +631,7 @@
                 <div class="action-wrapper-huge" style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
                     <select id="patternGameSelect" class="form-input form-input--sm" style="max-width: 250px; margin-right: 15px; font-size: 16px;"></select>
                     <button class="btn btn--primary btn--huge" onclick="detectPatterns(event)">Scan Game</button>
+                    <button class="btn btn--ghost btn--sm" onclick="loadPatterns()" style="margin-left: 10px;">🔄 Refresh</button>
                 </div>
                 <div id="patternsList" class="patterns-list"></div>
             </div>
@@ -639,6 +641,7 @@
                 <div class="action-wrapper-huge" style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
                     <select id="suggestionGameSelect" class="form-input form-input--sm" style="max-width: 250px; margin-right: 15px; font-size: 16px;"></select>
                     <button class="btn btn--primary btn--huge" onclick="generateSuggestions(event)">Generate</button>
+                    <button class="btn btn--ghost btn--sm" onclick="loadSuggestions()" style="margin-left: 10px;">🔄 Refresh</button>
                 </div>
                 <div id="suggestionsList" class="suggestions-list"></div>
             </div>

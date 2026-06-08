@@ -434,27 +434,39 @@ async function loadDashboardData() {
 
         document.getElementById('statGames').textContent = registeredGames.length;
 
+        // Aggregate pattern/suggestion counts across ALL games
+        let totalPatterns = 0;
+        let totalSuggestions = 0;
+        let patternLoaded = false;
+        let suggestionLoaded = false;
+
         if (contracts.PatternDetector && registeredGames.length > 0) {
             try {
-                const count = await contracts.PatternDetector.getPatternCount(registeredGames[0].id);
-                document.getElementById('statPatterns').textContent = count.toString();
-            } catch (e) {
-                document.getElementById('statPatterns').textContent = 'N/A';
-            }
-        } else {
-            document.getElementById('statPatterns').textContent = 'N/A';
+                for (const g of registeredGames) {
+                    try {
+                        const count = await contracts.PatternDetector.getPatternCount(g.id);
+                        totalPatterns += Number(count);
+                    } catch (e) {}
+                }
+                document.getElementById('statPatterns').textContent = totalPatterns.toString();
+                patternLoaded = true;
+            } catch (e) {}
         }
+        if (!patternLoaded) document.getElementById('statPatterns').textContent = 'N/A';
 
         if (contracts.SuggestionEngine && registeredGames.length > 0) {
             try {
-                const count = await contracts.SuggestionEngine.getSuggestionCount(registeredGames[0].id);
-                document.getElementById('statSuggestions').textContent = count.toString();
-            } catch (e) {
-                document.getElementById('statSuggestions').textContent = 'N/A';
-            }
-        } else {
-            document.getElementById('statSuggestions').textContent = 'N/A';
+                for (const g of registeredGames) {
+                    try {
+                        const count = await contracts.SuggestionEngine.getSuggestionCount(g.id);
+                        totalSuggestions += Number(count);
+                    } catch (e) {}
+                }
+                document.getElementById('statSuggestions').textContent = totalSuggestions.toString();
+                suggestionLoaded = true;
+            } catch (e) {}
         }
+        if (!suggestionLoaded) document.getElementById('statSuggestions').textContent = 'N/A';
 
         if (contracts.OikonoAgent) {
             try {
@@ -950,6 +962,9 @@ async function toggleGameStatus(gameId, currentlyActive) {
         return;
     }
 
+    const action = currentlyActive ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} this game?`)) return;
+
     try {
         const tx = currentlyActive
             ? await contracts.GameRegistry.deactivateGame(gameId)
@@ -1232,6 +1247,15 @@ function updateTemplatePreview() {
 // ══════════════════════════════════════════════
 
 function nextStep(step) {
+    // Validate current step before advancing
+    const currentStep = document.querySelector('.form-step.active');
+    if (currentStep) {
+        const currentStepNum = parseInt(currentStep.dataset.step);
+        if (step > currentStepNum) {
+            const valid = validateStep(currentStepNum);
+            if (!valid) return;
+        }
+    }
     document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
     const target = document.querySelector(`.form-step[data-step="${step}"]`);
     if (target) target.classList.add('active');
@@ -1241,6 +1265,43 @@ function nextStep(step) {
         if (sStep === step) s.classList.add('active');
         else if (sStep < step) s.classList.add('done');
     });
+    // Scroll to top of form
+    const formEl = document.getElementById('registerForm');
+    if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function validateStep(stepNum) {
+    switch (stepNum) {
+        case 1: {
+            const name = document.getElementById('gameName')?.value?.trim();
+            const gameType = document.getElementById('gameType')?.value;
+            const contract = document.getElementById('primaryContract')?.value?.trim();
+            if (!name) {
+                showNotification('Please enter a game name', 'error');
+                document.getElementById('gameName')?.focus();
+                return false;
+            }
+            if (!gameType) {
+                showNotification('Please select a game type', 'error');
+                document.getElementById('gameType')?.focus();
+                return false;
+            }
+            if (!contract || !contract.startsWith('0x') || contract.length !== 42) {
+                showNotification('Please enter a valid primary contract address (0x...42 chars)', 'error');
+                document.getElementById('primaryContract')?.focus();
+                return false;
+            }
+            return true;
+        }
+        case 2:
+            return true; // Contracts are optional
+        case 3:
+            return true; // Economy goals have defaults
+        case 4:
+            return true; // Permissions have defaults
+        default:
+            return true;
+    }
 }
 
 function prevStep(step) {
@@ -1307,6 +1368,35 @@ async function registerGame() {
     const btn = document.querySelector('#registerForm button[type="submit"]');
     if (!btn) return;
     setButtonLoading(btn, true, 'Registering...');
+
+    // Show registration progress overlay
+    const progressOverlay = document.createElement('div');
+    progressOverlay.id = 'regProgress';
+    progressOverlay.className = 'reg-progress-overlay';
+    progressOverlay.innerHTML = `
+        <div class="reg-progress-modal">
+            <h3>🚀 Registering Game...</h3>
+            <div class="reg-progress-steps">
+                <div class="reg-step active" data-reg-step="1"><span class="reg-step-icon">⏳</span> Registering game on-chain...</div>
+                <div class="reg-step" data-reg-step="2"><span class="reg-step-icon">⏳</span> Adding contracts...</div>
+                <div class="reg-step" data-reg-step="3"><span class="reg-step-icon">⏳</span> Applying template...</div>
+                <div class="reg-step" data-reg-step="4"><span class="reg-step-icon">⏳</span> Loading dashboard...</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(progressOverlay);
+
+    function updateRegStep(step, status) {
+        const el = progressOverlay.querySelector(`[data-reg-step="${step}"]`);
+        if (!el) return;
+        const icon = el.querySelector('.reg-step-icon');
+        if (status === 'done') { icon.textContent = '✅'; el.classList.add('done'); el.classList.remove('active'); }
+        else if (status === 'active') { icon.textContent = '⏳'; el.classList.add('active'); }
+        else if (status === 'error') { icon.textContent = '❌'; el.classList.add('error'); }
+        // Activate next step
+        const next = progressOverlay.querySelector(`[data-reg-step="${step + 1}"]`);
+        if (next && status === 'done') { next.classList.add('active'); }
+    }
 
     try {
         showNotification('Preparing transaction...', 'info');
@@ -1407,18 +1497,14 @@ async function registerGame() {
         if (log) {
             gameId = contracts.GameRegistry.interface.parseLog(log).args.gameId;
             showNotification('Game registered! ID: ' + gameId, 'success');
+            updateRegStep(1, 'done');
 
             try {
                 // Skip redundant primary contract linking since it's passed in registerGame
-                // const addPrimaryTx = await contracts.GameRegistry.addContract(gameId, primaryGameAddress, 'game_logic', []);
-                // const primaryReceipt = await addPrimaryTx.wait();
-                // if (primaryReceipt.status === 0 || primaryReceipt.status === 0n) throw new Error('Primary contract link reverted');
-                // showNotification('Primary contract linked', 'success');
             } catch (e) {
-                showNotification('Contract link failed', 'warning');
-                showNotification('Failed to link primary contract: ' + parseError(e), 'error');
             }
 
+            updateRegStep(2, 'active');
             for (const c of gameContracts) {
                 try {
                     const addTx = await contracts.GameRegistry.addContract(gameId, c.address, c.role, []);
@@ -1426,11 +1512,12 @@ async function registerGame() {
                     if (addReceipt.status === 0 || addReceipt.status === 0n) throw new Error('Contract add reverted');
                     showNotification('Contract added: ' + c.role, 'success');
                 } catch (e) {
-                    showNotification('Contract add failed', 'warning');
                     showNotification('Failed to add contract ' + c.role + ': ' + parseError(e), 'error');
                 }
             }
+            updateRegStep(2, 'done');
 
+            updateRegStep(3, 'active');
             try {
                 showNotification('Applying game type template...', 'info');
                 if (!contracts.GameTypeManager) {
@@ -1444,6 +1531,7 @@ async function registerGame() {
             } catch (e) {
                 showNotification('Template application failed: ' + parseError(e), 'warning');
             }
+            updateRegStep(3, 'done');
         } else {
             throw new Error('Game registered but could not parse event to get gameId');
         }
@@ -1455,13 +1543,19 @@ async function registerGame() {
         gameContracts = [];
         updateContractList();
 
+        updateRegStep(4, 'active');
         await loadDashboardData();
-        // Skip optional reactivity setup to reduce MetaMask popups during registration
-        // await autoSubscribeReactivity(gameId, primaryGameAddress);
+        updateRegStep(4, 'done');
+
+        // Remove progress overlay after a short delay
+        setTimeout(() => { progressOverlay.remove(); }, 1000);
         showDashboard('games');
 
     } catch (err) {
         showNotification('Registration failed: ' + parseError(err), 'error');
+        // Remove progress overlay on error
+        const overlay = document.getElementById('regProgress');
+        if (overlay) overlay.remove();
     } finally {
         setButtonLoading(btn, false, 'Register Game');
     }
@@ -1638,8 +1732,8 @@ async function viewGameDetails(gameId) {
                             <button class="btn btn--ghost btn--sm" onclick="toggleGameStatus(${gameId}, ${game.isActive}); closeGameDetails();">
                                 ${game.isActive ? '⏸ Deactivate' : '▶ Activate'}
                             </button>
-                            <button class="btn btn--ghost btn--sm" onclick="detectPatterns(); closeGameDetails();">🔍 Scan Patterns</button>
-                            <button class="btn btn--ghost btn--sm" onclick="generateSuggestions(); closeGameDetails();">💡 Generate Suggestions</button>
+                            <button class="btn btn--ghost btn--sm" onclick="switchView('patterns'); closeGameDetails();">🔍 Scan Patterns</button>
+                            <button class="btn btn--ghost btn--sm" onclick="switchView('suggestions'); closeGameDetails();">💡 Generate Suggestions</button>
                         </div>
                     </div>
                 </div>
