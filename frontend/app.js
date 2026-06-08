@@ -2,7 +2,6 @@
 // OIKONO - Data-Driven Game Economy Agent
 // Premium Design + Full Functionality
 // ═══════════════════════════════════════════════
-console.log('[Oikono] app.js loaded successfully');
 
 // ── SVG Icon System ─────────────────────────────
 const ICONS = {
@@ -652,12 +651,10 @@ async function loadMetrics() {
 }
 
 async function recordMetric() {
-    console.log('[Oikono] recordMetric called');
     const select = document.getElementById('metricsGameSelect');
     const gameId = select?.value;
     const metricName = document.getElementById('recordMetricName')?.value;
     const metricValue = document.getElementById('recordMetricValue')?.value;
-    console.log('[Oikono] gameId:', gameId, 'metricName:', metricName, 'metricValue:', metricValue);
 
     if (!gameId) {
         showNotification('Please select a game first', 'error');
@@ -1799,8 +1796,6 @@ function startPatternAutoDetection() {
         const gid = Number(gameId);
         const game = registeredGames.find(g => g.id === gid);
         if (!game) return;
-
-        console.log('[Oikono] Event: MetricRecorded for game', gid, metricName, Number(value));
         showNotification(`Metric recorded: ${metricName} = ${value}`, 'success');
 
         // Optimistic update: show metric immediately in UI
@@ -1811,7 +1806,6 @@ function startPatternAutoDetection() {
             showNotification('Analyzing patterns...', 'info');
             const tx = await contracts.PatternDetector.detectPatterns(gid);
             await tx.wait();
-            console.log('[Oikono] Auto-detected patterns for game', gid);
 
             // Refresh patterns view
             loadPatterns();
@@ -1825,7 +1819,6 @@ function startPatternAutoDetection() {
     if (contracts.SuggestionEngine) {
         contracts.PatternDetector.on('PatternDetected', async (gameId, patternId, patternType, description, severity) => {
             const gid = Number(gameId);
-            console.log('[Oikono] Event: PatternDetected for game', gid, patternType);
             showNotification(`Pattern detected: ${patternType} (severity: ${severity})`, 'warning');
 
             // Auto-generate suggestions
@@ -1833,7 +1826,6 @@ function startPatternAutoDetection() {
                 showNotification('Generating suggestions...', 'info');
                 const tx = await contracts.SuggestionEngine.generateSuggestions(gid);
                 await tx.wait();
-                console.log('[Oikono] Auto-generated suggestions for game', gid);
 
                 // Refresh suggestions view
                 loadSuggestions();
@@ -1848,7 +1840,6 @@ function startPatternAutoDetection() {
     if (contracts.SuggestionEngine) {
         contracts.SuggestionEngine.on('SuggestionCreated', (gameId, suggestionId, category, priority, description) => {
             const gid = Number(gameId);
-            console.log('[Oikono] Event: SuggestionCreated for game', gid, category);
             showNotification(`New suggestion: ${category} (${priority})`, 'success');
             loadSuggestions();
             loadGameDetailSuggestions(gid);
