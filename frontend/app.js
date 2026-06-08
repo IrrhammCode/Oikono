@@ -453,6 +453,19 @@ function loadViewData(view) {
     }
 }
 
+function showSkeletons(listId, count = 3) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `<div class="skeleton">
+                    <div class="skeleton-text short"></div>
+                    <div class="skeleton-text"></div>
+                 </div>`;
+    }
+    list.innerHTML = html;
+}
+
 // ══════════════════════════════════════════════
 // METRICS
 // ══════════════════════════════════════════════
@@ -476,6 +489,8 @@ async function loadMetrics() {
         grid.innerHTML = '<div class="empty-state"><p>Select a game to view metrics</p></div>';
         return;
     }
+
+    showSkeletons('metricsGrid', 4);
 
     try {
         const metricNames = await contracts.MetricsRegistry.getMetricNames(gameId);
@@ -586,6 +601,8 @@ async function loadPatterns() {
         return;
     }
 
+    showSkeletons('patternsList', 3);
+
     let allPatterns = [];
     for (const game of registeredGames) {
         try {
@@ -648,6 +665,7 @@ async function detectPatterns(e) {
 
     const btn = e?.target || document.querySelector('[onclick*="detectPatterns"]');
     setButtonLoading(btn, true, 'Scanning...');
+    showSkeletons('patternsList', 3);
 
     try {
         const tx = await contracts.PatternDetector.detectPatterns(game.id);
@@ -673,6 +691,8 @@ async function loadSuggestions() {
         list.innerHTML = '<div class="empty-state"><p>No games registered yet. Register a game first.</p></div>';
         return;
     }
+
+    showSkeletons('suggestionsList', 3);
 
     let allSuggestions = [];
     for (const game of registeredGames) {
@@ -740,6 +760,7 @@ async function generateSuggestions(e) {
 
     const btn = e?.target || document.querySelector('[onclick*="generateSuggestions"]');
     setButtonLoading(btn, true, 'Generating...');
+    showSkeletons('suggestionsList', 3);
 
     try {
         const tx = await contracts.SuggestionEngine.generateSuggestions(game.id);

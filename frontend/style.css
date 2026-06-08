@@ -1551,3 +1551,34 @@ textarea.form-input { resize: vertical; min-height: 80px; }
     .overview__stats { grid-template-columns: repeat(2, 1fr); }
     .footer__inner { flex-direction: column; gap: var(--space-4); text-align: center; }
 }
+
+/* ── Skeletons & Loading States ───────────────────────────────── */
+.skeleton {
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-hover) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    min-height: 90px;
+    border: 1px solid var(--border);
+    padding: 16px;
+}
+
+.skeleton-text {
+    height: 16px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    width: 100%;
+}
+.skeleton-text.short {
+    width: 40%;
+    height: 20px;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
