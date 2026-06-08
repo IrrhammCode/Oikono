@@ -62,6 +62,7 @@ const CONFIG = {
             'function getConfig(uint256 gameId) external view returns (tuple(bool canSpawn, bool canAdjustEconomy, bool canGenerateNarrative, bool canAdjustDifficulty, uint256 maxChangePerEpoch, uint256 epochLength))',
             'function deactivateGame(uint256 gameId) external',
             'function activateGame(uint256 gameId) external',
+            'function gameByAddress(address gameAddress) external view returns (uint256)',
             'event GameRegistered(uint256 indexed gameId, address indexed gameAddress, address indexed owner, string name, string gameType)',
         ],
         MetricsRegistry: [

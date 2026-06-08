@@ -845,14 +845,14 @@ async function toggleGameStatus(gameId, currentlyActive) {
 const GAME_TYPE_TEMPLATES = CONFIG.GAME_TYPE_TEMPLATES || {};
 let gameContracts = [];
 
-function addGameContract() {
+async function addGameContract(btnElement) {
     const addressInput = document.getElementById('contractAddress');
     const roleSelect = document.getElementById('contractRole');
     const address = addressInput.value.trim();
     const role = roleSelect.value;
 
-    if (!address || !address.startsWith('0x')) {
-        showNotification('Invalid! Contract address must start with 0x', 'error');
+    if (!address || !address.startsWith('0x') || address.length !== 42) {
+        showNotification('Invalid! Contract address must be a valid 42-character hex address', 'error');
         return;
     }
     if (gameContracts.find(c => c.address.toLowerCase() === address.toLowerCase())) {
@@ -860,9 +860,25 @@ function addGameContract() {
         return;
     }
 
-    gameContracts.push({ address, role });
-    updateContractList();
-    addressInput.value = '';
+    if (btnElement) btnElement.disabled = true;
+    try {
+        if (provider) {
+            const code = await provider.getCode(address);
+            if (code === '0x') {
+                showNotification(`Address ${shortAddr(address)} is not a deployed contract (no bytecode found)`, 'warning');
+                return;
+            }
+        }
+        
+        gameContracts.push({ address, role });
+        updateContractList();
+        addressInput.value = '';
+        showNotification(`Contract analyzed and added successfully: ${role}`, 'success');
+    } catch (err) {
+        showNotification('Failed to analyze contract: ' + parseError(err), 'error');
+    } finally {
+        if (btnElement) btnElement.disabled = false;
+    }
 }
 
 function removeGameContract(index) {
@@ -881,9 +897,10 @@ function updateContractList() {
 
     list.innerHTML = gameContracts.map((c, i) => {
         const roleInfo = CONFIG.CONTRACT_ROLES[c.role] || { label: c.role, icon: '📄' };
+        const icon = roleInfo.icon || '📄';
         return `
             <div class="contract-item">
-                <span class="contract-item__icon">${roleInfo.icon}</span>
+                <span class="contract-item__icon">${icon}</span>
                 <span class="contract-item__role">${roleInfo.label}</span>
                 <span class="contract-item__address">${shortAddr(c.address)}</span>
                 <button type="button" class="btn btn--ghost btn--sm" onclick="removeGameContract(${i})">Remove</button>
@@ -1002,18 +1019,48 @@ async function registerGame() {
 
     if (!name || name.trim() === '') {
         showNotification('Please enter a game name', 'error');
+        nextStep(1);
         return;
     }
     if (!gameType) {
         showNotification('Please select a game type', 'error');
+        nextStep(1);
         return;
     }
     if (!primaryGameAddress || !primaryGameAddress.startsWith('0x') || primaryGameAddress.length !== 42) {
         showNotification('Please enter a valid primary game contract address', 'error');
+        nextStep(1);
         return;
     }
 
-    const btn = document.querySelector('#registerForm .btn--primary');
+    // Check if game address is actually a deployed contract and already registered
+    if (primaryGameAddress !== '0x0000000000000000000000000000000000000000') {
+        try {
+            if (provider) {
+                const code = await provider.getCode(primaryGameAddress);
+                if (code === '0x') {
+                    showNotification(`Primary contract ${shortAddr(primaryGameAddress)} is not a deployed contract (no bytecode found)`, 'warning');
+                    nextStep(1);
+                    return;
+                }
+            }
+
+            if (typeof contracts.GameRegistry.gameByAddress === 'function') {
+                const existingGameId = await contracts.GameRegistry.gameByAddress(primaryGameAddress);
+                if (Number(existingGameId) !== 0) {
+                    showNotification(`Contract ${shortAddr(primaryGameAddress)} is already registered (Game ID: ${existingGameId})`, 'error');
+                    nextStep(1);
+                    return;
+                }
+            } else {
+                console.warn('gameByAddress function not found in ABI. Please hard refresh the page.');
+            }
+        } catch (err) {
+            console.warn('Failed to check existing game address', err);
+        }
+    }
+
+    const btn = document.querySelector('#registerForm button[type="submit"]');
     if (!btn) return;
     setButtonLoading(btn, true, 'Registering...');
 
@@ -1548,6 +1595,10 @@ function parseError(err) {
     if (err.message) {
         const match = err.message.match(/reason="([^"]+)"/);
         if (match) return match[1];
+        if (err.message.includes('reverted') || err.message.includes('revert')) {
+            const revertMatch = err.message.match(/reverted with reason "([^"]+)"/) || err.message.match(/revert: ([^"]+)/);
+            if (revertMatch) return revertMatch[1];
+        }
         return err.message.slice(0, 120);
     }
     return 'Unknown error';
