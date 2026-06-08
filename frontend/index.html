@@ -304,7 +304,7 @@
                     <p class="register-page__desc">Connect your game to the Oikono agent system.</p>
                 </div>
 
-                <form id="registerForm" class="register-form">
+                <form id="registerForm" class="register-form" novalidate>
                     <!-- Step 1: Game Info -->
                     <div class="form-step active" data-step="1">
                         <div class="form-step__header">
@@ -483,11 +483,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Total Supply</label>
-                                <input type="number" class="form-input" id="totalSupply" placeholder="100000000">
+                                <input type="text" inputmode="numeric" class="form-input" id="totalSupply" placeholder="100000000">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Circulating Supply</label>
-                                <input type="number" class="form-input" id="circSupply" placeholder="25000000">
+                                <input type="text" inputmode="numeric" class="form-input" id="circSupply" placeholder="25000000">
                             </div>
                         </div>
                         <div class="form-group">

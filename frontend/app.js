@@ -1069,6 +1069,10 @@ async function registerGame() {
         showNotification('TX sent: ' + tx.hash, 'info');
         const receipt = await tx.wait();
 
+        if (receipt.status === 0 || receipt.status === 0n) {
+            throw new Error('Transaction failed and reverted on the blockchain.');
+        }
+
         const log = receipt.logs.find(l => {
             try { return contracts.GameRegistry.interface.parseLog(l)?.name === 'GameRegistered'; }
             catch { return false; }
@@ -1079,9 +1083,11 @@ async function registerGame() {
             showNotification('Game registered! ID: ' + gameId, 'success');
 
             try {
-                const addPrimaryTx = await contracts.GameRegistry.addContract(gameId, primaryGameAddress, 'game_logic', []);
-                await addPrimaryTx.wait();
-                showNotification('Primary contract linked', 'success');
+                // Skip redundant primary contract linking since it's passed in registerGame
+                // const addPrimaryTx = await contracts.GameRegistry.addContract(gameId, primaryGameAddress, 'game_logic', []);
+                // const primaryReceipt = await addPrimaryTx.wait();
+                // if (primaryReceipt.status === 0 || primaryReceipt.status === 0n) throw new Error('Primary contract link reverted');
+                // showNotification('Primary contract linked', 'success');
             } catch (e) {
                 showNotification('Contract link failed', 'warning');
                 showNotification('Failed to link primary contract: ' + parseError(e), 'error');
@@ -1090,7 +1096,8 @@ async function registerGame() {
             for (const c of gameContracts) {
                 try {
                     const addTx = await contracts.GameRegistry.addContract(gameId, c.address, c.role, []);
-                    await addTx.wait();
+                    const addReceipt = await addTx.wait();
+                    if (addReceipt.status === 0 || addReceipt.status === 0n) throw new Error('Contract add reverted');
                     showNotification('Contract added: ' + c.role, 'success');
                 } catch (e) {
                     showNotification('Contract add failed', 'warning');
@@ -1104,15 +1111,15 @@ async function registerGame() {
                     showNotification('Template skipped - GameTypeManager not loaded', 'warning');
                 } else {
                     const templateTx = await contracts.GameTypeManager.applyTemplate(gameId, gameType);
-                    await templateTx.wait();
+                    const templateReceipt = await templateTx.wait();
+                    if (templateReceipt.status === 0 || templateReceipt.status === 0n) throw new Error('Template transaction reverted');
                     showNotification('Template applied! Metrics and rules configured.', 'success');
                 }
             } catch (e) {
-                showNotification('Template failed: ' + parseError(e), 'warning');
                 showNotification('Template application failed: ' + parseError(e), 'warning');
             }
         } else {
-            showNotification('Game registered but could not parse event', 'warning');
+            throw new Error('Game registered but could not parse event to get gameId');
         }
 
         const form = document.getElementById('registerForm');
@@ -1123,7 +1130,8 @@ async function registerGame() {
         updateContractList();
 
         await loadDashboardData();
-        await autoSubscribeReactivity(gameId, primaryGameAddress);
+        // Skip optional reactivity setup to reduce MetaMask popups during registration
+        // await autoSubscribeReactivity(gameId, primaryGameAddress);
         showDashboard('games');
 
     } catch (err) {
@@ -1150,7 +1158,8 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
         try {
             const subscriptionDeposit = ethers.parseEther('0.01');
             const tx = await contracts.GameMaster.subscribeToPlayerMoved(playerMovedSig, { value: subscriptionDeposit });
-            await tx.wait();
+            const gmReceipt = await tx.wait();
+            if (gmReceipt.status === 0 || gmReceipt.status === 0n) throw new Error('GameMaster subscription reverted');
             showNotification('GameMaster subscribed to PlayerMoved events', 'success');
         } catch (e) {
 ;
@@ -1163,7 +1172,8 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
                 const regTx = await contracts.AgentRuntime.registerGame(
                     document.getElementById('gameName')?.value || 'Game ' + gameId, pluginAddr
                 );
-                await regTx.wait();
+                const regReceipt = await regTx.wait();
+                if (regReceipt.status === 0 || regReceipt.status === 0n) throw new Error('AgentRuntime registration reverted');
                 showNotification('Game registered with AgentRuntime', 'success');
             }
         } catch (e) {
@@ -1174,7 +1184,8 @@ async function autoSubscribeReactivity(gameId, gameAddress) {
             const subscriptionDeposit = ethers.parseEther('0.01');
             const playerMovedSig2 = ethers.id('PlayerMoved(address,uint256,uint256,uint256,uint256)');
             const subTx = await contracts.AgentRuntime.subscribeToEvent(playerMovedSig2, subscriptionDeposit, { value: subscriptionDeposit });
-            await subTx.wait();
+            const subReceipt = await subTx.wait();
+            if (subReceipt.status === 0 || subReceipt.status === 0n) throw new Error('AgentRuntime subscription reverted');
             showNotification('AgentRuntime subscribed to game events', 'success');
         } catch (e) {
 ;
