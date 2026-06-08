@@ -1,0 +1,53 @@
+{
+  "factory": "0x248cCDBB7331cA30D4057862F4Dc673a6AeC9007",
+  "games": [
+    {
+      "name": "WagerVerse Arena",
+      "type": "pvp",
+      "address": "0xd5f3E959b213e1B6811852bB7F4Ea8a5C868e21c"
+    },
+    {
+      "name": "Worms Arena",
+      "type": "strategy",
+      "address": "0x01BcdC8eD5Ac27Fe0dFF13c71EEE7e4B2c23D182"
+    },
+    {
+      "name": "Infinite Craft",
+      "type": "sandbox",
+      "address": "0xeb6c713Fd7292ced58fa13eEf3DBd5c9Dfdb40e2"
+    },
+    {
+      "name": "Void Hunters",
+      "type": "rpg",
+      "address": "0xccbFe6Cb15E50CB540BB3dcbeBd0333564C1Daf0"
+    },
+    {
+      "name": "Kingsomni",
+      "type": "card",
+      "address": "0x9839E260f5C10e1fd975214bDdd498a8D39FcB12"
+    },
+    {
+      "name": "Gamers Lab",
+      "type": "puzzle",
+      "address": "0x197B377E88f7EbB0Dd130a1c2EAC40193930F4B4"
+    },
+    {
+      "name": "Somn Tournament",
+      "type": "racing",
+      "address": "0x04cdcC114616F37bA1D1CcC4f5248DbB2E782912"
+    },
+    {
+      "name": "NFT Bridge World",
+      "type": "simulation",
+      "address": "0x098f6C6B1c80460aD896F63900D84D4e64BFA926"
+    },
+    {
+      "name": "DeFi Arena",
+      "type": "defi",
+      "address": "0x9532A3Ac3a3ba2AAcbc6bbd21ede6dDED49d86F8"
+    }
+  ],
+  "deployer": "0xe255990F02E12b1Ec96Dd80bA6270bA24DDF86C6",
+  "network": "somnia_testnet",
+  "timestamp": "2026-06-08T14:48:13.952Z"
+}
