@@ -909,6 +909,66 @@ function updateContractList() {
     }).join('');
 }
 
+window.fillExampleData = function() {
+    // Step 1
+    const nameInput = document.getElementById('gameName');
+    if (nameInput) nameInput.value = "Battle Arena";
+    
+    const typeInput = document.getElementById('gameType');
+    if (typeInput) {
+        typeInput.value = "rpg";
+        // Trigger change to update template preview
+        typeInput.dispatchEvent(new Event('change'));
+    }
+    
+    const descInput = document.getElementById('gameDesc');
+    if (descInput) descInput.value = "On-chain battle arena with NFT enemies, token rewards, and AI-powered game master";
+    
+    const primaryInput = document.getElementById('primaryContract');
+    if (primaryInput) primaryInput.value = "0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf";
+
+    // Step 2
+    gameContracts = [
+        { address: "0xA03916C493cc00869FBd1D56cb89ba0d14A12116", role: "token" },
+        { address: "0x8B0E52280c2E5047B8fd7AffD20333f36463b037", role: "nft" },
+        { address: "0xA530dbDB02f46F4A1B7c18cEE8eA57148fC470Ae", role: "game_logic" }
+    ];
+    updateContractList();
+
+    // Step 3
+    if(document.getElementById('targetWinRate')) document.getElementById('targetWinRate').value = "55";
+    if(document.getElementById('targetRetention')) document.getElementById('targetRetention').value = "30";
+    if(document.getElementById('inflationTolerance')) document.getElementById('inflationTolerance').value = "medium";
+    if(document.getElementById('economyStyle')) document.getElementById('economyStyle').value = "balanced";
+    if(document.getElementById('maxChange')) document.getElementById('maxChange').value = "20";
+    if(document.getElementById('epochLength')) document.getElementById('epochLength').value = "6500";
+
+    // Step 4
+    if(document.getElementById('permSpawn')) document.getElementById('permSpawn').checked = true;
+    if(document.getElementById('permEconomy')) document.getElementById('permEconomy').checked = true;
+    if(document.getElementById('permNarrative')) document.getElementById('permNarrative').checked = false;
+    if(document.getElementById('permDifficulty')) document.getElementById('permDifficulty').checked = true;
+    if(document.getElementById('autonomyLevel')) document.getElementById('autonomyLevel').value = "semi-auto";
+
+    // Step 5
+    if(document.getElementById('tokenName')) document.getElementById('tokenName').value = "OIK Token";
+    if(document.getElementById('tokenSymbol')) document.getElementById('tokenSymbol').value = "OIK";
+    if(document.getElementById('totalSupply')) document.getElementById('totalSupply').value = "1000000000";
+    if(document.getElementById('circSupply')) document.getElementById('circSupply').value = "250000000";
+    if(document.getElementById('tokenUtility')) document.getElementById('tokenUtility').value = "mixed";
+    
+    if(document.getElementById('sinkEntry')) document.getElementById('sinkEntry').checked = true;
+    if(document.getElementById('sinkCraft')) document.getElementById('sinkCraft').checked = true;
+    if(document.getElementById('sinkMarket')) document.getElementById('sinkMarket').checked = true;
+    if(document.getElementById('sinkStaking')) document.getElementById('sinkStaking').checked = true;
+    
+    if(document.getElementById('srcBattle')) document.getElementById('srcBattle').checked = true;
+    if(document.getElementById('srcQuest')) document.getElementById('srcQuest').checked = true;
+    if(document.getElementById('srcStaking')) document.getElementById('srcStaking').checked = true;
+
+    showNotification('Example data filled successfully! Proceed to verify all steps.', 'success');
+}
+
 function updateRangeDisplay(input, displayId) {
     const display = document.getElementById(displayId);
     if (display) display.textContent = input.value + '%';

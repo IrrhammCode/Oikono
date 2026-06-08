@@ -300,7 +300,10 @@
             <div class="register-page">
                 <div class="register-page__header">
                     <button class="btn btn--ghost btn--sm" id="backToHomeBtn">&larr; Back</button>
-                    <h2 class="register-page__title">Register Your Game</h2>
+                    <h2 class="register-page__title" style="display:flex; align-items:center; gap:12px;">
+                        Register Your Game 
+                        <button type="button" class="btn btn--sm btn--ghost" onclick="fillExampleData()" style="font-size: 12px; padding: 4px 10px; border-radius: 4px;">Fill Example Data</button>
+                    </h2>
                     <p class="register-page__desc">Connect your game to the Oikono agent system.</p>
                 </div>
 
@@ -652,7 +655,7 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
-    <script src="config.js?v=103"></script>
-    <script src="app.js?v=103"></script>
+    <script src="config.js?v=104"></script>
+    <script src="app.js?v=104"></script>
 </body>
 </html>
