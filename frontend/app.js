@@ -438,14 +438,22 @@ async function loadDashboardData() {
             try {
                 const count = await contracts.PatternDetector.getPatternCount(registeredGames[0].id);
                 document.getElementById('statPatterns').textContent = count.toString();
-            } catch (e) {}
+            } catch (e) {
+                document.getElementById('statPatterns').textContent = 'N/A';
+            }
+        } else {
+            document.getElementById('statPatterns').textContent = 'N/A';
         }
 
         if (contracts.SuggestionEngine && registeredGames.length > 0) {
             try {
                 const count = await contracts.SuggestionEngine.getSuggestionCount(registeredGames[0].id);
                 document.getElementById('statSuggestions').textContent = count.toString();
-            } catch (e) {}
+            } catch (e) {
+                document.getElementById('statSuggestions').textContent = 'N/A';
+            }
+        } else {
+            document.getElementById('statSuggestions').textContent = 'N/A';
         }
 
         if (contracts.OikonoAgent) {
@@ -1043,7 +1051,7 @@ window.fillExampleData = function() {
     if (descInput) descInput.value = "On-chain battle arena with NFT enemies, token rewards, and AI-powered game master";
     
     const primaryInput = document.getElementById('primaryContract');
-    if (primaryInput) primaryInput.value = "0xA247bFd1F0951071849EB47264185bb2047db39b";
+    if (primaryInput) primaryInput.value = "0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf";
 
     // Step 2
     gameContracts = [
@@ -1589,15 +1597,15 @@ async function viewGameDetails(gameId) {
                     </div>
                     <div class="detail-section" id="detailMetrics-${gameId}">
                         <h4>📈 Metrics Overview</h4>
-                        <div class="detail-loading">Loading metrics...</div>
+                        <div class="detail-loading"><span class="loading-spinner"></span> Loading metrics...</div>
                     </div>
                     <div class="detail-section" id="detailPatterns-${gameId}">
                         <h4>🔍 Recent Patterns</h4>
-                        <div class="detail-loading">Loading patterns...</div>
+                        <div class="detail-loading"><span class="loading-spinner"></span> Loading patterns...</div>
                     </div>
                     <div class="detail-section" id="detailSuggestions-${gameId}">
                         <h4>💡 Active Suggestions</h4>
-                        <div class="detail-loading">Loading suggestions...</div>
+                        <div class="detail-loading"><span class="loading-spinner"></span> Loading suggestions...</div>
                     </div>
                     <div class="detail-section">
                         <h4>🔗 Contract Addresses</h4>
@@ -1621,7 +1629,7 @@ async function viewGameDetails(gameId) {
                     <div class="detail-section">
                         <h4>🤖 Agent Config</h4>
                         <div class="detail-grid" id="detailAgentConfig-${gameId}">
-                            <div class="detail-loading">Loading config...</div>
+                            <div class="detail-loading"><span class="loading-spinner"></span> Loading config...</div>
                         </div>
                     </div>
                     <div class="detail-section">
@@ -1945,6 +1953,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (registerForm) registerForm.addEventListener('submit', (e) => {
         e.preventDefault();
         registerGame();
+    });
+
+    // Metrics game select change handler
+    const metricsGameSelect = document.getElementById('metricsGameSelect');
+    if (metricsGameSelect) metricsGameSelect.addEventListener('change', () => {
+        loadMetrics();
     });
 
     // Template preview on game type change
