@@ -348,6 +348,104 @@ const CONFIG = {
                 { type: 'trend_up', metric: 'queue_time', threshold: '50% over 7d', description: 'Queue time increasing' },
             ]
         },
+        strategy: {
+            name: 'Strategy',
+            description: 'Strategy Games',
+            metrics: [
+                { name: 'win_rate', healthy: '40-60%', description: 'Player win rate' },
+                { name: 'avg_game_length', healthy: '10-30 min', description: 'Average game duration' },
+                { name: 'build_diversity', healthy: '>50%', description: 'Build/strategy diversity' },
+                { name: 'comeback_rate', healthy: '15-35%', description: 'Comeback win rate' },
+            ],
+            rules: [
+                { type: 'spike', metric: 'win_rate', threshold: '25%', description: 'Win rate spike' },
+                { type: 'drop', metric: 'build_diversity', threshold: '20%', description: 'Meta stagnation' },
+            ]
+        },
+        sandbox: {
+            name: 'Sandbox',
+            description: 'Sandbox Games',
+            metrics: [
+                { name: 'daily_active_users', healthy: '>100', description: 'Daily active players' },
+                { name: 'items_crafted', healthy: '>50/day', description: 'Items crafted per day' },
+                { name: 'trade_volume', healthy: '>1000/day', description: 'Marketplace trade volume' },
+                { name: 'retention_d7', healthy: '25-45%', description: '7-day retention' },
+            ],
+            rules: [
+                { type: 'drop', metric: 'daily_active_users', threshold: '30%', description: 'User drop' },
+                { type: 'spike', metric: 'trade_volume', threshold: '200%', description: 'Trade volume spike' },
+            ]
+        },
+        puzzle: {
+            name: 'Puzzle',
+            description: 'Puzzle Games',
+            metrics: [
+                { name: 'avg_solve_time', healthy: '2-10 min', description: 'Average puzzle solve time' },
+                { name: 'completion_rate', healthy: '60-85%', description: 'Puzzle completion rate' },
+                { name: 'hint_usage', healthy: '<30%', description: 'Hint usage rate' },
+                { name: 'retention_d7', healthy: '30-50%', description: '7-day retention' },
+            ],
+            rules: [
+                { type: 'spike', metric: 'hint_usage', threshold: '50%', description: 'Difficulty spike' },
+                { type: 'drop', metric: 'completion_rate', threshold: '20%', description: 'Completion drop' },
+            ]
+        },
+        racing: {
+            name: 'Racing',
+            description: 'Racing Games',
+            metrics: [
+                { name: 'avg_race_time', healthy: '1-5 min', description: 'Average race duration' },
+                { name: 'finish_rate', healthy: '>80%', description: 'Race finish rate' },
+                { name: 'vehicle_diversity', healthy: '>60%', description: 'Vehicle usage diversity' },
+                { name: 'stake_per_race', healthy: '10-100', description: 'Average stake per race' },
+            ],
+            rules: [
+                { type: 'drop', metric: 'finish_rate', threshold: '15%', description: 'Finish rate drop' },
+                { type: 'spike', metric: 'avg_race_time', threshold: '100%', description: 'Race time spike' },
+            ]
+        },
+        simulation: {
+            name: 'Simulation',
+            description: 'Simulation Games',
+            metrics: [
+                { name: 'resource_balance', healthy: '0.8-1.2', description: 'Resource supply/demand ratio' },
+                { name: 'player_governance', healthy: '>20%', description: 'Governance participation' },
+                { name: 'cross_chain_volume', healthy: '>10/day', description: 'Cross-chain transfers' },
+                { name: 'retention_d30', healthy: '15-30%', description: '30-day retention' },
+            ],
+            rules: [
+                { type: 'drop', metric: 'resource_balance', threshold: '30%', description: 'Economy imbalance' },
+                { type: 'spike', metric: 'cross_chain_volume', threshold: '500%', description: 'Bridge volume spike' },
+            ]
+        },
+        idle: {
+            name: 'Idle',
+            description: 'Idle Games',
+            metrics: [
+                { name: 'loot_per_hour', healthy: '50-200', description: 'Loot earned per hour' },
+                { name: 'auto_battle_win', healthy: '45-65%', description: 'Auto-battle win rate' },
+                { name: 'craft_success', healthy: '30-50%', description: 'Craft success rate' },
+                { name: 'session_frequency', healthy: '>3/day', description: 'Sessions per day' },
+            ],
+            rules: [
+                { type: 'spike', metric: 'auto_battle_win', threshold: '20%', description: 'Win rate spike' },
+                { type: 'drop', metric: 'session_frequency', threshold: '40%', description: 'Engagement drop' },
+            ]
+        },
+        defi: {
+            name: 'DeFi',
+            description: 'DeFi Games',
+            metrics: [
+                { name: 'tvl', healthy: '>10000', description: 'Total value locked' },
+                { name: 'yield_rate', healthy: '5-25%', description: 'Current yield rate' },
+                { name: 'liquidation_rate', healthy: '<5%', description: 'Liquidation rate' },
+                { name: 'unique_wallets', healthy: '>50', description: 'Unique active wallets' },
+            ],
+            rules: [
+                { type: 'spike', metric: 'liquidation_rate', threshold: '200%', description: 'Liquidation spike' },
+                { type: 'drop', metric: 'tvl', threshold: '30%', description: 'TVL drop' },
+            ]
+        },
     },
 
     CONTRACT_ROLES: {
