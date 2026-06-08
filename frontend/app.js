@@ -1079,123 +1079,65 @@ function updateContractList() {
     }).join('');
 }
 
-window.fillExampleData = function() {
+const EXAMPLE_DATA = [
+    { name: "Battle Arena", type: "rpg", desc: "On-chain battle arena with NFT enemies, token rewards, and AI-powered game master", primary: "0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf", contracts: [{ address: "0xA03916C493cc00869FBd1D56cb89ba0d14A12116", role: "token" }, { address: "0x8B0E52280c2E5047B8fd7AffD20333f36463b037", role: "nft" }, { address: "0xA530dbDB02f46F4A1B7c18cEE8eA57148fC470Ae", role: "game_logic" }], winRate: 55, retention: 30, inflation: "medium", economy: "balanced", maxChange: 20, epoch: 6500, spawn: true, econPerm: true, narrative: false, difficulty: true, autonomy: "semi-auto", tokenName: "OIK Token", tokenSym: "OIK", totalSupply: "1000000000", circSupply: "250000000", utility: "mixed", sinks: ["entry","craft","market","staking"], sources: ["battle","quest","staking"] },
+    { name: "Cosmic Racers", type: "racing", desc: "Intergalactic racing game with dynamic weather, NFT vehicle upgrades, and token staking for race entry", primary: "0x3bDE5012889FAa8eaDCE1B2F4939798359513273", contracts: [{ address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", role: "token" }, { address: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", role: "nft" }], winRate: 50, retention: 40, inflation: "low", economy: "deflationary", maxChange: 10, epoch: 5000, spawn: false, econPerm: true, narrative: false, difficulty: true, autonomy: "manual", tokenName: "Cosmic Fuel", tokenSym: "FUEL", totalSupply: "50000000", circSupply: "10000000", utility: "utility", sinks: ["entry","market"], sources: ["quest","staking"] },
+    { name: "Shadow Realms", type: "card", desc: "Dark fantasy TCG with procedurally generated cards, on-chain deck building, and seasonal tournaments", primary: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", contracts: [{ address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", role: "token" }, { address: "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D", role: "nft" }, { address: "0x6B175474E89094C44Da98b954EedeAC495271d0F", role: "marketplace" }], winRate: 48, retention: 35, inflation: "medium", economy: "balanced", maxChange: 15, epoch: 7000, spawn: false, econPerm: true, narrative: true, difficulty: false, autonomy: "semi-auto", tokenName: "Shadow Shard", tokenSym: "SHARD", totalSupply: "200000000", circSupply: "80000000", utility: "governance", sinks: ["entry","craft","market"], sources: ["quest","staking"] },
+    { name: "Pixel Fortress", type: "strategy", desc: "Tower defense meets DeFi — build, defend, and earn through strategic resource management on-chain", primary: "0xDc64a140Aa3E981100d9e1b7b6d2C53C0d69e8a3", contracts: [{ address: "0x514910771AF9Ca656af840dff83E8264EcF986CA", role: "token" }, { address: "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d", role: "nft" }, { address: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", role: "game_logic" }], winRate: 52, retention: 38, inflation: "high", economy: "inflationary", maxChange: 25, epoch: 8000, spawn: true, econPerm: true, narrative: false, difficulty: true, autonomy: "full-auto", tokenName: "Fortress Gold", tokenSym: "FGOLD", totalSupply: "500000000", circSupply: "150000000", utility: "mixed", sinks: ["entry","craft","staking"], sources: ["battle","quest","staking"] },
+    { name: "Dragon Arena PvP", type: "pvp", desc: "Real-time PvP dragon battles with breeding mechanics, seasonal rankings, and token wagering system", primary: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", contracts: [{ address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", role: "token" }, { address: "0x4d224452801ACEd8B2F0aebE155379bb5D594381", role: "nft" }], winRate: 45, retention: 25, inflation: "medium", economy: "balanced", maxChange: 18, epoch: 6000, spawn: true, econPerm: false, narrative: false, difficulty: true, autonomy: "semi-auto", tokenName: "Dragon Essence", tokenSym: "DRE", totalSupply: "100000000", circSupply: "40000000", utility: "utility", sinks: ["entry","market","staking"], sources: ["battle","staking"] },
+    { name: "Galactic Sim", type: "simulation", desc: "Space colony simulation with resource trading, AI governance, and cross-chain asset bridges", primary: "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0", contracts: [{ address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", role: "token" }, { address: "0x3845badAde8e6dFF049820680d1F14bD3903a5d0", role: "nft" }, { address: "0x0AbdAce70D3790235af448C88547603b945604ea", role: "staking" }], winRate: 60, retention: 45, inflation: "low", economy: "deflationary", maxChange: 8, epoch: 9000, spawn: true, econPerm: true, narrative: true, difficulty: false, autonomy: "full-auto", tokenName: "Galactic Credit", tokenSym: "GCRED", totalSupply: "750000000", circSupply: "200000000", utility: "mixed", sinks: ["craft","market","staking"], sources: ["quest","staking"] },
+    { name: "Mind Maze", type: "puzzle", desc: "Cryptographic puzzle game with progressive difficulty, NFT brain boosts, and community-created levels", primary: "0x6810e776880C02933D47DB1b9fc05908e5386b96", contracts: [{ address: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", role: "token" }, { address: "0xED5AF388653567Af2F388E6224dC7C4b3241C544", role: "nft" }], winRate: 65, retention: 50, inflation: "low", economy: "deflationary", maxChange: 5, epoch: 4000, spawn: false, econPerm: false, narrative: true, difficulty: false, autonomy: "manual", tokenName: "Mind Token", tokenSym: "MIND", totalSupply: "50000000", circSupply: "15000000", utility: "utility", sinks: ["entry","craft"], sources: ["quest"] },
+    { name: "Nomad Worlds", type: "idle", desc: "Idle RPG with auto-battling, loot crafting, and cross-game item bridges powered by AI agents", primary: "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85", contracts: [{ address: "0xc00e94Cb662C3520282E6f5717214004A7f26888", role: "token" }, { address: "0xBd3531dA5CF5857e7CfAA92426877b022e612cf8", role: "nft" }, { address: "0xDe30da39c46104798bB5aA3fe8B9e0e1F348163F", role: "marketplace" }], winRate: 70, retention: 55, inflation: "high", economy: "inflationary", maxChange: 30, epoch: 10000, spawn: true, econPerm: true, narrative: true, difficulty: true, autonomy: "full-auto", tokenName: "Nomad Gold", tokenSym: "NGOLD", totalSupply: "2000000000", circSupply: "500000000", utility: "mixed", sinks: ["entry","craft","market","staking","cosmetic"], sources: ["battle","quest","staking","airdrop"] },
+    { name: "CryptoKnights", type: "sandbox", desc: "Open-world medieval sandbox with player-owned land, resource wars, and DAO governance for game rules", primary: "0x0D8775F648430679A709E98d2b0Cb6250d2887EF", contracts: [{ address: "0xD533a949740bb3306d119CC777fa900bA034cd52", role: "token" }, { address: "0x34d85c9CDeB23FA97cb08333b511ac86E1C4E258", role: "nft" }, { address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", role: "marketplace" }, { address: "0x1a4743cf8B40EBa27c1E8b0dA5E4c7e4B8bA7C2a", role: "staking" }], winRate: 40, retention: 30, inflation: "medium", economy: "balanced", maxChange: 20, epoch: 7500, spawn: true, econPerm: true, narrative: true, difficulty: true, autonomy: "semi-auto", tokenName: "Knight Token", tokenSym: "KNIGHT", totalSupply: "800000000", circSupply: "300000000", utility: "governance", sinks: ["entry","craft","market","staking"], sources: ["battle","quest","staking"] }
+];
+
+function fillFormFromData(d) {
     // Step 1
     const nameInput = document.getElementById('gameName');
-    if (nameInput) nameInput.value = "Battle Arena";
-    
+    if (nameInput) nameInput.value = d.name;
     const typeInput = document.getElementById('gameType');
-    if (typeInput) {
-        typeInput.value = "rpg";
-        // Trigger change to update template preview
-        typeInput.dispatchEvent(new Event('change'));
-    }
-    
+    if (typeInput) { typeInput.value = d.type; typeInput.dispatchEvent(new Event('change')) }
     const descInput = document.getElementById('gameDesc');
-    if (descInput) descInput.value = "On-chain battle arena with NFT enemies, token rewards, and AI-powered game master";
-    
+    if (descInput) descInput.value = d.desc;
     const primaryInput = document.getElementById('primaryContract');
-    if (primaryInput) primaryInput.value = "0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf";
+    if (primaryInput) primaryInput.value = d.primary;
 
     // Step 2
-    gameContracts = [
-        { address: "0xA03916C493cc00869FBd1D56cb89ba0d14A12116", role: "token" },
-        { address: "0x8B0E52280c2E5047B8fd7AffD20333f36463b037", role: "nft" },
-        { address: "0xA530dbDB02f46F4A1B7c18cEE8eA57148fC470Ae", role: "game_logic" }
-    ];
+    gameContracts = d.contracts.map(c => ({ address: c.address, role: c.role }));
     updateContractList();
 
     // Step 3
-    if(document.getElementById('targetWinRate')) document.getElementById('targetWinRate').value = "55";
-    if(document.getElementById('targetRetention')) document.getElementById('targetRetention').value = "30";
-    if(document.getElementById('inflationTolerance')) document.getElementById('inflationTolerance').value = "medium";
-    if(document.getElementById('economyStyle')) document.getElementById('economyStyle').value = "balanced";
-    if(document.getElementById('maxChange')) document.getElementById('maxChange').value = "20";
-    if(document.getElementById('epochLength')) document.getElementById('epochLength').value = "6500";
+    if(document.getElementById('targetWinRate')) document.getElementById('targetWinRate').value = d.winRate;
+    if(document.getElementById('targetRetention')) document.getElementById('targetRetention').value = d.retention;
+    if(document.getElementById('inflationTolerance')) document.getElementById('inflationTolerance').value = d.inflation;
+    if(document.getElementById('economyStyle')) document.getElementById('economyStyle').value = d.economy;
+    if(document.getElementById('maxChange')) document.getElementById('maxChange').value = d.maxChange;
+    if(document.getElementById('epochLength')) document.getElementById('epochLength').value = d.epoch;
 
     // Step 4
-    if(document.getElementById('permSpawn')) document.getElementById('permSpawn').checked = true;
-    if(document.getElementById('permEconomy')) document.getElementById('permEconomy').checked = true;
-    if(document.getElementById('permNarrative')) document.getElementById('permNarrative').checked = false;
-    if(document.getElementById('permDifficulty')) document.getElementById('permDifficulty').checked = true;
-    if(document.getElementById('autonomyLevel')) document.getElementById('autonomyLevel').value = "semi-auto";
+    if(document.getElementById('permSpawn')) document.getElementById('permSpawn').checked = d.spawn;
+    if(document.getElementById('permEconomy')) document.getElementById('permEconomy').checked = d.econPerm;
+    if(document.getElementById('permNarrative')) document.getElementById('permNarrative').checked = d.narrative;
+    if(document.getElementById('permDifficulty')) document.getElementById('permDifficulty').checked = d.difficulty;
+    if(document.getElementById('autonomyLevel')) document.getElementById('autonomyLevel').value = d.autonomy;
 
     // Step 5
-    if(document.getElementById('tokenName')) document.getElementById('tokenName').value = "OIK Token";
-    if(document.getElementById('tokenSymbol')) document.getElementById('tokenSymbol').value = "OIK";
-    if(document.getElementById('totalSupply')) document.getElementById('totalSupply').value = "1000000000";
-    if(document.getElementById('circSupply')) document.getElementById('circSupply').value = "250000000";
-    if(document.getElementById('tokenUtility')) document.getElementById('tokenUtility').value = "mixed";
-    
-    if(document.getElementById('sinkEntry')) document.getElementById('sinkEntry').checked = true;
-    if(document.getElementById('sinkCraft')) document.getElementById('sinkCraft').checked = true;
-    if(document.getElementById('sinkMarket')) document.getElementById('sinkMarket').checked = true;
-    if(document.getElementById('sinkStaking')) document.getElementById('sinkStaking').checked = true;
-    
-    if(document.getElementById('srcBattle')) document.getElementById('srcBattle').checked = true;
-    if(document.getElementById('srcQuest')) document.getElementById('srcQuest').checked = true;
-    if(document.getElementById('srcStaking')) document.getElementById('srcStaking').checked = true;
+    if(document.getElementById('tokenName')) document.getElementById('tokenName').value = d.tokenName;
+    if(document.getElementById('tokenSymbol')) document.getElementById('tokenSymbol').value = d.tokenSym;
+    if(document.getElementById('totalSupply')) document.getElementById('totalSupply').value = d.totalSupply;
+    if(document.getElementById('circSupply')) document.getElementById('circSupply').value = d.circSupply;
+    if(document.getElementById('tokenUtility')) document.getElementById('tokenUtility').value = d.utility;
 
-    showNotification('Example 1 data filled successfully! Proceed to verify all steps.', 'success');
+    const allSinks = ['entry','craft','market','staking','cosmetic'];
+    allSinks.forEach(s => { const el = document.getElementById('sink' + s.charAt(0).toUpperCase() + s.slice(1)); if (el) el.checked = d.sinks.includes(s); });
+    const allSources = ['battle','quest','staking','airdrop'];
+    allSources.forEach(s => { const el = document.getElementById('src' + s.charAt(0).toUpperCase() + s.slice(1)); if (el) el.checked = d.sources.includes(s); });
+
+    showNotification(d.name + ' data filled! Verify all steps.', 'success');
 }
 
-window.fillExampleData2 = function() {
-    // Step 1
-    const nameInput = document.getElementById('gameName');
-    if (nameInput) nameInput.value = "Cosmic Racers";
-    
-    const typeInput = document.getElementById('gameType');
-    if (typeInput) {
-        typeInput.value = "racing";
-        // Trigger change to update template preview
-        typeInput.dispatchEvent(new Event('change'));
-    }
-    
-    const descInput = document.getElementById('gameDesc');
-    if (descInput) descInput.value = "A fast-paced intergalactic racing game with dynamic weather conditions and NFT upgrades.";
-    
-    const primaryInput = document.getElementById('primaryContract');
-    if (primaryInput) primaryInput.value = "0x3bDE5012889FAa8eaDCE1B2F4939798359513273";
-
-    // Step 2
-    gameContracts = [
-        { address: "0x0000000000000000000000000000000000000002", role: "marketplace" },
-        { address: "0x0000000000000000000000000000000000000003", role: "nft" }
-    ];
-    updateContractList();
-
-    // Step 3
-    if(document.getElementById('targetWinRate')) document.getElementById('targetWinRate').value = "50";
-    if(document.getElementById('targetRetention')) document.getElementById('targetRetention').value = "40";
-    if(document.getElementById('inflationTolerance')) document.getElementById('inflationTolerance').value = "low";
-    if(document.getElementById('economyStyle')) document.getElementById('economyStyle').value = "deflationary";
-    if(document.getElementById('maxChange')) document.getElementById('maxChange').value = "10";
-    if(document.getElementById('epochLength')) document.getElementById('epochLength').value = "5000";
-
-    // Step 4
-    if(document.getElementById('permSpawn')) document.getElementById('permSpawn').checked = false;
-    if(document.getElementById('permEconomy')) document.getElementById('permEconomy').checked = true;
-    if(document.getElementById('permNarrative')) document.getElementById('permNarrative').checked = false;
-    if(document.getElementById('permDifficulty')) document.getElementById('permDifficulty').checked = true;
-    if(document.getElementById('autonomyLevel')) document.getElementById('autonomyLevel').value = "manual";
-
-    // Step 5
-    if(document.getElementById('tokenName')) document.getElementById('tokenName').value = "Cosmic Fuel";
-    if(document.getElementById('tokenSymbol')) document.getElementById('tokenSymbol').value = "FUEL";
-    if(document.getElementById('totalSupply')) document.getElementById('totalSupply').value = "50000000";
-    if(document.getElementById('circSupply')) document.getElementById('circSupply').value = "10000000";
-    if(document.getElementById('tokenUtility')) document.getElementById('tokenUtility').value = "utility";
-    
-    if(document.getElementById('sinkEntry')) document.getElementById('sinkEntry').checked = true;
-    if(document.getElementById('sinkCraft')) document.getElementById('sinkCraft').checked = false;
-    if(document.getElementById('sinkMarket')) document.getElementById('sinkMarket').checked = true;
-    if(document.getElementById('sinkStaking')) document.getElementById('sinkStaking').checked = false;
-    
-    if(document.getElementById('srcBattle')) document.getElementById('srcBattle').checked = false;
-    if(document.getElementById('srcQuest')) document.getElementById('srcQuest').checked = true;
-    if(document.getElementById('srcStaking')) document.getElementById('srcStaking').checked = false;
-
-    showNotification('Example 2 data filled successfully! Proceed to verify all steps.', 'success');
+for (let i = 0; i < EXAMPLE_DATA.length; i++) {
+    window['fillExample' + (i + 1)] = function() { fillFormFromData(EXAMPLE_DATA[i]); };
 }
 
 function updateRangeDisplay(input, displayId) {
