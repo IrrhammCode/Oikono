@@ -865,8 +865,8 @@ async function addGameContract(btnElement) {
         if (provider) {
             const code = await provider.getCode(address);
             if (code === '0x') {
-                showNotification(`Address ${shortAddr(address)} is not a deployed contract (no bytecode found)`, 'warning');
-                return;
+                showNotification(`Warning: Address ${shortAddr(address)} does not have deployed contract code.`, 'warning');
+                // Continue without returning
             }
         }
         
@@ -1039,9 +1039,8 @@ async function registerGame() {
             if (provider) {
                 const code = await provider.getCode(primaryGameAddress);
                 if (code === '0x') {
-                    showNotification(`Primary contract ${shortAddr(primaryGameAddress)} is not a deployed contract (no bytecode found)`, 'warning');
-                    nextStep(1);
-                    return;
+                    showNotification(`Warning: Primary address ${shortAddr(primaryGameAddress)} does not have deployed contract code. Proceeding anyway...`, 'warning');
+                    // Continue without returning
                 }
             }
 
