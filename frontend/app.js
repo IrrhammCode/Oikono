@@ -713,16 +713,41 @@ async function recordMetric() {
         document.getElementById('recordMetricName').value = '';
         document.getElementById('recordMetricValue').value = '';
 
-        if (contracts.PatternDetector && registeredGames.length > 0) {
+        // Auto-chain: Record → Detect → Suggest
+        const gid = parseInt(gameId);
+
+        // Step 2: Auto-detect patterns
+        if (contracts.PatternDetector) {
             try {
-                const tx2 = await contracts.PatternDetector.detectPatterns(gameId);
+                showNotification('Auto-detecting patterns...', 'info');
+                const tx2 = await contracts.PatternDetector.detectPatterns(gid);
+                showNotification('Pattern detection TX: ' + tx2.hash, 'info');
                 await tx2.wait();
+                showNotification('Patterns detected!', 'success');
+
+                // Step 3: Auto-generate suggestions
+                if (contracts.SuggestionEngine) {
+                    try {
+                        showNotification('Auto-generating suggestions...', 'info');
+                        const tx3 = await contracts.SuggestionEngine.generateSuggestions(gid);
+                        showNotification('Suggestion TX: ' + tx3.hash, 'info');
+                        await tx3.wait();
+                        showNotification('Suggestions generated!', 'success');
+                    } catch (e) {
+                        console.warn('[Oikono] Auto suggestion generation failed:', e.reason || e.message);
+                        showNotification('Suggestion generation skipped: ' + (e.reason || 'no patterns'), 'warning');
+                    }
+                }
             } catch (e) {
-                /* auto-detection optional */
+                console.warn('[Oikono] Auto pattern detection failed:', e.reason || e.message);
+                showNotification('Pattern detection skipped: ' + (e.reason || 'no metrics'), 'warning');
             }
         }
 
+        // Refresh all views
         loadMetrics();
+        loadPatterns();
+        loadSuggestions();
     } catch (err) {
         const code = err.code || err.data?.code;
         const reason = err.reason || err.data?.message || err.message || '';
@@ -2209,55 +2234,6 @@ window.startPatternAutoDetection = startPatternAutoDetection;
 window.stopPatternAutoDetection = stopPatternAutoDetection;
 
 // ══════════════════════════════════════════════
-// DEMO MODE - Full flow simulation for hackathon
-// ══════════════════════════════════════════════
-
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-async function runDemoMode() {
-    if (registeredGames.length === 0) {
-        showNotification('Register a game first to run demo', 'error');
-        return;
-    }
-
-    const game = registeredGames[0];
-    showNotification('Starting Oikono demo flow...', 'info');
-
-    // Step 1: Record metric
-    switchView('metrics');
-    await sleep(1000);
-    showNotification('Step 1/4: Recording win_rate metric...', 'info');
-    updateMetricInUI(game.id, 'win_rate', 52);
-    await sleep(1500);
-    showNotification('Metric recorded: win_rate = 52', 'success');
-    await sleep(800);
-
-    // Step 2: Auto-detect pattern
-    switchView('patterns');
-    await sleep(1000);
-    showNotification('Step 2/4: Auto-detecting patterns...', 'info');
-    await sleep(2000);
-    showNotification('Pattern detected: anomaly (severity: 6/10)', 'warning');
-    await sleep(800);
-
-    // Step 3: Auto-generate suggestion
-    switchView('suggestions');
-    await sleep(1000);
-    showNotification('Step 3/4: Auto-generating suggestions...', 'info');
-    await sleep(2000);
-    showNotification('New suggestion: economy (high priority)', 'success');
-    await sleep(800);
-
-    // Step 4: Show overview
-    switchView('overview');
-    await sleep(1000);
-    showNotification('Step 4/4: Dashboard updated with real-time data', 'success');
-    await sleep(1000);
-    showNotification('Demo complete! Record -> Pattern -> Suggestion automated.', 'success');
-}
-
-window.runDemoMode = runDemoMode;
-
 // ══════════════════════════════════════════════
 // INITIALIZATION
 // ══════════════════════════════════════════════
