@@ -364,6 +364,19 @@ async function loadDashboardData() {
     if (isDashboardLoading) return;
     isDashboardLoading = true;
 
+    // Show skeletons for overview stats
+    ['statGames', 'statPatterns', 'statSuggestions', 'statSuccess'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<div class="skeleton-text short" style="margin:0; height:20px;"></div>';
+    });
+
+    // Show skeleton for activity
+    const activityList = document.getElementById('activityList');
+    if (activityList) activityList.innerHTML = '<div class="skeleton"><div class="skeleton-text short"></div><div class="skeleton-text"></div></div>'.repeat(3);
+
+    // Update games list (will show skeletons if currently loading)
+    updateGamesList();
+
     try {
         if (contracts.GameRegistry) {
             const gameIds = await contracts.GameRegistry.getGamesByOwner(userAddress);
@@ -553,7 +566,7 @@ async function loadMetrics() {
             }
         }
 
-        grid.innerHTML = html || '<div class="empty-state"><p>Failed to load metrics</p></div>';
+        grid.innerHTML = '<div class="fade-in" style="display:contents">' + (html || '<div class="empty-state"><p>Failed to load metrics</p></div>') + '</div>';
     } catch (err) {
         showNotification('Error loading metrics', 'error');
         grid.innerHTML = '<div class="empty-state"><p>Error loading metrics</p></div>';
@@ -683,7 +696,7 @@ async function loadPatterns() {
         return;
     }
 
-    list.innerHTML = allPatterns.map(p => `
+    list.innerHTML = '<div class="fade-in" style="display:contents">' + allPatterns.map(p => `
         <div class="pattern-item">
             <div class="pattern-item__header">
                 <span class="pattern-item__type">${p.patternType}</span>
@@ -696,7 +709,7 @@ async function loadPatterns() {
                 <span>Metric: ${p.metricName}</span>
             </div>
         </div>
-    `).join('');
+    `).join('') + '</div>';
 }
 
 async function detectPatterns(e) {
@@ -788,7 +801,7 @@ async function loadSuggestions() {
         return;
     }
 
-    list.innerHTML = allSuggestions.map(s => `
+    list.innerHTML = '<div class="fade-in" style="display:contents">' + allSuggestions.map(s => `
         <div class="suggestion-item">
             <div class="suggestion-item__header">
                 <span class="suggestion-item__category">${s.category}</span>
@@ -803,7 +816,7 @@ async function loadSuggestions() {
             </div>
             ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">✓ Mark Implemented</button>` : '<span class="badge badge--active">Implemented</span>'}
         </div>
-    `).join('');
+    `).join('') + '</div>';
 }
 
 async function generateSuggestions(e) {
@@ -858,6 +871,11 @@ function updateGamesList() {
     const list = document.getElementById('gamesList');
     if (!list) return;
 
+    if (isDashboardLoading) {
+        showSkeletons('gamesList', 3);
+        return;
+    }
+
     let html = '';
 
     if (registeredGames.length > 0) {
@@ -899,7 +917,7 @@ function updateGamesList() {
         html += `<div class="empty-state" style="grid-column: 1/-1;"><p>No games registered yet.</p></div>`;
     }
 
-    list.innerHTML = html;
+    list.innerHTML = '<div class="fade-in" style="display:contents">' + html + '</div>';
 
     list.querySelectorAll('[data-action="view"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -1770,7 +1788,7 @@ function updateActivityFeed() {
             </div>
         `;
     }
-    list.innerHTML = html;
+    list.innerHTML = '<div class="fade-in" style="display:contents">' + html + '</div>';
 }
 
 // ══════════════════════════════════════════════
