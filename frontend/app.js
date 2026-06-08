@@ -863,7 +863,7 @@ async function loadSuggestions() {
                 <span>Confidence: ${(s.confidence / 100).toFixed(0)}%</span>
                 <span>Impact: ${(s.expectedImpact / 100).toFixed(0)}%</span>
             </div>
-            ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">${icon('check')} Mark Implemented</button>` : '<span class="badge badge--active">${icon('check')} Implemented</span>'}}
+            ${!s.implemented ? `<button class="btn btn--ghost btn--sm" onclick="markImplemented(${s.gameId}, ${s.suggestionId})">${icon('check')} Mark Implemented</button>` : `<span class="badge badge--active">${icon('check')} Implemented</span>`}
         </div>
     `).join('') + '</div>';
 }
