@@ -446,13 +446,43 @@ const CONFIG = {
                 { type: 'drop', metric: 'tvl', threshold: '30%', description: 'TVL drop' },
             ]
         },
+        wager: {
+            name: 'Wager',
+            description: 'Wager/Betting Games',
+            metrics: [
+                { name: 'wager_volume', healthy: '>500/day', description: 'Daily wager volume' },
+                { name: 'win_rate', healthy: '45-55%', description: 'Player win rate' },
+                { name: 'avg_wager_size', healthy: '10-100', description: 'Average wager size' },
+                { name: 'payout_ratio', healthy: '0.9-0.98', description: 'Payout to wager ratio' },
+            ],
+            rules: [
+                { type: 'spike', metric: 'wager_volume', threshold: '300%', description: 'Wager volume spike' },
+                { type: 'drop', metric: 'payout_ratio', threshold: '10%', description: 'Payout ratio drop' },
+            ]
+        },
+        prediction: {
+            name: 'Prediction',
+            description: 'Prediction Market Games',
+            metrics: [
+                { name: 'prediction_accuracy', healthy: '40-60%', description: 'Prediction accuracy' },
+                { name: 'pool_size', healthy: '>1000', description: 'Average pool size' },
+                { name: 'resolution_time', healthy: '<24h', description: 'Average resolution time' },
+                { name: 'active_markets', healthy: '>10', description: 'Active prediction markets' },
+            ],
+            rules: [
+                { type: 'spike', metric: 'pool_size', threshold: '500%', description: 'Pool size spike' },
+                { type: 'drop', metric: 'active_markets', threshold: '50%', description: 'Market activity drop' },
+            ]
+        },
     },
 
     CONTRACT_ROLES: {
         token: { label: 'Token', description: 'Game token contract' },
         nft: { label: 'NFT', description: 'NFT collection contract' },
         marketplace: { label: 'Marketplace', description: 'Trading marketplace' },
+        marketplace_v3: { label: 'Marketplace V3', description: 'MarketplaceV3 contract' },
         staking: { label: 'Staking', description: 'Staking/yield contract' },
+        nft_staking: { label: 'NFT Staking', description: 'NFT staking contract' },
         game_logic: { label: 'Game Logic', description: 'Core game mechanics' },
     },
 };
