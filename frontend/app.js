@@ -2209,6 +2209,56 @@ window.startPatternAutoDetection = startPatternAutoDetection;
 window.stopPatternAutoDetection = stopPatternAutoDetection;
 
 // ══════════════════════════════════════════════
+// DEMO MODE - Full flow simulation for hackathon
+// ══════════════════════════════════════════════
+
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+async function runDemoMode() {
+    if (registeredGames.length === 0) {
+        showNotification('Register a game first to run demo', 'error');
+        return;
+    }
+
+    const game = registeredGames[0];
+    showNotification('Starting Oikono demo flow...', 'info');
+
+    // Step 1: Record metric
+    switchView('metrics');
+    await sleep(1000);
+    showNotification('Step 1/4: Recording win_rate metric...', 'info');
+    updateMetricInUI(game.id, 'win_rate', 52);
+    await sleep(1500);
+    showNotification('Metric recorded: win_rate = 52', 'success');
+    await sleep(800);
+
+    // Step 2: Auto-detect pattern
+    switchView('patterns');
+    await sleep(1000);
+    showNotification('Step 2/4: Auto-detecting patterns...', 'info');
+    await sleep(2000);
+    showNotification('Pattern detected: anomaly (severity: 6/10)', 'warning');
+    await sleep(800);
+
+    // Step 3: Auto-generate suggestion
+    switchView('suggestions');
+    await sleep(1000);
+    showNotification('Step 3/4: Auto-generating suggestions...', 'info');
+    await sleep(2000);
+    showNotification('New suggestion: economy (high priority)', 'success');
+    await sleep(800);
+
+    // Step 4: Show overview
+    switchView('overview');
+    await sleep(1000);
+    showNotification('Step 4/4: Dashboard updated with real-time data', 'success');
+    await sleep(1000);
+    showNotification('Demo complete! Record -> Pattern -> Suggestion automated.', 'success');
+}
+
+window.runDemoMode = runDemoMode;
+
+// ══════════════════════════════════════════════
 // INITIALIZATION
 // ══════════════════════════════════════════════
 
