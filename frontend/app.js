@@ -785,7 +785,7 @@ function updateGamesList() {
                     </div>
                 </div>
                 <div class="game-card__footer">
-                    <span class="game-card__address">${game.address === '0x0000000000000000000000000000000000000000' ? 'Off-chain' : shortAddr(game.address)}</span>
+                    <span class="game-card__address">${game.gameAddress === '0x0000000000000000000000000000000000000000' ? 'Off-chain' : shortAddr(game.gameAddress)}</span>
                 </div>
                 <div class="game-card__actions">
                     <button class="btn btn--ghost btn--sm" data-action="view" data-game-id="${game.id}">View Details</button>
@@ -1171,7 +1171,6 @@ async function registerGame() {
 
     } catch (err) {
         showNotification('Registration failed: ' + parseError(err), 'error');
-        showNotification('Registration failed: ' + parseError(err), 'error');
     } finally {
         setButtonLoading(btn, false, 'Register Game');
     }
@@ -1457,13 +1456,19 @@ async function loadGameDetailAgentConfig(gameId) {
     }
     try {
         const config = await contracts.GameRegistry.getConfig(gameId);
+        const canSpawn = config.canSpawn ?? config[0] ?? false;
+        const canAdjustEconomy = config.canAdjustEconomy ?? config[1] ?? false;
+        const canGenerateNarrative = config.canGenerateNarrative ?? config[2] ?? false;
+        const canAdjustDifficulty = config.canAdjustDifficulty ?? config[3] ?? false;
+        const maxChangePerEpoch = Number(config.maxChangePerEpoch ?? config[4] ?? 0);
+        const epochLength = Number(config.epochLength ?? config[5] ?? 0);
         container.innerHTML = `
-            <div class="detail-item"><span class="detail-label">Spawn Entities</span><span class="detail-value">${config.canSpawn ? '✅' : '❌'}</span></div>
-            <div class="detail-item"><span class="detail-label">Adjust Economy</span><span class="detail-value">${config.canAdjustEconomy ? '✅' : '❌'}</span></div>
-            <div class="detail-item"><span class="detail-label">Generate Narrative</span><span class="detail-value">${config.canGenerateNarrative ? '✅' : '❌'}</span></div>
-            <div class="detail-item"><span class="detail-label">Adjust Difficulty</span><span class="detail-value">${config.canAdjustDifficulty ? '✅' : '❌'}</span></div>
-            <div class="detail-item"><span class="detail-label">Max Change/Epoch</span><span class="detail-value">${Number(config.maxChangePerEpoch) / 100}%</span></div>
-            <div class="detail-item"><span class="detail-label">Epoch Length</span><span class="detail-value">${Number(config.epochLength)} blocks</span></div>
+            <div class="detail-item"><span class="detail-label">Spawn Entities</span><span class="detail-value">${canSpawn ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Economy</span><span class="detail-value">${canAdjustEconomy ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Generate Narrative</span><span class="detail-value">${canGenerateNarrative ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Adjust Difficulty</span><span class="detail-value">${canAdjustDifficulty ? '✅' : '❌'}</span></div>
+            <div class="detail-item"><span class="detail-label">Max Change/Epoch</span><span class="detail-value">${maxChangePerEpoch / 100}%</span></div>
+            <div class="detail-item"><span class="detail-label">Epoch Length</span><span class="detail-value">${epochLength} blocks</span></div>
         `;
     } catch (e) {
         container.innerHTML = '<div class="detail-item"><span class="detail-value">Failed to load agent config</span></div>';
