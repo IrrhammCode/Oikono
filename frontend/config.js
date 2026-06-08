@@ -71,6 +71,7 @@ const CONFIG = {
             'function getLatest(uint256 gameId, string name) external view returns (uint256)',
             'function getStats(uint256 gameId, string name) external view returns (uint256 latest, uint256 min, uint256 max, uint256 avg, uint256 count, uint256 lastUpdated)',
             'function getMetricNames(uint256 gameId) external view returns (string[] memory)',
+            'function getMetricDef(uint256 gameId, string name) external view returns (string dataType, string source, uint256 healthyMin, uint256 healthyMax, bool isHigherBetter, bool isActive)',
             'function isHealthy(uint256 gameId, string name) external view returns (bool)',
             'function getChange(uint256 gameId, string name) external view returns (int256)',
             'event MetricDefined(uint256 indexed gameId, string metricName, string dataType, string source)',
