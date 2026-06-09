@@ -488,6 +488,77 @@ npm run deploy:agent
 | Somnia Testnet | 50312 | `https://dream-rpc.somnia.network` |
 | Somnia Mainnet | 5031 | `https://mainnet-rpc.somnia.network` |
 
+### 📍 Deployed Contract Addresses (Somnia Testnet)
+
+All contracts are deployed on **Somnia Testnet** (Chain ID: `50312`).
+
+#### 🧠 Agent System
+
+| Contract | Address | Source Code |
+|----------|---------|-------------|
+| **OikonoAgent** — The AI Brain | [`0x586e…7b05`](https://dream-explorer.somnia.network/address/0x586e9ACF26D76A1aD52054b3EF3e9c72A9917b05) | [`contracts/agents/OikonoAgent.sol`](./contracts/agents/OikonoAgent.sol) |
+| **AgentRuntime** — Plugin execution engine | [`0x3ee2…7f54`](https://dream-explorer.somnia.network/address/0x3ee2954bd1e9188a35f40aFF521EF2a7FD375f54) | [`contracts/agents/core/AgentRuntime.sol`](./contracts/agents/core/AgentRuntime.sol) |
+| **AgentMemory** — On-chain learning history | [`0xf464…4e327`](https://dream-explorer.somnia.network/address/0xf464e505278EC6aae80BCeAa5787DB1Ab284e327) | [`contracts/agents/AgentMemory.sol`](./contracts/agents/AgentMemory.sol) |
+| **GameKnowledgeBase** — Cross-game intelligence | [`0x1B25…57c3`](https://dream-explorer.somnia.network/address/0x1B25C9FB0Ea6E09f773e082A6B30F39b091157c3) | [`contracts/agents/GameKnowledgeBase.sol`](./contracts/agents/GameKnowledgeBase.sol) |
+| **LLMInvoker** — On-chain LLM inference | [`0x7b7a…53de`](https://dream-explorer.somnia.network/address/0x7b7a8B51348ef9e8D233775455D50ED7Daa653de) | [`contracts/agents/LLMInvoker.sol`](./contracts/agents/LLMInvoker.sol) |
+| **PatternDetector** — Anomaly detection | [`0x655C…29eD`](https://dream-explorer.somnia.network/address/0x655Cd724318C38284B984A7629EFe05dE57F29eD) | [`contracts/agents/PatternDetector.sol`](./contracts/agents/PatternDetector.sol) |
+| **SuggestionEngine** — AI suggestions | [`0xe43c…5f8c`](https://dream-explorer.somnia.network/address/0xe43c42e639170e5c88c2Ae242330473cf5745f8c) | [`contracts/agents/SuggestionEngine.sol`](./contracts/agents/SuggestionEngine.sol) |
+
+#### 🔌 AI Plugins
+
+| Contract | Address | Source Code |
+|----------|---------|-------------|
+| **SpawnPlugin** — AI enemy/NPC/item generation | [`0xBd4b…718AD`](https://dream-explorer.somnia.network/address/0xBd4bfbCefbF5d02B179003F48294768d4DF718AD) | [`contracts/agents/plugins/SpawnPlugin.sol`](./contracts/agents/plugins/SpawnPlugin.sol) |
+| **EconomyPlugin** — Dynamic economy management | [`0xD70e…d8`](https://dream-explorer.somnia.network/address/0xD70e61cF38379B083a3d6bB4F7fbc5D61beF16d8) | [`contracts/agents/plugins/EconomyPlugin.sol`](./contracts/agents/plugins/EconomyPlugin.sol) |
+| **NarrativePlugin** — AI quest/story generation | [`0x5CFD…286B`](https://dream-explorer.somnia.network/address/0x5CFDB6B8857EcBbB479105a43e68e5Ed2801286B) | [`contracts/agents/plugins/NarrativePlugin.sol`](./contracts/agents/plugins/NarrativePlugin.sol) |
+| **BalancePlugin** — Auto game balancing | [`0x2041…8ACF`](https://dream-explorer.somnia.network/address/0x204173426d223F4ca1dd6FFb20492Ae316A88ACF) | [`contracts/agents/plugins/BalancePlugin.sol`](./contracts/agents/plugins/BalancePlugin.sol) |
+
+#### 🎮 Game Contracts
+
+| Contract | Address | Source Code |
+|----------|---------|-------------|
+| **GameMaster** — Autonomous AI Game Master | [`0x40E8…7347`](https://dream-explorer.somnia.network/address/0x40E8b775490b3BbB87A30693024E80fbF3D87347) | [`contracts/game/GameMaster.sol`](./contracts/game/GameMaster.sol) |
+| **BattleArena** — PvP battle system | [`0x12EA…d3Cf`](https://dream-explorer.somnia.network/address/0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf) | [`contracts/game/BattleArena.sol`](./contracts/game/BattleArena.sol) |
+| **PlayerRegistry** — Player management | [`0xA530…70Ae`](https://dream-explorer.somnia.network/address/0xA530dbDB02f46F4A1B7c18cEE8eA57148fC470Ae) | [`contracts/game/PlayerRegistry.sol`](./contracts/game/PlayerRegistry.sol) |
+| **EnemyNFT** — AI-generated enemy NFTs | [`0x8B0E…037`](https://dream-explorer.somnia.network/address/0x8B0E52280c2E5047B8fd7AffD20333f36463b037) | [`contracts/game/EnemyNFT.sol`](./contracts/game/EnemyNFT.sol) |
+
+#### 💰 Economy
+
+| Contract | Address | Source Code |
+|----------|---------|-------------|
+| **OIKToken** — ERC-20 with 0.5% burn tax | [`0xA039…2116`](https://dream-explorer.somnia.network/address/0xA03916C493cc00869FBd1D56cb89ba0d14A12116) | [`contracts/tokens/OIKToken.sol`](./contracts/tokens/OIKToken.sol) |
+| **Treasury** — Token burn & buyback | [`0xa93F…F7C7`](https://dream-explorer.somnia.network/address/0xa93F8194Aa25610eF1a818745e3f9f7FEcE1F7C7) | [`contracts/economy/Treasury.sol`](./contracts/economy/Treasury.sol) |
+| **RewardDistributor** — Emission phases | [`0x7017…7Db9`](https://dream-explorer.somnia.network/address/0x7017a844a4A9b2094C2D6e0252b9a441c2387Db9) | [`contracts/economy/RewardDistributor.sol`](./contracts/economy/RewardDistributor.sol) |
+| **EconomyParams** — Configurable parameters | [`0x6956…4235`](https://dream-explorer.somnia.network/address/0x6956F4485cAA6d84E2f4f210679AbbF416604235) | [`contracts/economy/EconomyParams.sol`](./contracts/economy/EconomyParams.sol) |
+
+#### 🛡️ Utilities
+
+| Contract | Address | Source Code |
+|----------|---------|-------------|
+| **CircuitBreaker** — Emergency pause (guardian voting) | [`0xA81C…7223`](https://dream-explorer.somnia.network/address/0xA81CC9ee929384ac20a9351DCC999E2e32F67223) | [`contracts/utils/CircuitBreaker.sol`](./contracts/utils/CircuitBreaker.sol) |
+| **AntiSybil** — Anti-bot protection | [`0x96A9…4bd3`](https://dream-explorer.somnia.network/address/0x96A9C1436C98155870bA29F5fD3637cbaC7f4bd3) | [`contracts/utils/AntiSybil.sol`](./contracts/utils/AntiSybil.sol) |
+| **TWAPOracle** — TWAP price oracle | [`0x1dcE…18b6`](https://dream-explorer.somnia.network/address/0x1dcEC3807fca337f54C81cDe01985594427F18b6) | [`contracts/utils/TWAPOracle.sol`](./contracts/utils/TWAPOracle.sol) |
+
+#### 🏭 Game Factory
+
+| Contract | Address | Source Code |
+|----------|---------|-------------|
+| **GameFactory** — Deploy new games | [`0x248c…9007`](https://dream-explorer.somnia.network/address/0x248cCDBB7331cA30D4057862F4Dc673a6AeC9007) | [`contracts/GameFactory.sol`](./contracts/GameFactory.sol) |
+
+#### 🎯 Registered Games (via Factory)
+
+| Game | Type | Address |
+|------|------|---------|
+| WagerVerse Arena | PvP | [`0xd5f3…d182`](https://dream-explorer.somnia.network/address/0xd5f3E959b213e1B6811852bB7F4Ea8a5C868e21c) |
+| Worms Arena | Strategy | [`0x01Bc…D182`](https://dream-explorer.somnia.network/address/0x01BcdC8eD5Ac27Fe0dFF13c71EEE7e4B2c23D182) |
+| Infinite Craft | Sandbox | [`0xeb6c…40e2`](https://dream-explorer.somnia.network/address/0xeb6c713Fd7292ced58fa13eEf3DBd5c9Dfdb40e2) |
+| Void Hunters | RPG | [`0xccbF…Daf0`](https://dream-explorer.somnia.network/address/0xccbFe6Cb15E50CB540BB3dcbeBd0333564C1Daf0) |
+| Kingsomni | Card | [`0x9839…fB12`](https://dream-explorer.somnia.network/address/0x9839E260f5C10e1fd975214bDdd498a8D39FcB12) |
+| Gamers Lab | Puzzle | [`0x197B…F4B4`](https://dream-explorer.somnia.network/address/0x197B377E88f7EbB0Dd130a1c2EAC40193930F4B4) |
+| Somn Tournament | Racing | [`0x04cd…2912`](https://dream-explorer.somnia.network/address/0x04cdcC114616F37bA1D1CcC4f5248DbB2E782912) |
+| NFT Bridge World | Simulation | [`0x098f…926`](https://dream-explorer.somnia.network/address/0x098f6C6B1c80460aD896F63900D84D4e64BFA926) |
+| DeFi Arena | DeFi | [`0x9532…86F8`](https://dream-explorer.somnia.network/address/0x9532A3Ac3a3ba2AAcbc6bbd21ede6dDED49d86F8) |
+
 ### Post-Deployment
 
 After deployment, update `frontend/config.js` with the deployed contract addresses:
@@ -495,8 +566,8 @@ After deployment, update `frontend/config.js` with the deployed contract address
 ```javascript
 const CONFIG = {
   CONTRACTS: {
-    OikonoAgent: '0x...',
-    AgentRuntime: '0x...',
+    OikonoAgent: '0x586e9ACF26D76A1aD52054b3EF3e9c72A9917b05',
+    AgentRuntime: '0x3ee2954bd1e9188a35f40aFF521EF2a7FD375f54',
     // ... other addresses
   }
 };
