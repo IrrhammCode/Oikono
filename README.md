@@ -492,60 +492,164 @@ npm run deploy:agent
 
 All contracts are deployed on **Somnia Testnet** (Chain ID: `50312`).
 
+---
+
 #### 🧠 Agent System
+
+The brain of OIKONO — an autonomous AI agent that watches game events, makes decisions via LLM inference, and executes actions on-chain.
 
 | Contract | Address | Source Code |
 |----------|---------|-------------|
-| **OikonoAgent** — The AI Brain | [`0x586e…7b05`](https://dream-explorer.somnia.network/address/0x586e9ACF26D76A1aD52054b3EF3e9c72A9917b05) | [`contracts/agents/OikonoAgent.sol`](./contracts/agents/OikonoAgent.sol) |
-| **AgentRuntime** — Plugin execution engine | [`0x3ee2…7f54`](https://dream-explorer.somnia.network/address/0x3ee2954bd1e9188a35f40aFF521EF2a7FD375f54) | [`contracts/agents/core/AgentRuntime.sol`](./contracts/agents/core/AgentRuntime.sol) |
-| **AgentMemory** — On-chain learning history | [`0xf464…4e327`](https://dream-explorer.somnia.network/address/0xf464e505278EC6aae80BCeAa5787DB1Ab284e327) | [`contracts/agents/AgentMemory.sol`](./contracts/agents/AgentMemory.sol) |
-| **GameKnowledgeBase** — Cross-game intelligence | [`0x1B25…57c3`](https://dream-explorer.somnia.network/address/0x1B25C9FB0Ea6E09f773e082A6B30F39b091157c3) | [`contracts/agents/GameKnowledgeBase.sol`](./contracts/agents/GameKnowledgeBase.sol) |
-| **LLMInvoker** — On-chain LLM inference | [`0x7b7a…53de`](https://dream-explorer.somnia.network/address/0x7b7a8B51348ef9e8D233775455D50ED7Daa653de) | [`contracts/agents/LLMInvoker.sol`](./contracts/agents/LLMInvoker.sol) |
-| **PatternDetector** — Anomaly detection | [`0x655C…29eD`](https://dream-explorer.somnia.network/address/0x655Cd724318C38284B984A7629EFe05dE57F29eD) | [`contracts/agents/PatternDetector.sol`](./contracts/agents/PatternDetector.sol) |
-| **SuggestionEngine** — AI suggestions | [`0xe43c…5f8c`](https://dream-explorer.somnia.network/address/0xe43c42e639170e5c88c2Ae242330473cf5745f8c) | [`contracts/agents/SuggestionEngine.sol`](./contracts/agents/SuggestionEngine.sol) |
+| **OikonoAgent** | [`0x586e…7b05`](https://dream-explorer.somnia.network/address/0x586e9ACF26D76A1aD52054b3EF3e9c72A9917b05) | [`contracts/agents/OikonoAgent.sol`](./contracts/agents/OikonoAgent.sol) |
+| **AgentRuntime** | [`0x3ee2…7f54`](https://dream-explorer.somnia.network/address/0x3ee2954bd1e9188a35f40aFF521EF2a7FD375f54) | [`contracts/agents/core/AgentRuntime.sol`](./contracts/agents/core/AgentRuntime.sol) |
+| **AgentMemory** | [`0xf464…4e327`](https://dream-explorer.somnia.network/address/0xf464e505278EC6aae80BCeAa5787DB1Ab284e327) | [`contracts/agents/AgentMemory.sol`](./contracts/agents/AgentMemory.sol) |
+| **GameKnowledgeBase** | [`0x1B25…57c3`](https://dream-explorer.somnia.network/address/0x1B25C9FB0Ea6E09f773e082A6B30F39b091157c3) | [`contracts/agents/GameKnowledgeBase.sol`](./contracts/agents/GameKnowledgeBase.sol) |
+| **LLMInvoker** | [`0x7b7a…53de`](https://dream-explorer.somnia.network/address/0x7b7a8B51348ef9e8D233775455D50ED7Daa653de) | [`contracts/agents/LLMInvoker.sol`](./contracts/agents/LLMInvoker.sol) |
+| **PatternDetector** | [`0x655C…29eD`](https://dream-explorer.somnia.network/address/0x655Cd724318C38284B984A7629EFe05dE57F29eD) | [`contracts/agents/PatternDetector.sol`](./contracts/agents/PatternDetector.sol) |
+| **SuggestionEngine** | [`0xe43c…5f8c`](https://dream-explorer.somnia.network/address/0xe43c42e639170e5c88c2Ae242330473cf5745f8c) | [`contracts/agents/SuggestionEngine.sol`](./contracts/agents/SuggestionEngine.sol) |
+
+<details>
+<summary><b>📖 Detail Kegunaan Setiap Contract Agent System</b></summary>
+
+**OikonoAgent** — Otak utama OIKONO. Menerima game events dari game yang terdaftar, membaca game state via `IGameStateReader`, membangun context dari memory dan knowledge base, lalu memanggil Somnia LLM Inference untuk mengambil keputusan. Setelah LLM merespons, agent mengeksekusi plugin yang sesuai (spawn, economy, narrative, balance) dan menyimpan hasilnya ke memory untuk pembelajaran. Developer cukup register game mereka — agent handle sisanya.
+
+**AgentRuntime** — Core runtime yang menangani integrasi Somnia. Bertanggung jawab untuk: (1) listen on-chain events via Somnia Reactivity, (2) invoke LLM Inference secara deterministik, (3) execute plugin berdasarkan response LLM, (4) manage lifecycle setiap plugin. Ini adalah "jantung" framework yang mengorkestrasi seluruh alur kerja agent.
+
+**AgentMemory** — On-chain learning memory yang menyimpan history keputusan agent. Setiap keputusan (spawn, economy, balance, narrative) direkam beserta outcome-nya. Agent menggunakan data ini untuk: belajar dari keputusan masa lalu (apa yang berhasil, apa yang gagal), membangun knowledge spesifik per game, dan berbagi pola antar game serupa. Ini yang membuat OIKONO makin pintar seiring waktu.
+
+**GameKnowledgeBase** — Cross-game knowledge sharing. Menyimpan pengetahuan teragregasi dari semua game yang dikelola agent. Ketika game baru mendaftar, agent bisa langsung bootstrap dengan knowledge dari game serupa. Contoh: jika agent sudah mengelola 10 game RPG dan belajar bahwa 65% win rate adalah optimal, game RPG baru langsung mendapat knowledge itu — tanpa cold start.
+
+**LLMInvoker** — Menangani Somnia LLM Inference untuk keputusan game economy. Menggunakan ABI-encoded responses (bukan JSON) untuk efisiensi. Alur: (1) bangun prompt dengan context game state + memory + knowledge, (2) request ABI-encoded response dari Qwen3-30B via Somnia, (3) decode response langsung tanpa JSON parsing, (4) apply safety bounds agar parameter tidak keluar range, (5) record di memory untuk pembelajaran.
+
+**PatternDetector** — Mendeteksi pola, anomali, dan tren dalam game metrics. Mendukung 4 tipe deteksi: **anomaly** (spike/drop tiba-tiba), **trend** (kenaikan/penurunan konsisten), **divergence** (dua metrik berlawanan arah), dan **correlation** (dua metrik bergerak bersama). Setiap pola punya severity (1-10) dan confidence (0-10000 bps). Game owner bisa menambah custom detection rules.
+
+**SuggestionEngine** — Menghasilkan suggestion berdasarkan pola yang terdeteksi. Setiap suggestion punya category (economy/balance/content/retention), priority (critical/high/medium/low), confidence score, dan expected impact. Yang membuatnya powerful: engine belajar dari outcome — ketika developer mengimplementasi suggestion dan melaporkan hasilnya, engine menggunakan data tersebut untuk meningkatkan kualitas suggestion di masa depan.
+
+</details>
+
+---
 
 #### 🔌 AI Plugins
 
+Modular AI capabilities yang bisa di-enable per game. Setiap plugin di-trigger oleh OikonoAgent berdasarkan keputusan LLM.
+
 | Contract | Address | Source Code |
 |----------|---------|-------------|
-| **SpawnPlugin** — AI enemy/NPC/item generation | [`0xBd4b…718AD`](https://dream-explorer.somnia.network/address/0xBd4bfbCefbF5d02B179003F48294768d4DF718AD) | [`contracts/agents/plugins/SpawnPlugin.sol`](./contracts/agents/plugins/SpawnPlugin.sol) |
-| **EconomyPlugin** — Dynamic economy management | [`0xD70e…d8`](https://dream-explorer.somnia.network/address/0xD70e61cF38379B083a3d6bB4F7fbc5D61beF16d8) | [`contracts/agents/plugins/EconomyPlugin.sol`](./contracts/agents/plugins/EconomyPlugin.sol) |
-| **NarrativePlugin** — AI quest/story generation | [`0x5CFD…286B`](https://dream-explorer.somnia.network/address/0x5CFDB6B8857EcBbB479105a43e68e5Ed2801286B) | [`contracts/agents/plugins/NarrativePlugin.sol`](./contracts/agents/plugins/NarrativePlugin.sol) |
-| **BalancePlugin** — Auto game balancing | [`0x2041…8ACF`](https://dream-explorer.somnia.network/address/0x204173426d223F4ca1dd6FFb20492Ae316A88ACF) | [`contracts/agents/plugins/BalancePlugin.sol`](./contracts/agents/plugins/BalancePlugin.sol) |
+| **SpawnPlugin** | [`0xBd4b…718AD`](https://dream-explorer.somnia.network/address/0xBd4bfbCefbF5d02B179003F48294768d4DF718AD) | [`contracts/agents/plugins/SpawnPlugin.sol`](./contracts/agents/plugins/SpawnPlugin.sol) |
+| **EconomyPlugin** | [`0xD70e…16d8`](https://dream-explorer.somnia.network/address/0xD70e61cF38379B083a3d6bB4F7fbc5D61beF16d8) | [`contracts/agents/plugins/EconomyPlugin.sol`](./contracts/agents/plugins/EconomyPlugin.sol) |
+| **NarrativePlugin** | [`0x5CFD…286B`](https://dream-explorer.somnia.network/address/0x5CFDB6B8857EcBbB479105a43e68e5Ed2801286B) | [`contracts/agents/plugins/NarrativePlugin.sol`](./contracts/agents/plugins/NarrativePlugin.sol) |
+| **BalancePlugin** | [`0x2041…8ACF`](https://dream-explorer.somnia.network/address/0x204173426d223F4ca1dd6FFb20492Ae316A88ACF) | [`contracts/agents/plugins/BalancePlugin.sol`](./contracts/agents/plugins/BalancePlugin.sol) |
+
+<details>
+<summary><b>📖 Detail Kegunaan Setiap Plugin</b></summary>
+
+**SpawnPlugin** — Plugin untuk generate entitas game (musuh, NPC, item) secara otomatis dengan stats yang ditentukan AI. Ketika player bergerak atau memasuki area baru, plugin ini menganalisis level player, win rate, dan game state lalu menghasilkan musuh yang tantangannya pas — tidak terlalu mudah, tidak terlalu sulit. Setiap enemy di-mint sebagai ERC-721 NFT dengan metadata on-chain (name, class, element, power, threat level).
+
+**EconomyPlugin** — Mengelola tokenomics game secara dinamis. Plugin ini bisa menyesuaikan: reward rate berdasarkan inflasi, burn rate berdasarkan velocity, entry fee berdasarkan active players, dan mint cost berdasarkan supply. Semua perubahan punya safety bounds (min/max) dan gradual ramp — perubahan tidak drastis tapi bertahap. Terintegrasi dengan EconomyParams untuk parameter storage.
+
+**NarrativePlugin** — Generate quest, dialog, dan story events secara otomatis menggunakan LLM. Plugin ini bisa membuat: quest line baru berdasarkan progress player, dialog NPC yang kontekstual dengan kondisi game, dan world events yang mempengaruhi semua player. Narrative di-generate berdasarkan game type — RPG dapat quest epik, Strategy dapat political events, Racing dapat storyline rival.
+
+**BalancePlugin** — Auto game balancing berdasarkan data real-time. Plugin ini memantau: win rate (target 45-55%), session time (terlalu pendek = frustrasi, terlalu lama = boring), player churn rate, dan difficulty curve. Ketika win rate terlalu tinggi (>60%), plugin bisa menambah enemy power atau mengurangi reward. Ketika terlalu rendah (<40%), plugin mengurangi difficulty. Semua perubahan di-record di EconomyParams.
+
+</details>
+
+---
 
 #### 🎮 Game Contracts
 
+Kontrak inti yang menangani gameplay loop: player registration, battle system, enemy generation, dan AI Game Master.
+
 | Contract | Address | Source Code |
 |----------|---------|-------------|
-| **GameMaster** — Autonomous AI Game Master | [`0x40E8…7347`](https://dream-explorer.somnia.network/address/0x40E8b775490b3BbB87A30693024E80fbF3D87347) | [`contracts/game/GameMaster.sol`](./contracts/game/GameMaster.sol) |
-| **BattleArena** — PvP battle system | [`0x12EA…d3Cf`](https://dream-explorer.somnia.network/address/0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf) | [`contracts/game/BattleArena.sol`](./contracts/game/BattleArena.sol) |
-| **PlayerRegistry** — Player management | [`0xA530…70Ae`](https://dream-explorer.somnia.network/address/0xA530dbDB02f46F4A1B7c18cEE8eA57148fC470Ae) | [`contracts/game/PlayerRegistry.sol`](./contracts/game/PlayerRegistry.sol) |
-| **EnemyNFT** — AI-generated enemy NFTs | [`0x8B0E…037`](https://dream-explorer.somnia.network/address/0x8B0E52280c2E5047B8fd7AffD20333f36463b037) | [`contracts/game/EnemyNFT.sol`](./contracts/game/EnemyNFT.sol) |
+| **GameMaster** | [`0x40E8…7347`](https://dream-explorer.somnia.network/address/0x40E8b775490b3BbB87A30693024E80fbF3D87347) | [`contracts/game/GameMaster.sol`](./contracts/game/GameMaster.sol) |
+| **BattleArena** | [`0x12EA…d3Cf`](https://dream-explorer.somnia.network/address/0x12EA4e91489B4FF6089C55a3833fc2e9b035d3Cf) | [`contracts/game/BattleArena.sol`](./contracts/game/BattleArena.sol) |
+| **PlayerRegistry** | [`0xA530…70Ae`](https://dream-explorer.somnia.network/address/0xA530dbDB02f46F4A1B7c18cEE8eA57148fC470Ae) | [`contracts/game/PlayerRegistry.sol`](./contracts/game/PlayerRegistry.sol) |
+| **EnemyNFT** | [`0x8B0E…b037`](https://dream-explorer.somnia.network/address/0x8B0E52280c2E5047B8fd7AffD20333f36463b037) | [`contracts/game/EnemyNFT.sol`](./contracts/game/EnemyNFT.sol) |
+
+<details>
+<summary><b>📖 Detail Kegunaan Setiap Game Contract</b></summary>
+
+**GameMaster** — Autonomous AI Game Master yang menggunakan Somnia On-Chain Reactivity + LLM Inference. Kontrak ini subscribe ke `PlayerMoved` events via Somnia precompile (address 0x0100). Ketika event terjadi, GameMaster langsung bereaksi di block yang sama: baca player position, cek enemy terdekat, invoke LLM untuk generate musuh baru, mint EnemyNFT, dan tentukan battle rewards. Semua terjadi autonomously tanpa off-chain trigger.
+
+**BattleArena** — Sistem battle PvP antara player dan AI-generated enemies. Menangani: entry fee collection (10 OIK), battle resolution berdasarkan power comparison + element system, reward distribution (base 100 OIK + multiplier), dan burn mechanism (40% entry fee di-burn). Terintegrasi dengan AntiSybil untuk mencegah bot farming dan CircuitBreaker untuk emergency pause. Statistik battle (total battles, rewards, burns) di-track on-chain.
+
+**PlayerRegistry** — Registry untuk player state, posisi, dan progresi. Menyimpan data: coordinates (x, y), XP, level, battle stats (wins/losses), equipped element, dan last move time. Emit `PlayerMoved` events yang di-detect oleh GameMaster via Somnia Reactivity. Juga menangani player registration dengan AntiSybil check.
+
+**EnemyNFT** — Dynamic ERC-721 NFT untuk AI-generated enemies. Setiap enemy punya atribut on-chain: name, enemy class (assassin/tank/mage/berserker/healer/ranger), element (fire/ice/shadow/lightning/void/earth), power (40-100), threat level (1-10), dan battle record. Stats di-generate oleh Somnia LLM berdasarkan player level dan game state. Enemy yang menang battle naik power, yang kalah turun — evolusi on-chain.
+
+</details>
+
+---
 
 #### 💰 Economy
 
+Token economics layer yang mengatur supply, distribution, dan deflasi OIK token.
+
 | Contract | Address | Source Code |
 |----------|---------|-------------|
-| **OIKToken** — ERC-20 with 0.5% burn tax | [`0xA039…2116`](https://dream-explorer.somnia.network/address/0xA03916C493cc00869FBd1D56cb89ba0d14A12116) | [`contracts/tokens/OIKToken.sol`](./contracts/tokens/OIKToken.sol) |
-| **Treasury** — Token burn & buyback | [`0xa93F…F7C7`](https://dream-explorer.somnia.network/address/0xa93F8194Aa25610eF1a818745e3f9f7FEcE1F7C7) | [`contracts/economy/Treasury.sol`](./contracts/economy/Treasury.sol) |
-| **RewardDistributor** — Emission phases | [`0x7017…7Db9`](https://dream-explorer.somnia.network/address/0x7017a844a4A9b2094C2D6e0252b9a441c2387Db9) | [`contracts/economy/RewardDistributor.sol`](./contracts/economy/RewardDistributor.sol) |
-| **EconomyParams** — Configurable parameters | [`0x6956…4235`](https://dream-explorer.somnia.network/address/0x6956F4485cAA6d84E2f4f210679AbbF416604235) | [`contracts/economy/EconomyParams.sol`](./contracts/economy/EconomyParams.sol) |
+| **OIKToken** | [`0xA039…2116`](https://dream-explorer.somnia.network/address/0xA03916C493cc00869FBd1D56cb89ba0d14A12116) | [`contracts/tokens/OIKToken.sol`](./contracts/tokens/OIKToken.sol) |
+| **Treasury** | [`0xa93F…F7C7`](https://dream-explorer.somnia.network/address/0xa93F8194Aa25610eF1a818745e3f9f7FEcE1F7C7) | [`contracts/economy/Treasury.sol`](./contracts/economy/Treasury.sol) |
+| **RewardDistributor** | [`0x7017…7Db9`](https://dream-explorer.somnia.network/address/0x7017a844a4A9b2094C2D6e0252b9a441c2387Db9) | [`contracts/economy/RewardDistributor.sol`](./contracts/economy/RewardDistributor.sol) |
+| **EconomyParams** | [`0x6956…4235`](https://dream-explorer.somnia.network/address/0x6956F4485cAA6d84E2f4f210679AbbF416604235) | [`contracts/economy/EconomyParams.sol`](./contracts/economy/EconomyParams.sol) |
+
+<details>
+<summary><b>📖 Detail Kegunaan Setiap Economy Contract</b></summary>
+
+**OIKToken** — ERC-20 token native OIKONO dengan mekanisme deflasi built-in. Max supply 1.5 miliar OIK, initial mint 1 miliar. Setiap transfer dikenakan burn tax 0.5% (50 bps) — otomatis di-burn saat `_update()`. Juga punya daily reward cap 2000 OIK per address untuk mencegah exploit. Token ini digunakan untuk: entry fee battle, reward distribution, staking, dan governance.
+
+**Treasury** — Mengelola reserves, buyback, dan burn operations. Menerima burned tokens dari berbagai sumber (entry fee, transfer tax, manual burn). Melakukan buyback periodik (cooldown 24 jam, max 1% circulating supply per buyback). Tracking burn per kategori (battle, transfer, manual, buyback) untuk analytics. Juga bisa emergency withdraw dalam situasi kritis.
+
+**RewardDistributor** — Mengelola emission schedule dengan model halving. Phase 1 (minggu 1-12): 2404 OIK/block. Phase 2 (minggu 13-24): setengah dari Phase 1. Phase 3 (minggu 25-48): setengah lagi. Setelah Phase 3, emission flat. Alokasi per epoch: battle rewards, quest rewards, exploration rewards, staking rewards, dan AI operations reserve. Terintegrasi dengan AntiSybil — hanya player yang memenuhi syarat yang bisa claim reward.
+
+**EconomyParams** — Storage untuk parameter ekonomi yang bisa di-tune oleh AI controller. Parameter: reward multiplier (0.5x – 2.0x), burn rate (20% – 80%), mint cost multiplier (0.5x – 3.0x), enemy power scaling, dan entry fee multiplier. Setiap perubahan di-record per epoch dengan data context (win rate, velocity, supply, active players). Punya safety bounds dan gradual ramp — perubahan max 20% per epoch untuk mencegah shock.
+
+</details>
+
+---
 
 #### 🛡️ Utilities
 
+Security dan oracle layer yang melindungi ekosistem dari exploit dan manipulasi.
+
 | Contract | Address | Source Code |
 |----------|---------|-------------|
-| **CircuitBreaker** — Emergency pause (guardian voting) | [`0xA81C…7223`](https://dream-explorer.somnia.network/address/0xA81CC9ee929384ac20a9351DCC999E2e32F67223) | [`contracts/utils/CircuitBreaker.sol`](./contracts/utils/CircuitBreaker.sol) |
-| **AntiSybil** — Anti-bot protection | [`0x96A9…4bd3`](https://dream-explorer.somnia.network/address/0x96A9C1436C98155870bA29F5fD3637cbaC7f4bd3) | [`contracts/utils/AntiSybil.sol`](./contracts/utils/AntiSybil.sol) |
-| **TWAPOracle** — TWAP price oracle | [`0x1dcE…18b6`](https://dream-explorer.somnia.network/address/0x1dcEC3807fca337f54C81cDe01985594427F18b6) | [`contracts/utils/TWAPOracle.sol`](./contracts/utils/TWAPOracle.sol) |
+| **CircuitBreaker** | [`0xA81C…7223`](https://dream-explorer.somnia.network/address/0xA81CC9ee929384ac20a9351DCC999E2e32F67223) | [`contracts/utils/CircuitBreaker.sol`](./contracts/utils/CircuitBreaker.sol) |
+| **AntiSybil** | [`0x96A9…4bd3`](https://dream-explorer.somnia.network/address/0x96A9C1436C98155870bA29F5fD3637cbaC7f4bd3) | [`contracts/utils/AntiSybil.sol`](./contracts/utils/AntiSybil.sol) |
+| **TWAPOracle** | [`0x1dcE…18b6`](https://dream-explorer.somnia.network/address/0x1dcEC3807fca337f54C81cDe01985594427F18b6) | [`contracts/utils/TWAPOracle.sol`](./contracts/utils/TWAPOracle.sol) |
+
+<details>
+<summary><b>📖 Detail Kegunaan Setiap Utility Contract</b></summary>
+
+**CircuitBreaker** — Emergency pause mechanism untuk seluruh ekosistem OIKONO. Menggunakan sistem guardian — hingga 5 guardian address yang bisa vote untuk pause. Butuh 3-of-5 votes untuk pause otomatis, atau owner bisa emergency pause langsung. Auto-unpause setelah max 7 hari. Semua game contract punya `whenNotPaused` modifier — ketika paused, semua operasi (battle, spawn, reward) berhenti total. Ini melindungi dari exploit massal.
+
+**AntiSybil** — Rate limiting dan anti-bot protection. Menerapkan cooldown: 30 detik untuk move, 60 detik untuk battle, 200 detik untuk reward transfer. Minimum stake 10 OIK untuk berpartisipasi. Tracking unique opponents per epoch — bot yang farming lawan yang sama terus-menerus terdeteksi. Juga tracking total reward per epoch untuk mencegah drain. Authorized callers bisa di-set oleh owner (game contracts only).
+
+**TWAPOracle** — Time-Weighted Average Price oracle untuk perhitungan economy. Terintegrasi dengan external price feed (DIA, Protofire) di Somnia. TWAP window 100 data points, max price age 1 jam. Mencegah flash loan attack — harga diambil dari rata-rata, bukan spot price. Digunakan oleh EconomyParams untuk perhitungan buyback, reward value, dan entry fee dalam USD equivalent.
+
+</details>
+
+---
 
 #### 🏭 Game Factory
 
+Factory pattern untuk deploy dan register game baru dalam satu transaksi.
+
 | Contract | Address | Source Code |
 |----------|---------|-------------|
-| **GameFactory** — Deploy new games | [`0x248c…9007`](https://dream-explorer.somnia.network/address/0x248cCDBB7331cA30D4057862F4Dc673a6AeC9007) | [`contracts/GameFactory.sol`](./contracts/GameFactory.sol) |
+| **GameFactory** | [`0x248c…9007`](https://dream-explorer.somnia.network/address/0x248cCDBB7331cA30D4057862F4Dc673a6AeC9007) | [`contracts/GameFactory.sol`](./contracts/GameFactory.sol) |
+
+<details>
+<summary><b>📖 Detail Kegunaan GameFactory</b></summary>
+
+**GameFactory** — Factory contract yang memungkinkan deploy beberapa game sekaligus dalam satu transaksi (batch deploy, max 20 game per batch). Menghemat gas karena tidak perlu deploy satu per satu. Setiap game di-deploy sebagai `GameContract` minimal (name, gameType, description, owner). Game yang terdaftar bisa langsung integrate dengan OikonoAgent system. Semua deployed games di-track di array public untuk indexing.
+
+</details>
+
+---
 
 #### 🎯 Registered Games (via Factory)
+
+9 game terdaftar yang menggunakan OIKONO AI Agent system di Somnia Testnet.
 
 | Game | Type | Address |
 |------|------|---------|
@@ -558,6 +662,29 @@ All contracts are deployed on **Somnia Testnet** (Chain ID: `50312`).
 | Somn Tournament | Racing | [`0x04cd…2912`](https://dream-explorer.somnia.network/address/0x04cdcC114616F37bA1D1CcC4f5248DbB2E782912) |
 | NFT Bridge World | Simulation | [`0x098f…926`](https://dream-explorer.somnia.network/address/0x098f6C6B1c80460aD896F63900D84D4e64BFA926) |
 | DeFi Arena | DeFi | [`0x9532…86F8`](https://dream-explorer.somnia.network/address/0x9532A3Ac3a3ba2AAcbc6bbd21ede6dDED49d86F8) |
+
+<details>
+<summary><b>📖 Detail Setiap Registered Game</b></summary>
+
+**WagerVerse Arena (PvP)** — Arena pertarungan player-vs-player dengan sistem wagering. Player bisa bertaruh OIK token dan winner mengambil pot. AI mengatur matchmaking berdasarkan power level dan win rate.
+
+**Worms Arena (Strategy)** — Game strategi berbasis giliran di mana player mengendalikan pasukan cacing. AI generate map, item placement, dan difficulty scaling berdasarkan player skill.
+
+**Infinite Craft (Sandbox)** — Game sandbox kreatif di mana player mengkombinasikan elemen untuk membuat item baru. AI mengenerate recipe baru dan mengatur rarity distribution.
+
+**Void Hunters (RPG)** — RPG action di mana player berburu monster di void realm. AI generate enemy, quest, dan loot table berdasarkan player progression dan game state.
+
+**Kingsomni (Card)** — Game kartu koleksi dengan sistem battle berbasis deck. AI generate kartu baru, balance meta, dan mengatur card pack distribution.
+
+**Gamers Lab (Puzzle)** — Platform puzzle dengan level yang di-generate AI. Difficulty scaling otomatis berdasarkan solve rate dan time-to-complete player.
+
+**Somn Tournament (Racing)** — Game racing kompetitif dengan turnamen periodik. AI generate track, mengatur NPC opponents, dan menyesuaikan rubber-banding.
+
+**NFT Bridge World (Simulation)** — Game simulasi ekonomi di mana player membangun dan mengelola world mereka. AI mengatur resource generation, trade routes, dan event generation.
+
+**DeFi Arena (DeFi)** — Game dengan mekanisme DeFi terintegrasi — yield farming, liquidity mining, dan trading competitions. AI mengatur APY, token emission, dan risk parameters.
+
+</details>
 
 ### Post-Deployment
 
