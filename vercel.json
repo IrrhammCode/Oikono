@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "name": "oikono",
+  "cleanUrls": true,
+  "buildCommand": "mkdir -p dist && cp -r frontend/* dist/",
+  "outputDirectory": "dist"
+}
